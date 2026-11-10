@@ -329,6 +329,11 @@ def _scope_missing(data: dict) -> bool:
     return isinstance(message, str) and _SCOPE_PHRASE in message.lower()
 
 
+def reason_for(status: int, data: object) -> str:
+    """The short, safe reason for a failed Google response, for logging."""
+    return _reason(status, data if isinstance(data, dict) else {})
+
+
 def _reason(status: int, data: dict) -> str:
     """A short reason from Google's codes only; its free-text message may echo our data."""
     error = _error_body(data)

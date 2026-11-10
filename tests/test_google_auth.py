@@ -341,6 +341,34 @@ async def test_a_failing_account_lookup_aborts_plainly(
     assert "unused-access" not in caplog.text
 
 
+async def test_a_refused_account_lookup_logs_googles_reason_code(
+    hass, hass_admin_user, add_crm, hass_client_no_auth, aioclient_mock,
+    current_request_with_host, caplog,
+):
+    entry = await add_crm(hass_admin_user)
+
+    result = await start_reconfigure(hass, entry)
+    result = await run_oauth(
+        hass, hass_client_no_auth, aioclient_mock, result, "unused-access",
+        lookup={
+            "status": HTTPStatus.FORBIDDEN,
+            "json": {
+                "error": {
+                    "code": 403,
+                    "status": "PERMISSION_DENIED",
+                    "message": "free text that must not be logged",
+                    "details": [{"reason": "SERVICE_DISABLED"}],
+                }
+            },
+        },
+    )
+
+    assert result["reason"] == "people_api_unavailable"
+    assert "HTTP 403 PERMISSION_DENIED SERVICE_DISABLED" in caplog.text
+    assert "free text that must not be logged" not in caplog.text
+    assert "unused-access" not in caplog.text
+
+
 @pytest.mark.parametrize(
     "lookup",
     [

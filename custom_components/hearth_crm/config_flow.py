@@ -36,6 +36,7 @@ from .const import (
     GOOGLE_PEOPLE_ME,
     GOOGLE_SCOPE,
 )
+from .google_client import reason_for
 
 SOURCE_SELF_SERVICE = "self_service"
 ACCOUNT_LOOKUP_TIMEOUT = 30
@@ -167,8 +168,13 @@ class HearthConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, domai
                     headers={"Authorization": f"Bearer {access_token}"},
                 ) as resp:
                     if resp.status != 200:
+                        try:
+                            failure = await resp.json()
+                        except (aiohttp.ClientError, ValueError):
+                            failure = None
                         _LOGGER.warning(
-                            "Could not read the Google account (HTTP %s)", resp.status
+                            "Could not read the Google account (%s)",
+                            reason_for(resp.status, failure),
                         )
                         return None
                     body = await resp.json()
