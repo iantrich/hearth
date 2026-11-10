@@ -21,7 +21,7 @@ Everything you enter (people, contact details, birthdays, notes, relationships, 
 
 Google Contacts sync is off by default. If you connect it:
 
-- Hearth uses Google's sign-in (OAuth) to ask for one permission: access to your Google Contacts (`https://www.googleapis.com/auth/contacts`).
+- Hearth uses Google's sign-in (OAuth) to ask for two permissions: access to your Google Contacts (`https://www.googleapis.com/auth/contacts`), and the basic `openid` sign-in. The second gives Hearth only an anonymous account id, used to tell which Google account is connected and to refuse a different one by mistake. Hearth does not receive your name, email address or profile photo.
 - Hearth sends names, phone numbers, email addresses, postal addresses and photos from your CRM to your own Google account through the Google People API, and reads back only the contact id and version marker it needs to update a contact safely.
 - The sign-in tokens are stored in your Home Assistant. They are not sent anywhere except to Google.
 - Data goes directly from your Home Assistant to Google. It does not pass through any server run by the developer.

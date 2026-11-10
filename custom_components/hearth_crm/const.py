@@ -29,13 +29,15 @@ TOOL_PREFIX = f"{DOMAIN}__"
 
 # Google Contacts sync. Hearth asks for read and write access to the owner's contacts and a
 # refresh token (access_type=offline, prompt=consent), so the sync keeps working unattended.
-GOOGLE_SCOPE = "https://www.googleapis.com/auth/contacts"
+# ``openid`` adds nothing but a stable id for the signed-in account (no name, email or photo):
+# the People API's own ``people/me`` needs the broader ``profile`` scope.
+GOOGLE_SCOPE = "https://www.googleapis.com/auth/contacts openid"
 OAUTH2_AUTHORIZE = "https://accounts.google.com/o/oauth2/v2/auth"
 OAUTH2_TOKEN = "https://oauth2.googleapis.com/token"
-# The Google account a CRM is linked to (its People API resourceName), so reconnecting with a
+# The Google account a CRM is linked to (its OpenID ``sub``), so reconnecting with a
 # different account is refused instead of orphaning every stored google_contact_id.
 CONF_GOOGLE_ACCOUNT_ID = "google_account_id"
-GOOGLE_PEOPLE_ME = "https://people.googleapis.com/v1/people/me"
+GOOGLE_USERINFO = "https://openidconnect.googleapis.com/v1/userinfo"
 
 # When the sync runs on its own: shortly after setup, once edits settle, and hourly.
 GOOGLE_STARTUP_DELAY_SECONDS = 30

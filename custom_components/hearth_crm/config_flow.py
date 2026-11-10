@@ -33,8 +33,8 @@ from .const import (
     CONF_GOOGLE_ACCOUNT_ID,
     CONF_OWNER_USER_ID,
     DOMAIN,
-    GOOGLE_PEOPLE_ME,
     GOOGLE_SCOPE,
+    GOOGLE_USERINFO,
 )
 from .google_client import reason_for
 
@@ -170,7 +170,7 @@ class HearthConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, domai
     async def _async_google_account_id(
         self, access_token: str, granted: object = None
     ) -> str | None:
-        """The signed-in account's People API resourceName, or None if it can't be read.
+        """The signed-in account's OpenID ``sub``, or None if it can't be read.
 
         Nothing about the request or the token is logged.
         """
@@ -178,8 +178,7 @@ class HearthConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, domai
         try:
             async with asyncio.timeout(ACCOUNT_LOOKUP_TIMEOUT):
                 async with session.get(
-                    GOOGLE_PEOPLE_ME,
-                    params={"personFields": "metadata"},
+                    GOOGLE_USERINFO,
                     headers={"Authorization": f"Bearer {access_token}"},
                 ) as resp:
                     if resp.status != 200:
@@ -199,5 +198,5 @@ class HearthConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, domai
         except (TimeoutError, aiohttp.ClientError, ValueError):
             _LOGGER.warning("Could not read the Google account")
             return None
-        account_id = body.get("resourceName") if isinstance(body, dict) else None
+        account_id = body.get("sub") if isinstance(body, dict) else None
         return account_id if isinstance(account_id, str) and account_id else None

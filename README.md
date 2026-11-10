@@ -164,7 +164,7 @@ Within those fields Hearth wins: a field you empty in Hearth is cleared in Googl
 4. **Publish the app to "In production".** An app left in "Testing" gets refresh tokens that expire after 7 days, which would disconnect the sync every week.
 5. Create an **OAuth client ID** of type **Web application**, with the authorized redirect URI `https://my.home-assistant.io/redirect/oauth`.
 6. In Home Assistant, go to **Settings > Devices & services**, open the menu and choose **Application Credentials**. Add a credential for **Hearth** with the client ID and secret.
-7. Open the Hearth entry for the CRM you want to connect, open its menu and choose **Reconfigure**, then sign in to Google. Hearth asks for access to your contacts only.
+7. Open the Hearth entry for the CRM you want to connect, open its menu and choose **Reconfigure**, then sign in to Google. Hearth asks for access to your contacts, plus Google's basic `openid` sign-in, which gives it only an account id (no name, email or photo) so it can tell which Google account is connected.
 
 Each CRM keeps its own Google link, separate from every other CRM's. Once an entry is linked to a Google account, reconnecting must use the same account, and a Google account already linked to one Hearth CRM can't be linked to another.
 

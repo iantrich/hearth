@@ -35,9 +35,9 @@ CLIENT_ID = "invented-client-id"
 CLIENT_SECRET = "invented-client-secret"
 REDIRECT_URI = "https://example.com/auth/external/callback"
 PEOPLE_ME = "https://people.googleapis.com/v1/people/me"
-ACCOUNT_LOOKUP = f"{PEOPLE_ME}?personFields=metadata"
-ACCOUNT = "people/c1001"
-OTHER_ACCOUNT = "people/c2002"
+ACCOUNT_LOOKUP = "https://openidconnect.googleapis.com/v1/userinfo"
+ACCOUNT = "1001"
+OTHER_ACCOUNT = "2002"
 
 
 @pytest.fixture(autouse=True)
@@ -78,7 +78,7 @@ async def run_oauth(
     assert result["url"] == (
         f"{OAUTH2_AUTHORIZE}?response_type=code&client_id={CLIENT_ID}"
         f"&redirect_uri={REDIRECT_URI}&state={state}"
-        "&scope=https://www.googleapis.com/auth/contacts&access_type=offline&prompt=consent"
+        "&scope=https://www.googleapis.com/auth/contacts+openid&access_type=offline&prompt=consent"
     )
     client = await hass_client_no_auth()
     resp = await client.get(f"/auth/external/callback?code=invented-code&state={state}")
@@ -96,7 +96,7 @@ async def run_oauth(
     if lookup is None:
         lookup = {
             "status": lookup_status,
-            "json": {"resourceName": account} if lookup_status == HTTPStatus.OK else {"error": {}},
+            "json": {"sub": account} if lookup_status == HTTPStatus.OK else {"error": {}},
         }
     aioclient_mock.get(ACCOUNT_LOOKUP, **lookup)
     result = await hass.config_entries.flow.async_configure(result["flow_id"])
@@ -375,11 +375,11 @@ async def test_a_refused_account_lookup_logs_googles_reason_code(
     [
         {"text": "<html>not json</html>"},
         {"json": {"etag": "invented-etag"}},
-        {"json": {"resourceName": ""}},
-        {"json": ["people/c1001"]},
+        {"json": {"sub": ""}},
+        {"json": ["1001"]},
         {"exc": TimeoutError()},
     ],
-    ids=["not-json", "no-resource-name", "empty-resource-name", "not-an-object", "timeout"],
+    ids=["not-json", "no-sub", "empty-sub", "not-an-object", "timeout"],
 )
 async def test_an_unreadable_account_lookup_aborts_plainly(
     hass, hass_admin_user, add_crm, hass_client_no_auth, aioclient_mock,
@@ -466,7 +466,7 @@ async def test_two_first_requests_build_one_session(
 ):
     entry = await add_crm(hass_admin_user)
     await connect(hass, entry)
-    aioclient_mock.get(PEOPLE_ME, json={"resourceName": ACCOUNT})
+    aioclient_mock.get(PEOPLE_ME, json={"resourceName": "people/me"})
     real = google_link.config_entry_oauth2_flow.async_get_config_entry_implementation
     lookups = 0
 
