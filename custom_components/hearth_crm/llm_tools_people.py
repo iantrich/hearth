@@ -7,7 +7,6 @@ snapshot, so derived values (household names, contact status, age) come from Pyt
 
 from __future__ import annotations
 
-from datetime import date
 from typing import Any
 
 import probatio
@@ -27,14 +26,14 @@ from .llm_base import (
     find_record,
     replaces_text,
 )
-from .llm_logic import default_hidden, parse_birthday, person_brief, similar_people
+from .llm_logic import parse_birthday, person_brief, similar_people
 
 _TEXT_FIELDS = (
     "phone", "phone2", "email", "email2", "occupation", "employer", "how_i_know_them", "notes",
     "website", "linkedin", "facebook", "instagram",
 )
 _PLACE_FIELDS = ("address", "school")
-_FLAGS = ("favorite", "close_friend", "hide_from_list")
+_FLAGS = ("favorite", "close_friend")
 
 _INTERACTION_TYPES = [t.value for t in InteractionType]
 _DEFAULT_TYPE = InteractionType.CATCH_UP.value
@@ -73,11 +72,6 @@ _PERSON_FIELDS: dict[str, tuple[str, Any]] = {
     "favorite": ("Mark as a favorite.", bool),
     "close_friend": (
         "A close friend: Hearth then reminds the user to keep in touch on a rotation.", bool
-    ),
-    "hide_from_list": (
-        "Hide from the main people list and birthday lists. Set it true for children, even when "
-        "their age is not known.",
-        bool,
     ),
     "website": ("Website URL.", str),
     "linkedin": ("LinkedIn profile URL.", str),
@@ -179,9 +173,7 @@ class CreatePersonTool(HearthTool):
         "refuses and lists them; ask the user whether it is one of them, and only call again "
         "with confirm_new=true once the user says this is someone new. Set how_i_know_them "
         "when the connection to the user is known. If the birth year is unknown, pass the "
-        "birthday as MM-DD. Children are hidden from lists by default when their birth year "
-        "shows they are under 18; set hide_from_list=true for a child even when their age is "
-        "not known. Add family links with the relationship tools and households with the "
+        "birthday as MM-DD. Add family links with the relationship tools and households with the "
         "household tools afterwards."
     )
     parameters = probatio.Schema(
@@ -212,13 +204,6 @@ class CreatePersonTool(HearthTool):
                     "Ask the user whether this is one of them. If this really is a new person, "
                     "call again with confirm_new=true."
                 )
-        if "hide_from_list" not in fields:
-            birthday = fields.get("birthday")
-            fields["hide_from_list"] = default_hidden(
-                date.fromisoformat(birthday) if birthday else None,
-                fields.get("birth_year_unknown", False),
-                crm.today,
-            )
         saved = await crm.run(lambda s: s.create("person", fields, "claude"))
         crm.notify("person", saved["id"], "create")
         return _person_result(await crm.snapshot(), saved["id"])

@@ -83,11 +83,10 @@ def upcoming_birthdays(
     today: date,
     *,
     within_days: int | None = None,
-    include_hidden: bool = False,
 ) -> list[UpcomingBirthday]:
     result: list[UpcomingBirthday] = []
     for person in people:
-        if person.birthday is None or (person.hide_from_list and not include_hidden):
+        if person.birthday is None:
             continue
         days = days_until_birthday(person.birthday, today)
         if within_days is not None and days > within_days:

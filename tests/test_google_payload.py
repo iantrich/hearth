@@ -41,9 +41,8 @@ def test_split_name_by_the_last_word():
     assert split_name("  Sam   Rowe  ") == ("Sam", "Rowe")
 
 
-def test_eligibility_skips_hidden_nameless_and_contactless_people():
+def test_eligibility_skips_nameless_and_contactless_people():
     assert eligibility(make_person()).eligible
-    assert eligibility(make_person(hide_from_list=True)).reason == "hidden"
     assert eligibility(make_person(name="  ")).reason == "no_name"
     contactless = make_person(phone=None, phone2=" ", email="", email2=None)
     result = eligibility(contactless)
@@ -176,7 +175,7 @@ def test_blocked_wins_when_fresh_or_ineligible():
     assert plan_for(fresh, None).kind == "blocked"
     ineligible = make_person(
         google_contact_id="c1", google_sync_error=ERROR_CONTACT_MISSING,
-        hide_from_list=True, google_synced_at=T0, updated_at=LATER,
+        name=" ", google_synced_at=T0, updated_at=LATER,
     )
     assert plan_for(ineligible, None).kind == "blocked"
 
@@ -188,7 +187,7 @@ def test_equal_timestamps_are_not_stale():
 
 def test_ineligible_person_with_id_and_changed_photo_plans_none():
     person = make_person(
-        hide_from_list=True, google_contact_id="c1", google_synced_at=LATER,
+        name=" ", google_contact_id="c1", google_synced_at=LATER,
         photo_hash="new", google_photo_hash="old",
     )
     assert plan_for(person, None).kind == "none"
@@ -215,11 +214,11 @@ def test_plan_for_covers_every_kind():
     work = plan_for(photo_only, None)
     assert (work.kind, work.photo) == ("photo_only", True)
 
-    hidden_stale = make_person(hide_from_list=True, google_synced_at=T0, updated_at=LATER)
-    assert plan_for(hidden_stale, None).kind == "skip"
-    assert plan_for(make_person(hide_from_list=True), None).kind == "skip"
-    hidden_fresh = make_person(hide_from_list=True, google_synced_at=LATER)
-    assert plan_for(hidden_fresh, None).kind == "none"
+    nameless_stale = make_person(name=" ", google_synced_at=T0, updated_at=LATER)
+    assert plan_for(nameless_stale, None).kind == "skip"
+    assert plan_for(make_person(name=" "), None).kind == "skip"
+    nameless_fresh = make_person(name=" ", google_synced_at=LATER)
+    assert plan_for(nameless_fresh, None).kind == "none"
 
     blocked = make_person(
         google_contact_id="c1", google_sync_error=ERROR_CONTACT_MISSING,

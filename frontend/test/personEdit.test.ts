@@ -109,7 +109,7 @@ describe("edit a person", () => {
     const names = [...root(el).querySelectorAll("#content [name]")].map((n) => n.getAttribute("name"));
     for (const name of [
       "name", "how_i_know_them", "occupation", "employer", "phone", "phone2", "email", "email2", "birthday",
-      "favorite", "close_friend", "hide_from_list", "address", "school", "website", "linkedin", "facebook",
+      "favorite", "close_friend", "address", "school", "website", "linkedin", "facebook",
       "instagram", "notes", "relationship_summary", "household_id",
     ]) expect(names).toContain(name);
     expect(names).not.toContain("summary_updated");

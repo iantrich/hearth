@@ -12,7 +12,6 @@ import unicodedata
 from datetime import date
 from difflib import SequenceMatcher
 
-from .derive import age_on
 
 _UNKNOWN_YEAR = 2000  # A leap year, so "02-29" parses.
 _TOKEN_RATIO = 0.8
@@ -39,7 +38,6 @@ def person_brief(snapshot: dict, person: dict) -> dict:
         "how_i_know_them": person["how_i_know_them"],
         "close_friend": person["close_friend"],
         "favorite": person["favorite"],
-        "hidden": person["hide_from_list"],
         "last_contacted": status["last_contacted"],
         "days_since_contact": status["days_since_contact"],
         "urgency": status["urgency"],
@@ -105,7 +103,7 @@ def search_people(
     household: str | None = None,
     limit: int = 25,
 ) -> dict:
-    """Name search like the panel's: hidden people included, sorted by name."""
+    """Name search like the panel's, sorted by name."""
     people = sorted(snapshot["people"], key=_by_name)
     by_id = {p["id"]: p for p in people}
     needle = _fold(query.strip())
@@ -204,11 +202,11 @@ def similar_people(snapshot: dict, name: str, limit: int = 5) -> list[dict]:
 
 
 def reach_out(snapshot: dict, limit: int = 25) -> dict:
-    """Visible close friends who are overdue or due soon, most pressing first."""
+    """Close friends who are overdue or due soon, most pressing first."""
     overdue: list[dict] = []
     due_soon: list[dict] = []
     for person in snapshot["people"]:
-        if person["hide_from_list"] or not person["close_friend"]:
+        if not person["close_friend"]:
             continue
         urgency = person["contact_status"]["urgency"]
         if urgency == "overdue":
@@ -239,15 +237,13 @@ def reach_out(snapshot: dict, limit: int = 25) -> dict:
 
 
 def upcoming(
-    snapshot: dict, within_days: int = 30, limit: int = 25, include_hidden: bool = False
+    snapshot: dict, within_days: int = 30, limit: int = 25
 ) -> dict:
     """Birthdays within ``within_days``, soonest first (days come from the snapshot)."""
     rows = []
     for person in snapshot["people"]:
         until = person["days_until_birthday"]
         if until is None or until > within_days:
-            continue
-        if person["hide_from_list"] and not include_hidden:
             continue
         rows.append((until, _by_name(person), person))
     rows.sort(key=lambda r: r[:2])
@@ -296,8 +292,3 @@ def parse_birthday(text: str) -> tuple[date, bool]:
     )
 
 
-def default_hidden(birthday: date | None, year_unknown: bool, today: date) -> bool:
-    """Minors are hidden from lists by default, but only when the birth year is known."""
-    if birthday is None or year_unknown:
-        return False
-    return age_on(birthday, today) < 18

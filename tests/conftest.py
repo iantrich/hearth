@@ -61,7 +61,7 @@ def sample_data() -> CRMData:
         person("p2", "Blair Example", household_id="h1", birth_year_unknown=True,
                birthday=date(1982, 7, 9)),
         person("p3", "Casey Example", household_id="h1", school=school, close_friend=True),
-        person("p4", "Drew Example", household_id="h1", hide_from_list=True, notes="Kid"),
+        person("p4", "Drew Example", household_id="h1", notes="Kid"),
     ]
     households = [
         Household(

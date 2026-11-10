@@ -50,7 +50,7 @@ async def crm(hass, add_crm):
         ids["josie"] = create("person", {"name": "Josie Parent", "birthday": "2015-01-01"})
         ids["ada"] = create("person", {"name": "Ada Friend", "close_friend": True})
         ids["dee"] = create("person", {"name": "Dee Quiet", "close_friend": True})
-        ids["bo"] = create("person", {"name": "Bo Hidden", "hide_from_list": True,
+        ids["bo"] = create("person", {"name": "Bo Near",
                                       "birthday": (today + timedelta(days=3)).replace(year=2000).isoformat()})
         ids["cy"] = create("person", {"name": "Cy Soon", "birthday": (today + timedelta(days=5)).replace(year=1990).isoformat()})
         ids["house"] = create("household", {"notes": "Corner lot"})
@@ -83,8 +83,8 @@ async def test_search_people_caps_results_and_says_it_truncated(hass, crm):
     result = await run(hass, user, "search_people", query="", limit=10)
     assert result["total"] == 36 and result["returned"] == 10 and result["truncated"] is True
     assert len(result["people"]) == 10
-    hidden = await run(hass, user, "search_people", query="hidden")
-    assert [p["name"] for p in hidden["people"]] == ["Bo Hidden"]  # hidden people are searched
+    near = await run(hass, user, "search_people", query="near")
+    assert [p["name"] for p in near["people"]] == ["Bo Near"]
     narrowed = await run(hass, user, "search_people", group="book", how_i_know_them="roommate")
     assert [p["id"] for p in narrowed["people"]] == [ids["phil"]]
     with pytest.raises(ToolError):
@@ -201,14 +201,12 @@ async def test_who_to_reach_out_to_matches_the_panel_urgency(hass, crm):
     assert result["total"] == 1 and result["truncated"] is False
 
 
-async def test_upcoming_birthdays_respects_window_and_hidden(hass, crm):
+async def test_upcoming_birthdays_respects_the_window(hass, crm):
     user, ids, _ = crm
     result = await run(hass, user, "upcoming_birthdays", within_days=30)
-    assert [b["person"]["id"] for b in result["birthdays"]] == [ids["cy"]]
-    assert result["birthdays"][0]["days_until"] == 5
-    with_hidden = await run(hass, user, "upcoming_birthdays", include_hidden=True)
-    assert [b["person"]["id"] for b in with_hidden["birthdays"]] == [ids["bo"], ids["cy"]]
-    narrow = await run(hass, user, "upcoming_birthdays", within_days=4, include_hidden=True)
+    assert [b["person"]["id"] for b in result["birthdays"]] == [ids["bo"], ids["cy"]]
+    assert [b["days_until"] for b in result["birthdays"]] == [3, 5]
+    narrow = await run(hass, user, "upcoming_birthdays", within_days=4)
     assert [b["person"]["id"] for b in narrow["birthdays"]] == [ids["bo"]]
     with pytest.raises(ToolError):
         await run(hass, user, "upcoming_birthdays", within_days=367)

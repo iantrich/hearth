@@ -33,7 +33,7 @@ const TEXT_FIELDS = [
   "name", "how_i_know_them", "occupation", "employer", "phone", "phone2", "email", "email2",
   "website", "linkedin", "facebook", "instagram", "notes", "relationship_summary",
 ] as const;
-const FLAGS = ["favorite", "close_friend", "hide_from_list"] as const;
+const FLAGS = ["favorite", "close_friend"] as const;
 
 /** The form's input: text as typed ("" for none), places as their text, and the chosen groups. */
 type PersonForm = Record<(typeof TEXT_FIELDS)[number], string> &
@@ -62,7 +62,6 @@ function initialForm(person: Person, snapshot: Snapshot): PersonForm {
     ...text,
     favorite: person.favorite,
     close_friend: person.close_friend,
-    hide_from_list: person.hide_from_list,
     birthday: person.birthday ?? "",
     birth_year_unknown: person.birth_year_unknown,
     address: person.address?.formatted ?? "",
@@ -240,8 +239,7 @@ export function personEditView(store: Store, id: string): View {
       ${section("Dates", dateField(b, "birthday", "Birthday", "birth_year_unknown"))}
       ${section(
         "Flags",
-        html`${toggleField(b, "favorite", "Favorite")} ${toggleField(b, "close_friend", "Close friend")}
-        ${toggleField(b, "hide_from_list", "Hide from lists")}`,
+        html`${toggleField(b, "favorite", "Favorite")} ${toggleField(b, "close_friend", "Close friend")}`,
       )}
       ${section("Places", html`${placeField(b, "address", "Address")} ${placeField(b, "school", "School")}`)}
       ${section(

@@ -26,12 +26,11 @@ describe("birthdays", () => {
   const people = [
     makePerson("a", "Later", { birthday: "1990-09-10", days_until_birthday: 20 }),
     makePerson("b", "Sooner", { birthday: "1990-08-25", days_until_birthday: 4 }),
-    makePerson("c", "Hidden", { birthday: "2015-08-22", days_until_birthday: 1, hide_from_list: true }),
     makePerson("d", "Unknown"),
     makePerson("e", "Also Sooner", { birthday: "1988-08-25", days_until_birthday: 4 }),
   ];
 
-  it("lists upcoming birthdays soonest first, then by name, without hidden people", () => {
+  it("lists upcoming birthdays soonest first, then by name", () => {
     expect(upcomingBirthdays(people).map((p) => [p.name, p.days_until_birthday])).toEqual([
       ["Also Sooner", 4],
       ["Sooner", 4],
@@ -52,9 +51,8 @@ describe("birthdays", () => {
 describe("favorites", () => {
   const fav = (id: string, name: string, overrides: Partial<Person> = {}) => makePerson(id, name, { favorite: true, ...overrides });
 
-  it("includes only visible favorites", () => {
+  it("includes only favorites", () => {
     expect(favorites([fav("a", "Ada"), fav("b", "Bo", { favorite: false })]).map((p) => p.id)).toEqual(["a"]);
-    expect(favorites([fav("a", "Ada"), fav("b", "Bo", { hide_from_list: true })]).map((p) => p.id)).toEqual(["a"]);
   });
 
   it("holds at most two rows of three, in source order", () => {
@@ -75,18 +73,14 @@ describe("favorites", () => {
 });
 
 describe("interaction feed", () => {
-  const person = (id: string, hidden = false) => makePerson(id, id, { hide_from_list: hidden });
+  const person = (id: string) => makePerson(id, id);
   const interaction = (id: string, personIds: string[], daysAgo: number): Interaction =>
     makeInteraction(id, id, addDays(today, -daysAgo), personIds);
   const feed = (interactions: Interaction[], people: Person[], options: { since?: string; limit?: number } = {}) =>
     visibleInteractions(interactions, people, { limit: 10, ...options }).map((i) => i.id);
 
-  it("hides an interaction whose only person is hidden", () => {
-    expect(feed([interaction("i1", ["ghost"], 1)], [person("ghost", true)])).toEqual([]);
-  });
-
-  it("keeps an interaction when anyone on it is visible", () => {
-    expect(feed([interaction("i1", ["ghost", "adam"], 1)], [person("ghost", true), person("adam")])).toEqual(["i1"]);
+  it("keeps an interaction when anyone on it is known", () => {
+    expect(feed([interaction("i1", ["ghost", "adam"], 1)], [person("adam")])).toEqual(["i1"]);
   });
 
   it("drops an interaction whose people are all unknown", () => {
@@ -110,7 +104,7 @@ describe("interaction feed", () => {
     expect(interactionPeople(interaction("i1", ["nobody", "adam"], 1), people).map((p) => p.id)).toEqual(["adam"]);
   });
 
-  it("lists one person's interactions newest first, hidden or not", () => {
+  it("lists one person's interactions newest first", () => {
     const all = [interaction("old", ["adam"], 30), interaction("other", ["bea"], 2), interaction("new", ["bea", "adam"], 1)];
     expect(interactionsFor(all, "adam").map((i) => i.id)).toEqual(["new", "old"]);
   });

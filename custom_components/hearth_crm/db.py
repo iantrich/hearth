@@ -104,7 +104,6 @@ CREATE TABLE IF NOT EXISTS person (
     birth_year_unknown INTEGER NOT NULL DEFAULT 0,
     favorite INTEGER NOT NULL DEFAULT 0,
     close_friend INTEGER NOT NULL DEFAULT 0,
-    hide_from_list INTEGER NOT NULL DEFAULT 0,
     website TEXT, linkedin TEXT, facebook TEXT, instagram TEXT,
     {_place_cols("address")},
     {_place_cols("school")},

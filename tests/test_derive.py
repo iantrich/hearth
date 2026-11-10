@@ -92,12 +92,6 @@ def test_upcoming_birthdays_within_days():
     assert [b.person_id for b in upcoming_birthdays(people, T, within_days=5)] == ["a"]
 
 
-def test_upcoming_birthdays_excludes_hidden_unless_asked():
-    people = [p("a", "A", date(1990, 6, 20)), p("h", "H", date(1990, 6, 21), hide_from_list=True)]
-    assert [b.person_id for b in upcoming_birthdays(people, T)] == ["a"]
-    assert [b.person_id for b in upcoming_birthdays(people, T, include_hidden=True)] == ["a", "h"]
-
-
 def test_turning_is_none_when_year_unknown():
     people = [p("a", "A", date(1990, 6, 20), birth_year_unknown=True)]
     assert upcoming_birthdays(people, T)[0].turning is None
@@ -183,11 +177,11 @@ def test_future_dated_interaction_is_negative_days_and_ok():
     assert (s.days_since_contact, s.urgency) == (-5, "ok")
 
 
-def test_snapshot_includes_derived_values_for_hidden_person(sample):
+def test_snapshot_includes_derived_values_for_a_child(sample):
     sample.people[3].birthday = date(2015, 3, 10)
     snap = build_snapshot(sample, me_person_id=None, today=date(2026, 3, 1))
     row = {x["id"]: x for x in snap["people"]}["p4"]
-    assert row["hide_from_list"] is True
+    assert "hide_from_list" not in row
     assert (row["age"], row["days_until_birthday"]) == (10, 9)
 
 

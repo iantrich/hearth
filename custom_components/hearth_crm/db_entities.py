@@ -22,12 +22,12 @@ PLACE_FIELDS = ("formatted", "street", "city", "state", "postal_code", "country"
 
 PERSON_SCALARS = (
     "phone", "phone2", "email", "email2", "occupation", "employer", "how_i_know_them",
-    "notes", "birthday", "birth_year_unknown", "favorite", "close_friend", "hide_from_list",
+    "notes", "birthday", "birth_year_unknown", "favorite", "close_friend",
     "website", "linkedin", "facebook", "instagram", "relationship_summary", "summary_updated",
     "photo_hash", "household_id", "google_contact_id", "google_synced_at",
     "google_photo_hash", "google_sync_error",
 )
-_PERSON_BOOLS = ("birth_year_unknown", "favorite", "close_friend", "hide_from_list")
+_PERSON_BOOLS = ("birth_year_unknown", "favorite", "close_friend")
 
 
 def dt(value: datetime | None) -> str | None:

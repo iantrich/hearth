@@ -119,21 +119,13 @@ async def test_create_person_guard_tells_an_unnamed_household_from_none(hass, cr
     assert f"Wren Friend (id {ids['wren']}, unnamed household, unknown)" in str(err.value)
 
 
-async def test_create_person_hides_minors_with_a_known_year_only(hass, crm):
+async def test_create_person_has_no_hide_option(hass, crm):
     user, _, _ = crm
-    today = dt_util.now().date()
-    kid = (today - timedelta(days=365 * 8)).isoformat()
-    adult = (today - timedelta(days=365 * 30)).isoformat()
-    minor = await run(hass, user, "create_person", name="Pip Youngster", birthday=kid)
-    assert minor["hide_from_list"] is True and minor["hidden"] is True
-    unknown = await run(hass, user, "create_person", name="Tam Noyear", birthday=kid[5:])
-    assert unknown["hide_from_list"] is False
-    grown = await run(hass, user, "create_person", name="Lou Grownup", birthday=adult)
-    assert grown["hide_from_list"] is False
-    shown = await run(hass, user, "create_person", name="Kit Shown", birthday=kid, hide_from_list=False)
-    assert shown["hide_from_list"] is False
-    hidden = await run(hass, user, "create_person", name="Bea Small", hide_from_list=True)
-    assert hidden["hide_from_list"] is True
+    kid = (dt_util.now().date() - timedelta(days=365 * 8)).isoformat()
+    child = await run(hass, user, "create_person", name="Pip Youngster", birthday=kid)
+    assert "hide_from_list" not in child and "hidden" not in child
+    with pytest.raises(ToolError):
+        await run(hass, user, "create_person", name="Bea Small", hide_from_list=True)
 
 
 async def test_create_person_accepts_month_day_birthdays_as_year_unknown(hass, crm):

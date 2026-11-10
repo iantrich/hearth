@@ -108,7 +108,6 @@ describe("reading screens", () => {
       s.people.push(
         person("n1", "Never Contacted", { close_friend: true, contact_status: { last_contacted: null, days_since_contact: null, urgency: "overdue" } }),
         person("n2", "Long Gone", { close_friend: true, contact_status: { last_contacted: "2026-06-01", days_since_contact: 157, urgency: "overdue" } }),
-        person("n3", "Hidden Friend", { close_friend: true, hide_from_list: true, contact_status: { last_contacted: null, days_since_contact: null, urgency: "overdue" } }),
       );
       return s;
     });
@@ -116,7 +115,6 @@ describe("reading screens", () => {
     expect(indexOf(el, "Sam Okafor")).toBeLessThan(indexOf(el, "Long Gone"));
     expect(indexOf(el, "Long Gone")).toBeLessThan(indexOf(el, "Never Contacted"));
     expect(text(el)).toContain("No interactions yet");
-    expect(text(el)).not.toContain("Hidden Friend");
   });
 
   it("person screen shows the household child as Child and the parent as Parent", async () => {

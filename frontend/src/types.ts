@@ -41,7 +41,6 @@ export interface Person {
   birth_year_unknown: boolean;
   favorite: boolean;
   close_friend: boolean;
-  hide_from_list: boolean;
   website: string | null;
   linkedin: string | null;
   facebook: string | null;

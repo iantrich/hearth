@@ -68,6 +68,17 @@ def test_failed_replace_all_leaves_previous_data(repo):
     assert len(repo.changes()) == 1
 
 
+def test_a_database_made_before_hide_from_list_was_dropped_still_works(tmp_path):
+    # Older databases keep the unused column; inserts leave it at its default.
+    conn = open_database(tmp_path / "old.sqlite")
+    conn.execute("ALTER TABLE person ADD COLUMN hide_from_list INTEGER NOT NULL DEFAULT 0")
+    conn.commit()
+    repo = CRMRepository(conn)
+    repo.replace_all(sample_data(), source="import")
+    assert repo.snapshot() == sample_data()
+    conn.close()
+
+
 def test_reopen_keeps_schema_version(tmp_path):
     path = tmp_path / "db.sqlite"
     conn = open_database(path)

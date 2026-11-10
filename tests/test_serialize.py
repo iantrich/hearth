@@ -73,6 +73,12 @@ def test_to_dict_rejects_naive_timestamp(sample):
         to_dict(sample.people[0])
 
 
+def test_a_retired_hide_from_list_field_is_read_and_ignored():
+    person = person_from_dict({**PERSON, "hide_from_list": True})
+    assert not hasattr(person, "hide_from_list")
+    assert "hide_from_list" not in to_dict(person)
+
+
 def test_bad_date_names_the_field():
     with pytest.raises(ValueError, match="birthday"):
         person_from_dict({**PERSON, "birthday": "05/01/2020"})

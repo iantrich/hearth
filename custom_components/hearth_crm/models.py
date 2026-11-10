@@ -38,7 +38,6 @@ class Person:
     birth_year_unknown: bool = False
     favorite: bool = False
     close_friend: bool = False
-    hide_from_list: bool = False
     website: str | None = None
     linkedin: str | None = None
     facebook: str | None = None

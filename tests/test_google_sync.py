@@ -186,7 +186,7 @@ async def test_dry_run_makes_no_google_call_and_writes_nothing(svc, client, phot
     new_a = _add(svc, "Avery Newcomb", phone="402-555-0121")
     _add(svc, "Blake Newcomb", email="blake@example.invalid")
     _linked(svc, "Casey Linked", "people/c5", phone="402-555-0123")
-    _add(svc, "Hidden Person", phone="402-555-0124", hide_from_list=True)
+    _add(svc, "Quiet Person")
     before = svc.read_data()
     log_before = len(svc._repo.changes(1000))
     read: list[str] = []
@@ -413,13 +413,13 @@ async def test_update_fetches_the_etag_then_patches(svc, client, photos):
 
 
 async def test_skipped_people_are_marked_synced_and_not_sent(svc, client, photos):
-    hidden = _add(svc, "Hidden Person", phone="402-555-0131", hide_from_list=True)
+    nameless_contact = _add(svc, "Second Quiet Person")
     contactless = _add(svc, "Quiet Person")
     report = await _syncer(svc, client, photos).run()
 
     assert client.calls == []
     assert report.skipped == 2
-    for pid in (hidden, contactless):
+    for pid in (nameless_contact, contactless):
         after = _person(svc, pid)
         assert after.google_synced_at == report.started_at
         assert after.google_sync_error is None

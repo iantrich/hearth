@@ -64,7 +64,7 @@ class SearchPeopleTool(HearthTool):
     name = f"{TOOL_PREFIX}search_people"
     title = "Search people"
     description = (
-        "Search the user's Hearth people by name. Hidden people (such as children) are included. "
+        "Search the user's Hearth people by name. "
         "An empty query matches everyone, so results are capped by limit and the result says "
         "when it was truncated: narrow the search instead of paging. 'connected' lists people "
         "related to a name match, with the reason. Search before assuming anyone is new, and "
@@ -298,8 +298,7 @@ class UpcomingBirthdaysTool(HearthTool):
     name = f"{TOOL_PREFIX}upcoming_birthdays"
     title = "Upcoming birthdays"
     description = (
-        "Birthdays coming up, soonest first, with days until and the age they turn. Hidden "
-        "people (such as children) are left out unless include_hidden is true. Capped by limit."
+        "Birthdays coming up, soonest first, with days until and the age they turn. Capped by limit."
     )
     parameters = probatio.Schema(
         {
@@ -308,11 +307,6 @@ class UpcomingBirthdaysTool(HearthTool):
                 default=DEFAULT_WITHIN_DAYS,
                 description="Look this many days ahead (0-366, default 30).",
             ): probatio.All(int, probatio.Range(min=0, max=MAX_WITHIN_DAYS)),
-            probatio.Optional(
-                "include_hidden",
-                default=False,
-                description="Also include people hidden from lists. Default false.",
-            ): bool,
             **limit_param("How many birthdays to return at most (1-100, default 25)."),
         }
     )
@@ -323,7 +317,6 @@ class UpcomingBirthdaysTool(HearthTool):
             await crm.snapshot(),
             within_days=args["within_days"],
             limit=args["limit"],
-            include_hidden=args["include_hidden"],
         )
 
 

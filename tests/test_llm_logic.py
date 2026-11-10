@@ -9,7 +9,6 @@ import pytest
 from custom_components.hearth_crm.derive import build_snapshot
 from custom_components.hearth_crm.enums import ConnectionType, InteractionType
 from custom_components.hearth_crm.llm_logic import (
-    default_hidden,
     find_relationship,
     parse_birthday,
     reach_out,
@@ -154,11 +153,11 @@ def test_search_people_filters_by_group_household_and_how_i_know_them_together()
     assert search_people(s, query="day", group="hik")["people"] == []
 
 
-def test_search_people_finds_hidden_people_accent_insensitively():
-    s = snap([person("p1", "Zoë Kid", hide_from_list=True)])
+def test_search_people_is_accent_insensitive():
+    s = snap([person("p1", "Zoë Kid")])
     result = search_people(s, query="zoe")
     assert names(result["people"]) == ["Zoë Kid"]
-    assert result["people"][0]["hidden"] is True
+    assert "hidden" not in result["people"][0]
 
 
 def test_search_people_connected_matches_read_from_the_matched_persons_side():
@@ -176,7 +175,6 @@ def test_search_people_connected_matches_read_from_the_matched_persons_side():
 
 def test_reach_out_orders_never_contacted_first_then_most_overdue():
     people = [person(i, i.title(), close_friend=True) for i in ("a", "b", "c", "d", "e", "n")]
-    people.append(person("hid", "Hidden", close_friend=True, hide_from_list=True))
     people.append(person("far", "Not Close"))
     s = snap(people, interactions=[
         contacted("i1", "a", 50), contacted("i2", "b", 80), contacted("i3", "c", 40),
@@ -203,12 +201,12 @@ def test_reach_out_applies_the_limit_to_each_list():
     assert one_cut["truncated"] is False
 
 
-def test_upcoming_uses_the_snapshots_days_until_and_hides_minors_by_default():
+def test_upcoming_uses_the_snapshots_days_until():
     people = [
         person("p1", "Ada Soon", birthday=date(1990, 6, 20)),
         person("p2", "Bo Today", birthday=date(1985, 6, 15)),
         person("p3", "Cy NoYear", birthday=date(2000, 7, 1), birth_year_unknown=True),
-        person("p4", "Di Kid", birthday=date(2014, 6, 18), hide_from_list=True),
+        person("p4", "Di Kid", birthday=date(2014, 6, 18)),
         person("p5", "Ed Far", birthday=date(1990, 12, 1)),
         person("p6", "Flo None"),
     ]
@@ -217,14 +215,13 @@ def test_upcoming_uses_the_snapshots_days_until_and_hides_minors_by_default():
     assert [(b["person"]["name"], b["days_until"], b["turning"], b["birthday"])
             for b in result["birthdays"]] == [
         ("Bo Today", 0, 41, "1985-06-15"),
+        ("Di Kid", 3, 12, "2014-06-18"),
         ("Ada Soon", 5, 36, "1990-06-20"),
         ("Cy NoYear", 16, None, "2000-07-01"),
     ]
-    with_hidden = upcoming(s, include_hidden=True)
-    assert [b["person"]["name"] for b in with_hidden["birthdays"]][1] == "Di Kid"
     assert upcoming(s, within_days=1)["total"] == 1
     assert upcoming(s, limit=1)["truncated"] is True
-    assert (result["total"], result["returned"]) == (3, 3)
+    assert (result["total"], result["returned"]) == (4, 4)
 
 
 def test_find_relationship_matches_either_orientation():
@@ -245,11 +242,3 @@ def test_parse_birthday_forms_and_errors():
     for bad in ("tomorrow", "13-40", "1990-02-30", "", "19900304", "1990-W10-1", "0304"):
         with pytest.raises(ValueError, match=r"YYYY-MM-DD.*MM-DD"):
             parse_birthday(bad)
-
-
-def test_default_hidden_only_for_known_year_minors():
-    assert default_hidden(date(2014, 6, 16), False, TODAY) is True  # turns 12
-    assert default_hidden(date(2008, 6, 15), False, TODAY) is False  # turned 18 today
-    assert default_hidden(date(2008, 6, 16), False, TODAY) is True  # 17 until tomorrow
-    assert default_hidden(date(2014, 6, 16), True, TODAY) is False  # year unknown
-    assert default_hidden(None, False, TODAY) is False

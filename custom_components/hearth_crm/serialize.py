@@ -166,8 +166,15 @@ def to_dict(obj: Any) -> dict[str, Any] | None:
     return {f.name: _encode(f.name, getattr(obj, f.name)) for f in dataclasses.fields(obj)}
 
 
+# Fields older bundles and exports carry that Hearth no longer has: read and ignored, so those
+# files still import. (A person's "hide_from_list" was dropped in 0.7.0.)
+_RETIRED_FIELDS = {"Person": frozenset({"hide_from_list"})}
+
+
 def _from_dict(cls: type, raw: dict[str, Any], where: str = "") -> Any:
     fields = {f.name: f for f in dataclasses.fields(cls)}
+    retired = _RETIRED_FIELDS.get(cls.__name__, frozenset())
+    raw = {k: v for k, v in raw.items() if k not in retired}
     prefix = f"{where}." if where else ""
     for key in raw:
         if key not in fields:

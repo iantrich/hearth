@@ -6,15 +6,13 @@ import { firstName } from "./names";
 // date window and cap.
 //
 // Newest first, capped at `limit`. An interaction is dropped when none of its people can be
-// shown: either the snapshot doesn't know them, or every one of them is hidden. One visible
-// person is enough to keep it, because hiding someone keeps them out of lists; it doesn't
-// erase shared history.
+// shown: the snapshot doesn't know any of them. One known person is enough to keep it.
 export function visibleInteractions(
   interactions: Interaction[],
   people: Person[],
   options: { since?: CalendarDay; limit: number },
 ): Interaction[] {
-  const shownIds = new Set(people.filter((p) => !p.hide_from_list).map((p) => p.id));
+  const shownIds = new Set(people.map((p) => p.id));
   const { since } = options;
   return interactions
     .filter((i) => (since === undefined || i.date >= since) && i.person_ids.some((id) => shownIds.has(id)))

@@ -2,7 +2,7 @@
 
 A Home Assistant custom integration that hosts a personal CRM (people, households, groups, relationships and interactions) on your own Home Assistant instance. Your data lives in your Home Assistant config directory, not in a third-party service.
 
-**What it is today (0.6.1):** a per-user CRM with a sidebar panel you can work from. Each Home Assistant user gets a separate CRM with its own database and photos. The Hearth panel browses it and edits it: people, relationships, households, groups and interactions, plus importing a bundle from Settings. Claude can read and edit your CRM too, through Home Assistant's MCP server (see [Claude](#claude)). You can also keep your contacts in your own Google account up to date from Hearth (see [Google Contacts](#google-contacts)). There is also import and export of the whole CRM as a portable bundle, and a websocket API plus an authenticated photo URL.
+**What it is today (0.7.0):** a per-user CRM with a sidebar panel you can work from. Each Home Assistant user gets a separate CRM with its own database and photos. The Hearth panel browses it and edits it: people, relationships, households, groups and interactions, plus importing a bundle from Settings. Claude can read and edit your CRM too, through Home Assistant's MCP server (see [Claude](#claude)). You can also keep your contacts in your own Google account up to date from Hearth (see [Google Contacts](#google-contacts)). There is also import and export of the whole CRM as a portable bundle, and a websocket API plus an authenticated photo URL.
 
 **What comes later:** dashboard cards and entities (birthdays and counts). These do not ship yet, and this README does not promise dates.
 
@@ -150,7 +150,7 @@ Hearth can keep your contacts in your own Google account up to date. It is optio
 
 Within those fields Hearth wins: a field you empty in Hearth is cleared in Google. Nothing else on the Google contact is touched.
 
-**What is skipped:** people hidden from the list, people with no name and people with no phone or email (any of the four). Skipped people still count as synced.
+**What is skipped:** people with no name and people with no phone or email (any of the four). Skipped people still count as synced.
 
 **It never matches existing Google contacts.** Hearth does not look anyone up in Google by name, phone or email. A person already linked (Hearth stored the Google contact's id) is updated. Everyone else is **created** as a new contact, even if you already have them in Google. So before you switch the sync on at cutover, use **Preview** and check the **Would create** list.
 

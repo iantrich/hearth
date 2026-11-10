@@ -3,7 +3,7 @@ import { searchPeople } from "../../src/logic/peopleSearch";
 import type { Person, Relationship } from "../../src/types";
 import { person as makePerson, relationship } from "../fixtures";
 
-const person = (id: string, name: string, hidden = false) => makePerson(id, name, { hide_from_list: hidden });
+const person = (id: string, name: string) => makePerson(id, name);
 const INVERSE: Record<string, string> = { Child: "Parent", Parent: "Child" };
 const link = (a: string, b: string, type: string): Relationship => relationship(`${a}-${b}`, a, b, type, INVERSE[type] ?? type);
 const cast = [person("theo", "Theo Brannock"), person("wren", "Wren Brannock"), person("kid", "Zoe Brannock")];
@@ -42,10 +42,6 @@ describe("direct matches", () => {
     expect(result.connected).toEqual([]);
   });
 
-  // Search is the one place Hide From List doesn't apply.
-  it("still finds hidden people", () => {
-    expect(search("Theo", [], [person("theo", "Theo Brannock", true)]).direct.map((p) => p.id)).toEqual(["theo"]);
-  });
 });
 
 describe("connected matches", () => {
@@ -74,11 +70,6 @@ describe("connected matches", () => {
       person("out", "Outsider"),
     ]);
     expect(result.connected.map((m) => m.person.id)).toEqual(["out"]);
-  });
-
-  it("still surfaces hidden people as connections", () => {
-    const result = search("Theo", [link("theo", "wren", "Spouse")], [person("theo", "Theo Brannock"), person("wren", "Wren Brannock", true)]);
-    expect(result.connected.map((m) => m.person.id)).toEqual(["wren"]);
   });
 
   it("ignores unknown people and links that don't touch a match", () => {

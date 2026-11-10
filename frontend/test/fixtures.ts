@@ -82,7 +82,7 @@ export function person(id: string, name: string, extra: Partial<Person> = {}): P
     id, name, created_at: STAMP, updated_at: STAMP,
     phone: null, phone2: null, email: null, email2: null, occupation: null, employer: null, how_i_know_them: null,
     notes: null, birthday: null, birth_year_unknown: false, favorite: false,
-    close_friend: false, hide_from_list: false, website: null, linkedin: null,
+    close_friend: false, website: null, linkedin: null,
     facebook: null, instagram: null, address: null, school: null,
     relationship_summary: null, summary_updated: null, photo_hash: null,
     household_id: null, google_contact_id: null, google_synced_at: null,

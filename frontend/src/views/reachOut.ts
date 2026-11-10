@@ -27,8 +27,7 @@ const byDays = (a: Person, b: Person) =>
   (a.contact_status.days_since_contact ?? Infinity) - (b.contact_status.days_since_contact ?? Infinity);
 
 export function reachOutView(store: Store): View {
-  // A day-to-day view, so hidden people stay out, as on Home.
-  const friends = snapshotOf(store).people.filter((p) => p.close_friend && !p.hide_from_list);
+  const friends = snapshotOf(store).people.filter((p) => p.close_friend);
   const overdue = friends.filter((p) => p.contact_status.urgency === "overdue").sort(byDays);
   const dueSoon = friends.filter((p) => p.contact_status.urgency === "due_soon").sort(byDays);
 

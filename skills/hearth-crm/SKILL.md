@@ -58,7 +58,6 @@ To correct a logged interaction use `hearth_crm__update_interaction`. To remove 
 2. Call `hearth_crm__create_person` with the name and whatever else is known:
    - **how_i_know_them**: set it whenever the connection to the user is known ("College roommate", "Neighbor on Elm St").
    - **birthday**: `YYYY-MM-DD`, or `MM-DD` when the year is unknown. Never guess a year.
-   - **Minors**: a child is hidden from lists automatically when the birth year shows they are under 18. Set `hide_from_list=true` for a child even when their age isn't known.
    - **address**: free text, such as "12 Elm St, Springfield".
    - **notes**: the user's own manual notes about the person. Don't write your own summaries there; what you write about the relationship goes in the relationship summary (`hearth_crm__set_relationship_summary`), and what happened at a meetup goes in an interaction.
 3. Add relationships, a household and any chaining (below).
@@ -68,7 +67,7 @@ A name is stored once, so a rename is a single `hearth_crm__update_person` call 
 ## Add a kid for someone
 
 1. Read the parent with `hearth_crm__get_person` and look for a spouse or partner in their relationships.
-2. Create the child (`hide_from_list=true`).
+2. Create the child.
 3. Link the child to **both** parents, not just the one named: `hearth_crm__add_relationship` with `person_id` = the parent, `other_person_id` = the child and `type` "Child", once per parent.
 4. Add the child to the parents' household with `hearth_crm__update_household` (`add_person_ids`), or create one with `hearth_crm__create_household` if the parents have none. If the two parents are in different households, or only one of them has a household, ask the user where the child lives before you move anyone with `move=true`.
 5. If the parents have other children, add a **Sibling** link between every pair of them. This is the step most often missed; always do it.
@@ -110,7 +109,7 @@ Look up the existing relationships first with `hearth_crm__get_person`, so nothi
 
 - **Who is this?** `hearth_crm__search_people` (by name, or filtered by how you know them, a group or a household), then `hearth_crm__get_person`. `hearth_crm__get_person` takes the person id `"me"` for the user; no other tool does.
 - **Who should I reach out to?** `hearth_crm__who_to_reach_out_to` gives the close-friend rotation, most pressing first, split into overdue and due soon. It matches what the panel shows.
-- **Birthdays:** `hearth_crm__upcoming_birthdays`, soonest first, with the age each person turns. Hidden people (usually children) are left out unless you pass `include_hidden=true`; pass it whenever the user asks about family or children.
+- **Birthdays:** `hearth_crm__upcoming_birthdays`, soonest first, with the age each person turns.
 - **Before a meetup**, call `hearth_crm__get_person` and give a short brief: how the user knows them, their family and household, the relationship summary, and the last one to three interactions.
 
 Results are capped (25 by default, at most 100) and say when they were truncated. Narrow the search rather than paging.

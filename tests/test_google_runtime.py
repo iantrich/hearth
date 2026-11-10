@@ -553,7 +553,7 @@ def test_status_counts_each_person_once():
         person("p1", "Alex Example", phone="555-0101", google_contact_id="people/c1",
                google_synced_at=T1),
         person("p2", "Blair Example", phone="555-0102"),
-        person("p3", "Casey Example", phone="555-0103", hide_from_list=True),
+        person("p3", "Casey Example"),
         person("p4", "Drew Example"),
         person("p5", "Ezra Example", phone="555-0105", google_contact_id="people/c5",
                google_synced_at=T0, google_sync_error=ERROR_CONTACT_MISSING),

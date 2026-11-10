@@ -39,14 +39,12 @@ def _has_text(value: str | None) -> bool:
 @dataclass(frozen=True)
 class Eligibility:
     eligible: bool
-    reason: Literal["hidden", "no_name", "no_contact_details"] | None = None
+    reason: Literal["no_name", "no_contact_details"] | None = None
 
 
 def eligibility(person: Person) -> Eligibility:
-    """Hidden people, nameless people and people with no phone or email
-    (any of the four) are not synced."""
-    if person.hide_from_list:
-        return Eligibility(False, "hidden")
+    """Nameless people and people with no phone or email (any of the four) are
+    not synced."""
     if not _has_text(person.name):
         return Eligibility(False, "no_name")
     if not any(
