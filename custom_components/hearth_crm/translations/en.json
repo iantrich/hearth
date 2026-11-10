@@ -44,7 +44,7 @@
         },
         "path": {
           "name": "Path",
-          "description": "The bundle's file name (or a path) inside this CRM's imports folder, /config/hearth_crm/<user id>/imports/. Anything that resolves outside that folder is refused."
+          "description": "The bundle's file name (or a path) inside this CRM's imports folder, /config/hearth_crm/USER_ID/imports/. Anything that resolves outside that folder is refused."
         },
         "replace_existing": {
           "name": "Replace existing changes",

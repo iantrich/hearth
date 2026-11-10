@@ -128,8 +128,8 @@ async def test_manifest_declares_dependencies_and_requirements():
     assert manifest["dependencies"] == [
         "application_credentials", "frontend", "http", "panel_custom", "websocket_api"
     ]
-    # A range, not HA's own exact pin, so the next Home Assistant release still installs it.
-    assert manifest["requirements"] == ["Pillow>=12.0"]
+    # Pillow comes with Home Assistant itself; hassfest refuses a custom integration that lists it.
+    assert "requirements" not in manifest
     assert manifest["iot_class"] == "calculated"
 
 

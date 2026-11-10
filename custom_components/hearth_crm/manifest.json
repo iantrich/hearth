@@ -8,6 +8,5 @@
   "integration_type": "service",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/iantrich/hearth/issues",
-  "requirements": ["Pillow>=12.0"],
   "version": "0.6.1"
 }
