@@ -1,0 +1,13 @@
+{
+  "domain": "hearth_crm",
+  "name": "Hearth",
+  "codeowners": ["@iantrich"],
+  "config_flow": true,
+  "dependencies": ["application_credentials", "frontend", "http", "panel_custom", "websocket_api"],
+  "documentation": "https://github.com/iantrich/hearth",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/iantrich/hearth/issues",
+  "requirements": ["Pillow>=12.0"],
+  "version": "0.6.0"
+}

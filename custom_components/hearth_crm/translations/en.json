@@ -1,0 +1,90 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Whose CRM?",
+        "description": "Each Home Assistant user has their own Hearth CRM, stored separately. Choose the user who owns this one.",
+        "data": {
+          "owner_user_id": "Owner"
+        }
+      },
+      "pick_implementation": {
+        "title": "Choose Google credentials",
+        "data": {
+          "implementation": "Credentials"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reconnect Google Contacts",
+        "description": "Google no longer accepts this CRM's access. Sign in to Google again to keep syncing contacts."
+      }
+    },
+    "abort": {
+      "already_configured": "That user already has a Hearth CRM.",
+      "no_users": "There are no active Home Assistant users to create a CRM for.",
+      "invalid_user": "That Home Assistant user does not exist or cannot have a CRM.",
+      "missing_configuration": "Add a Google OAuth client in Application Credentials before connecting Google Contacts.",
+      "google_needs_a_crm": "Google Contacts is connected from an existing Hearth CRM: open its menu and choose Reconfigure.",
+      "wrong_account": "This Hearth is linked to a different Google account. Sign in with the same account.",
+      "account_in_use": "That Google account is already linked to another Hearth CRM. Each CRM needs its own Google account.",
+      "people_api_unavailable": "Could not read your Google account. Check that the Google People API is enabled for your Google Cloud project."
+    }
+  },
+  "application_credentials": {
+    "description": "Hearth syncs people to the owner's Google Contacts with a Google Cloud OAuth client you create. Set up the [OAuth consent screen]({oauth_consent_url}), then create a Web application client on the [Credentials page]({oauth_creds_url}). See [Hearth's Google Contacts guide]({more_info_url}) for the full steps."
+  },
+  "services": {
+    "import": {
+      "name": "Import bundle",
+      "description": "Replace all of a CRM's data with a bundle and write a review report. Refused after cutover, and refused over changes made since the last import unless replace_existing is set.",
+      "fields": {
+        "config_entry_id": {
+          "name": "CRM",
+          "description": "The Hearth CRM to act on."
+        },
+        "path": {
+          "name": "Path",
+          "description": "The bundle's file name (or a path) inside this CRM's imports folder, /config/hearth_crm/<user id>/imports/. Anything that resolves outside that folder is refused."
+        },
+        "replace_existing": {
+          "name": "Replace existing changes",
+          "description": "Discard changes made in Hearth since the last import. Never overrides cutover."
+        }
+      }
+    },
+    "export": {
+      "name": "Export bundle",
+      "description": "Write the CRM and its photos to a bundle in the CRM's exports folder.",
+      "fields": {
+        "config_entry_id": {
+          "name": "CRM",
+          "description": "The Hearth CRM to act on."
+        }
+      }
+    },
+    "confirm_cutover": {
+      "name": "Confirm cutover",
+      "description": "Mark Hearth as the source of truth. From then on bundle imports are refused. This cannot be undone.",
+      "fields": {
+        "config_entry_id": {
+          "name": "CRM",
+          "description": "The Hearth CRM to act on."
+        }
+      }
+    },
+    "google_sync": {
+      "name": "Sync Google Contacts",
+      "description": "Sync a CRM's people to its owner's Google Contacts now, or with dry run only report what would change. A real run needs Google connected, the sync switched on and cutover confirmed. Hearth never deletes a Google contact.",
+      "fields": {
+        "config_entry_id": {
+          "name": "CRM",
+          "description": "The Hearth CRM to act on."
+        },
+        "dry_run": {
+          "name": "Dry run",
+          "description": "Only report who would be created, updated or skipped. Nothing is sent to Google and nothing is written."
+        }
+      }
+    }
+  }
+}

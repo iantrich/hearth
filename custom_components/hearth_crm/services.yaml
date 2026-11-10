@@ -1,0 +1,43 @@
+import:
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: hearth_crm
+    path:
+      required: true
+      example: bundle.zip
+      selector:
+        text:
+    replace_existing:
+      required: false
+      default: false
+      selector:
+        boolean:
+export:
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: hearth_crm
+confirm_cutover:
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: hearth_crm
+google_sync:
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: hearth_crm
+    dry_run:
+      required: false
+      default: false
+      selector:
+        boolean:
