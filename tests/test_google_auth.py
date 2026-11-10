@@ -356,7 +356,7 @@ async def test_a_refused_account_lookup_logs_googles_reason_code(
                 "error": {
                     "code": 403,
                     "status": "PERMISSION_DENIED",
-                    "message": "free text that must not be logged",
+                    "message": "The caller does not have permission",
                     "details": [{"reason": "SERVICE_DISABLED"}],
                 }
             },
@@ -365,7 +365,8 @@ async def test_a_refused_account_lookup_logs_googles_reason_code(
 
     assert result["reason"] == "people_api_unavailable"
     assert "HTTP 403 PERMISSION_DENIED SERVICE_DISABLED" in caplog.text
-    assert "free text that must not be logged" not in caplog.text
+    assert "scopes granted: https://www.googleapis.com/auth/contacts" in caplog.text
+    assert "Google said: The caller does not have permission" in caplog.text
     assert "unused-access" not in caplog.text
 
 

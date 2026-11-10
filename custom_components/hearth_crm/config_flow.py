@@ -45,6 +45,17 @@ ACCOUNT_LOOKUP_TIMEOUT = 30
 _LOGGER = logging.getLogger(__name__)
 
 
+def _printable(value: object) -> str:
+    """A short single-line form of a value Google sent, for the log."""
+    text = value if isinstance(value, str) else ""
+    return " ".join(text.split())[:300] or "(none)"
+
+
+def _error_message(body: object) -> object:
+    error = body.get("error") if isinstance(body, dict) else None
+    return error.get("message") if isinstance(error, dict) else None
+
+
 class HearthConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, domain=DOMAIN):
     """Create the CRM of one Home Assistant user, or connect one to Google."""
 
@@ -136,7 +147,9 @@ class HearthConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, domai
             entry = self._get_reauth_entry()
         else:
             return self.async_abort(reason="google_needs_a_crm")
-        account_id = await self._async_google_account_id(data["token"]["access_token"])
+        account_id = await self._async_google_account_id(
+            data["token"]["access_token"], granted=data["token"].get("scope")
+        )
         if account_id is None:
             return self.async_abort(reason="people_api_unavailable")
         # An entry connected before accounts were recorded has none yet and records this one.
@@ -154,7 +167,9 @@ class HearthConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, domai
             entry, data_updates={**data, CONF_GOOGLE_ACCOUNT_ID: account_id}
         )
 
-    async def _async_google_account_id(self, access_token: str) -> str | None:
+    async def _async_google_account_id(
+        self, access_token: str, granted: object = None
+    ) -> str | None:
         """The signed-in account's People API resourceName, or None if it can't be read.
 
         Nothing about the request or the token is logged.
@@ -173,8 +188,11 @@ class HearthConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, domai
                         except (aiohttp.ClientError, ValueError):
                             failure = None
                         _LOGGER.warning(
-                            "Could not read the Google account (%s)",
+                            "Could not read the Google account (%s); scopes granted: %s; "
+                            "Google said: %s",
                             reason_for(resp.status, failure),
+                            _printable(granted),
+                            _printable(_error_message(failure)),
                         )
                         return None
                     body = await resp.json()
