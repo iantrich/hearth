@@ -6,6 +6,7 @@ import { html, nothing, type TemplateResult } from "lit";
 import { confirmDialog } from "../forms/confirm";
 import { bindDraft, multilineField, selectField, type SelectOption } from "../forms/fields";
 import { personPicker } from "../forms/personPicker";
+import { nameOnly } from "../logic/newPerson";
 import { connectionTo } from "../logic/personConnections";
 import { firstName } from "../logic/names";
 import { goBack, href } from "../router";
@@ -107,6 +108,11 @@ function sheet(store: Store, viewer: Person, existing: Relationship | null, end:
             selected: other ? [other.id] : [],
             onPick: (id) => store.drafts.patch<RelationshipForm>(key, { other: id }),
             onRemove: () => store.drafts.patch<RelationshipForm>(key, { other: "" }),
+            // Just a name: the rest can be filled in from their own screen later.
+            onCreate: async (newName) => {
+              const id = await store.addPerson(nameOnly(newName));
+              if (id) store.drafts.patch<RelationshipForm>(key, { other: id });
+            },
             disabled: store.busy,
           })}
           <div class="muted" style="font-size:12.5px">${other ? other.name : "Someone"} is ${name}'s</div>

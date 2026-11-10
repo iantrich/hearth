@@ -372,6 +372,26 @@ describe("households and groups", () => {
     expect(el.route!.path).toBe("/search");
   });
 
+  it("household Create makes the person straight into that household", async () => {
+    const { el, writes } = await mount("/household/h1/edit", { "hearth_crm/create": () => ({ id: "newkid" }) });
+    const input = root(el).querySelector<HTMLInputElement>("#household-members")!;
+    input.value = "Zed Quill";
+    input.dispatchEvent(new Event("input"));
+    await settle(el);
+    root(el).querySelector<HTMLButtonElement>("#content .picker-create")!.click();
+    await settle(el);
+    expect(writes()).toEqual([{ type: "hearth_crm/create", kind: "person", fields: { name: "Zed Quill", household_id: "h1" } }]);
+  });
+
+  it("group members have no Create row", async () => {
+    const { el } = await mount("/group/g1/edit", {});
+    const input = root(el).querySelector<HTMLInputElement>("#group-members")!;
+    input.value = "Zed Quill";
+    input.dispatchEvent(new Event("input"));
+    await settle(el);
+    expect(root(el).querySelector(".picker-create")).toBeNull();
+  });
+
   it("new group creates then opens its editor", async () => {
     let created = false;
     const data = () => {

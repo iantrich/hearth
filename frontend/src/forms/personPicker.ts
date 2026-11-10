@@ -9,6 +9,8 @@ import type { Person } from "../types";
 import { snapshotOf } from "../views/view";
 
 const LIMIT = 8;
+/** The server's limit on a person's name (service.py MAX_TEXT_LENGTHS). */
+const MAX_NAME = 200;
 
 export interface PersonPickerOptions {
   /** The search box's id; also names the picker's draft. */
@@ -22,6 +24,8 @@ export interface PersonPickerOptions {
   selected?: readonly string[];
   onPick: (personId: string) => void;
   onRemove?: (personId: string) => void;
+  /** When given, a "Create" row after the results makes a person named by what was typed. */
+  onCreate?: (name: string) => void;
   disabled?: boolean;
 }
 
@@ -47,6 +51,11 @@ export function personPicker(store: Store, options: PersonPickerOptions): Templa
   const pick = (personId: string) => {
     store.drafts.patch<PickerDraft>(key, { query: "" });
     options.onPick(personId);
+  };
+
+  const create = () => {
+    store.drafts.patch<PickerDraft>(key, { query: "" });
+    options.onCreate?.(needle);
   };
 
   return html`<div class="field person-picker">
@@ -97,6 +106,15 @@ export function personPicker(store: Store, options: PersonPickerOptions): Templa
                 </button>`,
               )
             : html`<div class="empty">No one matches “${needle}”.</div>`}
+          ${options.onCreate
+            ? html`<button
+                class="row picker-create"
+                ?disabled=${(options.disabled ?? false) || needle.length > MAX_NAME}
+                @click=${create}
+              >
+                <span class="main"><div class="name accent">Create “${needle}”</div></span>
+              </button>`
+            : nothing}
         </div>`
       : nothing}
   </div>`;

@@ -281,6 +281,45 @@ describe("person picker", () => {
   });
 });
 
+describe("person picker: create", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  const typed = async (text: string, extra: Record<string, unknown>) => {
+    const { store } = await readyStore();
+    const opts = { id: "other", label: "Person", path: "/hearth/person/p1/relationship/new", onPick: () => {}, ...extra };
+    store.drafts.open("picker:other", opts.path, () => ({ query: text }));
+    return { store, host: draw(personPicker(store, opts as never)) };
+  };
+
+  it("offers Create with what was typed, after the matches, only when asked for", async () => {
+    const names: string[] = [];
+    const { host } = await typed("Zed Quill", { onCreate: (n: string) => names.push(n) });
+    expect(host.querySelector(".picker-create")!.textContent).toContain("Create “Zed Quill”");
+    expect(host.querySelector(".list")!.lastElementChild).toBe(host.querySelector(".picker-create"));
+    // The real matches still come first and stay unchanged: Create is not a picker-choice row.
+    expect(host.querySelectorAll(".picker-choice")).toHaveLength(0);
+    const { host: without } = await typed("Zed Quill", {});
+    expect(without.querySelector(".picker-create")).toBeNull();
+    const { host: empty } = await typed("  ", { onCreate: (n: string) => names.push(n) });
+    expect(empty.querySelector(".picker-create")).toBeNull();
+  });
+
+  it("clicking Create passes the typed name on and clears the search", async () => {
+    const names: string[] = [];
+    const { store, host } = await typed("  Zed Quill ", { onCreate: (n: string) => names.push(n) });
+    host.querySelector<HTMLButtonElement>(".picker-create")!.click();
+    expect(names).toEqual(["Zed Quill"]);
+    expect(store.drafts.get("picker:other")).toEqual({ query: "" });
+  });
+
+  it("is disabled for a name longer than the server allows", async () => {
+    const { host } = await typed("x".repeat(201), { onCreate: () => {} });
+    expect(host.querySelector<HTMLButtonElement>(".picker-create")!.disabled).toBe(true);
+  });
+});
+
 describe("confirm dialog", () => {
   afterEach(() => {
     document.body.innerHTML = "";

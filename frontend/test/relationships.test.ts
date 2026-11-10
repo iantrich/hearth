@@ -129,6 +129,45 @@ describe("relationship sheet", () => {
     expect(location.pathname).toBe("/hearth/person/phil");
   });
 
+  it("Create makes a person from the typed name, picks them, and saves the link", async () => {
+    const data = family();
+    const { el, writes } = await mount("/person/phil/relationship/new", () => data, {
+      "hearth_crm/create": (msg) => {
+        if (msg.kind === "person") {
+          data.people.push(person("newkid", String((msg.fields as { name: string }).name)));
+          return { id: "newkid" };
+        }
+        return { id: "rnew" };
+      },
+    });
+    await search(el, "Zed Quill");
+    expect(choices(el)).toEqual([]);
+    root(el).querySelector<HTMLButtonElement>(".picker-create")!.click();
+    await settle(el);
+    expect(writes()[0]).toMatchObject({ type: "hearth_crm/create", kind: "person", fields: { name: "Zed Quill" } });
+    expect(root(el).textContent).toContain("Zed Quill is Phil's");
+    await chooseType(el, "Child");
+    await clickSave(el);
+    expect(writes().at(-1)).toMatchObject({
+      kind: "relationship",
+      fields: { person_a_id: "phil", person_b_id: "newkid", type: "Child" },
+    });
+  });
+
+  it("a failed Create picks no one", async () => {
+    const { el, writes } = await mount("/person/phil/relationship/new", family, {
+      "hearth_crm/create": () => {
+        throw { code: "invalid_input", message: "no" };
+      },
+    });
+    await search(el, "Zed Quill");
+    root(el).querySelector<HTMLButtonElement>(".picker-create")!.click();
+    await settle(el);
+    expect(writes()).toHaveLength(1);
+    expect(sheetEl(el)!.textContent).toContain("Someone is Phil's");
+    expect(button(el, "Save")!.disabled).toBe(true);
+  });
+
   it("editing from B's side swaps A and B and stores the chosen type", async () => {
     const { el, writes } = await mount(`/person/phil/relationship/rjp`, family, {
       "hearth_crm/update": () => ({}),

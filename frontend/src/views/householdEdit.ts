@@ -9,6 +9,7 @@ import { personPicker } from "../forms/personPicker";
 import { photoPicker } from "../forms/photoPicker";
 import { sortHousehold } from "../logic/householdOrder";
 import { memberRoster } from "../logic/memberRoster";
+import { nameOnly } from "../logic/newPerson";
 import { householdChoiceLabel, householdIsNamed, householdTitle } from "../logic/names";
 import { goBack, href, navigate } from "../router";
 import type { Store } from "../store";
@@ -122,6 +123,8 @@ function members(store: Store, household: Household): TemplateResult {
     selected: roster.map((p) => p.id),
     onPick: pick,
     onRemove: (personId) => void setHousehold(store, personId, null),
+    // A new person goes straight into this household, so they needn't be in the snapshot first.
+    onCreate: (newName) => void store.addPerson({ ...nameOnly(newName), household_id: household.id }),
     disabled: store.busy,
   });
 }

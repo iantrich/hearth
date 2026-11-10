@@ -35,6 +35,8 @@ export interface NewPerson {
   how_i_know_them: string | null;
   birthday: string | null; // YYYY-MM-DD
   birth_year_unknown: boolean;
+  /** Put the new person straight into this household. */
+  household_id?: string;
 }
 
 /** The Import card in Settings. A refusal keeps the file so "Replace everything" can retry it. */
@@ -320,6 +322,7 @@ export class Store {
   /** Saves a new person and resolves to their id (null if it failed). See `save` for arriving. */
   async addPerson(draft: NewPerson): Promise<string | null> {
     const fields: Fields = { name: draft.name, phone: draft.phone, email: draft.email, how_i_know_them: draft.how_i_know_them };
+    if (draft.household_id) fields.household_id = draft.household_id;
     if (draft.birthday?.trim()) {
       fields.birthday = draft.birthday;
       if (draft.birth_year_unknown) fields.birth_year_unknown = true;
