@@ -17,7 +17,7 @@ import { personView } from "./person";
 import { reachOutView } from "./reachOut";
 import { arriving, notFound, snapshotOf, type View } from "./view";
 
-export type ReminderRoute = Extract<Route, { name: "reminder" | "reminderNew" | "interactionReminderNew" }>;
+export type ReminderRoute = Extract<Route, { name: "reminder" | "reminderNewAny" | "reminderNew" | "interactionReminderNew" }>;
 
 /** The person's id, "" until chosen, plus the reminder's own fields. */
 type SheetForm = ReminderForm & { person: string };
@@ -38,6 +38,11 @@ interface SheetSpec {
 export function reminderSheetView(store: Store, route: ReminderRoute): View {
   const snapshot = snapshotOf(store);
   switch (route.name) {
+    case "reminderNewAny": {
+      // From Reach out, nobody chosen yet.
+      const path = href.newReminderAny();
+      return { ...reachOutView(store), overlay: sheet(store, { key: "reminder:new:any", path, closeTo: href.reachOut(), person: null, locked: false, interaction: null, existing: null }) };
+    }
     case "reminderNew": {
       const base = personView(store, route.personId, null);
       const person = snapshot.people.find((p) => p.id === route.personId);

@@ -61,6 +61,7 @@ export function viewFor(store: Store, route: Route): View {
     case "interaction":
       return interactionView(store, route.id, route.sheet);
     case "reminder":
+    case "reminderNewAny":
     case "reminderNew":
     case "interactionReminderNew":
       return reminderSheetView(store, route);

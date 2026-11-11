@@ -137,6 +137,24 @@ describe("reminder sheet", () => {
     ]);
   });
 
+  it("test_new_reminder_from_reach_out_picks_a_person_and_sends_a_naive_local_time", async () => {
+    const { el, writes } = await mount("/reminder/new", sampleSnapshot, creates);
+    expect(sheetEl(el)!.getAttribute("aria-label")).toBe("Add reminder");
+    // Nobody preset: a picker, over the Reach out screen.
+    expect(root(el).querySelector("#reminder-person")).not.toBeNull();
+    expect(content(el)).toContain("CLOSE FRIEND ROTATION");
+    await click(el, "Tomorrow");
+    expect(button(el, "Save")!.disabled).toBe(true);
+    await type(el, "#reminder-person", "Taylor");
+    await pickPerson(el, "Taylor Brandt");
+    await click(el, "Save");
+    expect(writes()).toEqual([
+      { type: "hearth_crm/create", kind: "reminder", fields: { person_id: expect.any(String), due_at: "2026-11-06T08:00" } },
+    ]);
+    expect(location.pathname).toBe("/hearth/reach-out");
+    expect(sheetEl(el)).toBeNull();
+  });
+
   it("test_save_is_disabled_without_a_person", async () => {
     // An interaction whose people are all gone: nobody to preset, so the sheet offers a picker.
     const data = () => {

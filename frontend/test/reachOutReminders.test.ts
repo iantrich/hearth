@@ -58,6 +58,9 @@ describe("Reminders on Reach out", () => {
     const text = content(el);
     const at = (n: string) => text.indexOf(n);
     expect(at("Reminders")).toBeGreaterThan(-1);
+    expect(text).toContain("Add reminder");
+    expect(root(el).querySelector<HTMLAnchorElement>("#content a.pill")!.getAttribute("href")).toBe(href.newReminderAny());
+    expect(root(el).querySelector('button[aria-label="Done: Overdue thing"]')).not.toBeNull();
     expect(at("Reminders")).toBeLessThan(at("CLOSE FRIEND ROTATION"));
     expect(at("Overdue thing")).toBeLessThan(at("Ask about the new job"));
     expect(at("Ask about the new job")).toBeLessThan(at("Soon thing"));
@@ -113,6 +116,7 @@ describe("Reminders on Reach out", () => {
     const { el } = await mount(() => s);
     const text = content(el);
     expect(text).toContain("No reminders.");
+    expect(root(el).querySelector<HTMLAnchorElement>("#content a.pill")!.getAttribute("href")).toBe(href.newReminderAny());
     expect(text).toContain("1 person overdue");
     expect(text).toContain("Sam Okafor");
     expect(root(el).querySelectorAll(".reminder-row")).toHaveLength(0);

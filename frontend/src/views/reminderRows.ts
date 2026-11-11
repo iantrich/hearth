@@ -21,7 +21,7 @@ export function reminderRow(store: Store, r: Reminder, today: string, who?: Pers
       <div class="sub" style=${r.state === "overdue" ? "color:var(--danger)" : ""}>${when}${repeat}</div>
     </a>
     ${open
-      ? html`<button class="pill" ?disabled=${store.busy} @click=${() => void store.completeReminder(r.id)}>Done</button>`
+      ? html`<button class="pill" aria-label=${`Done: ${r.note || "Reminder"}`} ?disabled=${store.busy} @click=${() => void store.completeReminder(r.id)}>Done</button>`
       : nothing}
   </div>`;
 }

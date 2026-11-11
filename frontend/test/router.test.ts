@@ -73,6 +73,8 @@ describe("reminder routes", () => {
     expect(parseRoute(path(href.reminder("m 1")))).toEqual({ name: "reminder", id: "m 1" });
     expect(parseRoute(path(href.newReminder("p1")))).toEqual({ name: "reminderNew", personId: "p1" });
     expect(parseRoute(path(href.newInteractionReminder("i1")))).toEqual({ name: "interactionReminderNew", interactionId: "i1" });
+    expect(parseRoute(path(href.newReminderAny()))).toEqual({ name: "reminderNewAny" });
+    expect(href.newReminderAny()).toBe("/hearth/reminder/new");
     expect(href.reminder("m1")).toBe("/hearth/reminder/m1");
     expect(href.newReminder("p1")).toBe("/hearth/person/p1/reminder/new");
     expect(href.newInteractionReminder("i1")).toBe("/hearth/interaction/i1/reminder/new");

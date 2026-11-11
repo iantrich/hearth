@@ -23,6 +23,7 @@ export type Route =
   | { name: "groupEdit"; id: string }
   | { name: "interaction"; id: string; sheet: "edit" | null }
   | { name: "reminder"; id: string }
+  | { name: "reminderNewAny" }
   | { name: "reminderNew"; personId: string }
   | { name: "interactionReminderNew"; interactionId: string };
 
@@ -68,6 +69,7 @@ export function parseRoute(path: string): Route {
       if (id) return { name: "group", id };
       break;
     case "reminder":
+      if (id === "new") return { name: "reminderNewAny" };
       if (id) return { name: "reminder", id };
       break;
     case "interaction":
@@ -110,6 +112,7 @@ export const href = {
   interaction: (id: string) => `${PANEL_PATH}/interaction/${enc(id)}`,
   editInteraction: (id: string) => `${PANEL_PATH}/interaction/${enc(id)}/edit`,
   reminder: (id: string) => `${PANEL_PATH}/reminder/${enc(id)}`,
+  newReminderAny: () => `${PANEL_PATH}/reminder/new`,
   newReminder: (personId: string) => `${PANEL_PATH}/person/${enc(personId)}/reminder/new`,
   newInteractionReminder: (interactionId: string) => `${PANEL_PATH}/interaction/${enc(interactionId)}/reminder/new`,
 };
