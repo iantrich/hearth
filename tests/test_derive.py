@@ -202,3 +202,76 @@ def test_snapshot_lists_type_choices(sample):
     assert snap["interaction_types"][0] == "Catch-up"
     assert snap["interaction_types"] == [t.value for t in InteractionType]
     assert snap["connection_types"] == [t.value for t in ConnectionType]
+
+
+# -- reminders ---------------------------------------------------------------------------
+
+from zoneinfo import ZoneInfo  # noqa: E402
+
+from custom_components.hearth_crm.models import CRMData, Reminder  # noqa: E402
+
+CHICAGO = ZoneInfo("America/Chicago")
+R_TODAY = date(2026, 12, 8)
+
+
+def rem(id: str, due: datetime | None, **kw) -> Reminder:
+    return Reminder(id=id, person_id="a", created_at=NOW, updated_at=NOW, due_at=due, **kw)
+
+
+def local(y, m, d, hh=8, mm=0) -> datetime:
+    return datetime(y, m, d, hh, mm, tzinfo=CHICAGO)
+
+
+def reminder_snapshot(reminders, tz=CHICAGO):
+    data = CRMData(people=[p("a", "Alex Example", close_friend=True)], reminders=reminders)
+    return build_snapshot(data, me_person_id=None, today=R_TODAY, tz=tz)
+
+
+def test_snapshot_reminders_have_state_and_local_strings_and_hide_internals():
+    late = datetime(2026, 12, 9, 3, 30, tzinfo=timezone.utc)  # 21:30 on the 8th in Chicago
+    rows = {
+        r["id"]: r
+        for r in reminder_snapshot([
+            rem("over", local(2026, 12, 1), anchor_at=local(2026, 12, 1)),
+            rem("today", late, notified_for=late),
+            rem("soon", local(2026, 12, 20, 14, 5)),
+            rem("some", None),
+            rem("done", local(2026, 12, 2), done_at=NOW),
+        ])["reminders"]
+    }
+    assert {k: rows[k]["state"] for k in rows} == {
+        "over": "overdue", "today": "due_today", "soon": "upcoming", "some": "someday", "done": "done",
+    }
+    assert (rows["today"]["due_date"], rows["today"]["due_time"]) == ("2026-12-08", "21:30")
+    assert (rows["soon"]["due_date"], rows["soon"]["due_time"]) == ("2026-12-20", "14:05")
+    assert (rows["some"]["due_date"], rows["some"]["due_time"]) == (None, None)
+    assert rows["some"]["due_at"] is None
+    for row in rows.values():
+        assert "anchor_at" not in row and "notified_for" not in row
+        assert {"id", "person_id", "note", "due_at", "repeat_every", "repeat_unit",
+                "interaction_id", "done_at", "created_at", "updated_at"} <= set(row)
+
+
+def test_snapshot_reminder_order():
+    ids = [
+        r["id"]
+        for r in reminder_snapshot([
+            rem("some", None),
+            rem("done-old", local(2026, 12, 1), done_at=datetime(2026, 12, 2, tzinfo=timezone.utc)),
+            rem("late", local(2026, 12, 20)),
+            rem("early", local(2026, 12, 3)),
+            rem("done-new", local(2026, 12, 1), done_at=datetime(2026, 12, 5, tzinfo=timezone.utc)),
+        ])["reminders"]
+    ]
+    assert ids == ["early", "late", "some", "done-new", "done-old"]
+
+
+def test_snapshot_lists_reminder_units(sample):
+    snap = build_snapshot(sample, me_person_id=None, today=date(2026, 3, 1))
+    assert snap["reminder_units"] == ["day", "week", "month", "year"]
+
+
+def test_a_reminder_never_changes_contact_status():
+    plain = reminder_snapshot([])
+    with_reminder = reminder_snapshot([rem("r", local(2026, 12, 1))])
+    assert with_reminder["people"] == plain["people"]

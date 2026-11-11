@@ -536,3 +536,244 @@ def test_relationship_update_can_swap_ends(svc):
     assert row["person_b_id"] == josie
     assert row["type"] == "Mentee"
     assert row["inverse_type"] == ConnectionType.MENTEE.inverse.value == "Mentor"
+
+
+# -- reminders ---------------------------------------------------------------------------
+
+from datetime import UTC, datetime  # noqa: E402
+from zoneinfo import ZoneInfo  # noqa: E402
+
+CHICAGO = ZoneInfo("America/Chicago")
+
+
+@pytest.fixture
+def clock():
+    return {"now": datetime(2026, 12, 1, 9, 0, tzinfo=CHICAGO)}
+
+
+@pytest.fixture
+def rsvc(tmp_path: Path, clock):
+    """A service whose clock is Chicago time and can be moved by tests."""
+    repo = CRMRepository(open_database(tmp_path / "crm.db"))
+    ids = count(1)
+    service = HearthService(
+        repo,
+        PhotoStore(tmp_path / "photos"),
+        today=lambda: clock["now"].date(),
+        now=lambda: clock["now"],
+        new_id=lambda: f"id{next(ids)}",
+    )
+    service.create("person", {"name": "Alex Example"}, "panel")  # id1
+    yield service
+    repo.close()
+
+
+def stored(svc, reminder_id):
+    return svc._repo.get("reminder", reminder_id)
+
+
+def utc(value: datetime) -> datetime:
+    return value.astimezone(UTC)
+
+
+def test_create_reminder_sets_the_anchor_and_reads_a_naive_due_time_in_the_homes_zone(rsvc):
+    made = rsvc.create("reminder", {"person_id": "id1", "due_at": "2026-12-08T08:00"}, "panel")
+    saved = stored(rsvc, made["id"])
+    assert utc(saved.due_at) == datetime(2026, 12, 8, 14, 0, tzinfo=UTC)
+    assert saved.anchor_at == saved.due_at
+    assert saved.notified_for is None and saved.done_at is None
+
+    gap = rsvc.create("reminder", {"person_id": "id1", "due_at": "2027-03-14T02:30"}, "panel")
+    local = stored(rsvc, gap["id"]).due_at.astimezone(CHICAGO)
+    assert (local.hour, local.minute) == (3, 30)
+
+
+def test_an_aware_due_time_is_kept_as_given(rsvc):
+    made = rsvc.create("reminder", {"person_id": "id1", "due_at": "2026-12-08T08:00:00+00:00"}, "panel")
+    assert utc(stored(rsvc, made["id"]).due_at) == datetime(2026, 12, 8, 8, 0, tzinfo=UTC)
+
+
+def test_someday_has_no_due_time_and_no_anchor(rsvc):
+    made = rsvc.create("reminder", {"person_id": "id1", "note": "Send a card"}, "panel")
+    saved = stored(rsvc, made["id"])
+    assert saved.due_at is None and saved.anchor_at is None
+
+
+def test_reminder_needs_an_existing_person(rsvc):
+    with pytest.raises(InvalidInput) as err:
+        rsvc.create("reminder", {"person_id": "ghost"}, "panel")
+    assert err.value.field == "person_id"
+
+
+def test_linked_interaction_must_exist(rsvc):
+    with pytest.raises(InvalidInput) as err:
+        rsvc.create("reminder", {"person_id": "id1", "interaction_id": "ghost"}, "panel")
+    assert err.value.field == "interaction_id"
+    interaction = rsvc.create(
+        "interaction",
+        {"summary": "Coffee", "date": "2026-12-01", "type": "Catch-up", "person_ids": ["id1"]},
+        "panel",
+    )
+    made = rsvc.create(
+        "reminder", {"person_id": "id1", "interaction_id": interaction["id"]}, "panel"
+    )
+    assert made["interaction_id"] == interaction["id"]
+
+
+@pytest.mark.parametrize(
+    "fields",
+    [
+        {"repeat_every": 1},
+        {"repeat_unit": "week"},
+        {"repeat_every": 1, "repeat_unit": "week"},  # no due time
+        {"due_at": "2026-12-08T08:00", "repeat_every": 0, "repeat_unit": "week"},
+        {"due_at": "2026-12-08T08:00", "repeat_every": 1000, "repeat_unit": "week"},
+    ],
+)
+def test_repeat_needs_both_parts_a_due_time_and_a_sane_number(rsvc, fields):
+    with pytest.raises(InvalidInput):
+        rsvc.create("reminder", {"person_id": "id1"} | fields, "panel")
+
+
+def test_a_repeat_with_both_parts_and_a_due_time_is_saved(rsvc):
+    made = rsvc.create(
+        "reminder",
+        {"person_id": "id1", "due_at": "2026-12-08T08:00", "repeat_every": 999, "repeat_unit": "day"},
+        "panel",
+    )
+    assert (made["repeat_every"], made["repeat_unit"]) == (999, "day")
+
+
+def test_note_length_limit(rsvc):
+    rsvc.create("reminder", {"person_id": "id1", "note": "x" * 20_000}, "panel")
+    with pytest.raises(InvalidInput) as err:
+        rsvc.create("reminder", {"person_id": "id1", "note": "x" * 20_001}, "panel")
+    assert err.value.field == "note"
+
+
+@pytest.mark.parametrize("field", ["anchor_at", "notified_for", "done_at", "id"])
+def test_read_only_fields_are_refused(rsvc, field):
+    with pytest.raises(InvalidInput):
+        rsvc.create("reminder", {"person_id": "id1", field: "2026-12-08T08:00:00+00:00"}, "panel")
+    made = rsvc.create("reminder", {"person_id": "id1"}, "panel")
+    with pytest.raises(InvalidInput):
+        rsvc.update("reminder", made["id"], {field: "2026-12-08T08:00:00+00:00"}, "panel")
+
+
+def _armed(rsvc, **extra):
+    made = rsvc.create(
+        "reminder", {"person_id": "id1", "due_at": "2026-12-08T08:00"} | extra, "panel"
+    )
+    rsvc.mark_reminder_notified(made["id"], stored(rsvc, made["id"]).due_at)
+    assert stored(rsvc, made["id"]).notified_for is not None
+    return made["id"]
+
+
+def test_changing_the_due_time_resets_the_anchor_and_re_arms(rsvc):
+    reminder_id = _armed(rsvc)
+    rsvc.update("reminder", reminder_id, {"due_at": "2026-12-09T10:00"}, "panel")
+    saved = stored(rsvc, reminder_id)
+    assert utc(saved.due_at) == datetime(2026, 12, 9, 16, 0, tzinfo=UTC)
+    assert saved.anchor_at == saved.due_at
+    assert saved.notified_for is None
+
+
+def test_editing_only_the_note_or_the_repeat_rule_keeps_notified_for_and_anchor(rsvc):
+    reminder_id = _armed(rsvc)
+    before = stored(rsvc, reminder_id)
+    rsvc.update("reminder", reminder_id, {"note": "Ask about the trip"}, "panel")
+    rsvc.update("reminder", reminder_id, {"repeat_every": 2, "repeat_unit": "week"}, "panel")
+    after = stored(rsvc, reminder_id)
+    assert after.note == "Ask about the trip" and after.repeat_every == 2
+    assert after.anchor_at == before.anchor_at
+    assert after.notified_for == before.notified_for
+    # the same due time sent again is not a change either
+    rsvc.update("reminder", reminder_id, {"due_at": "2026-12-08T08:00"}, "panel")
+    assert stored(rsvc, reminder_id).notified_for == before.notified_for
+
+
+def test_a_done_reminder_cannot_be_edited(rsvc):
+    made = rsvc.create("reminder", {"person_id": "id1", "due_at": "2026-12-08T08:00"}, "panel")
+    rsvc.complete_reminder(made["id"], "panel")
+    with pytest.raises(InvalidInput):
+        rsvc.update("reminder", made["id"], {"note": "Too late"}, "panel")
+
+
+def test_complete_one_time_sets_done_at(rsvc, clock):
+    made = rsvc.create("reminder", {"person_id": "id1", "due_at": "2026-12-08T08:00"}, "panel")
+    clock["now"] = datetime(2026, 12, 8, 9, 0, tzinfo=CHICAGO)
+    done = rsvc.complete_reminder(made["id"], "panel")
+    assert utc(datetime.fromisoformat(done["done_at"])) == utc(clock["now"])
+    assert stored(rsvc, made["id"]).done_at == clock["now"]
+
+
+def _weekly(rsvc):
+    return rsvc.create(
+        "reminder",
+        {"person_id": "id1", "due_at": "2026-12-08T08:00", "repeat_every": 1, "repeat_unit": "week"},
+        "panel",
+    )["id"]
+
+
+def test_complete_repeating_moves_to_the_next_future_date_even_when_far_behind(rsvc, clock):
+    reminder_id = _weekly(rsvc)
+    clock["now"] = datetime(2027, 2, 2, 9, 0, tzinfo=CHICAGO)  # nine weeks late
+    done = rsvc.complete_reminder(reminder_id, "panel")
+    saved = stored(rsvc, reminder_id)
+    assert saved.done_at is None and done["done_at"] is None
+    assert saved.due_at.astimezone(CHICAGO) == datetime(2027, 2, 9, 8, 0, tzinfo=CHICAGO)
+
+
+def test_complete_repeating_before_it_is_due_moves_to_the_following_date(rsvc, clock):
+    reminder_id = _weekly(rsvc)
+    rsvc.complete_reminder(reminder_id, "panel")  # clock is 2026-12-01, a week early
+    assert stored(rsvc, reminder_id).due_at.astimezone(CHICAGO) == datetime(
+        2026, 12, 15, 8, 0, tzinfo=CHICAGO
+    )
+
+
+def test_complete_repeating_bumps_updated_at(rsvc):
+    reminder_id = _weekly(rsvc)
+    before = stored(rsvc, reminder_id).updated_at
+    rsvc.complete_reminder(reminder_id, "panel")
+    assert stored(rsvc, reminder_id).updated_at > before
+
+
+def test_complete_missing_reminder_is_not_found(rsvc):
+    with pytest.raises(NotFound):
+        rsvc.complete_reminder("ghost", "panel")
+
+
+def test_mark_reminder_notified_does_not_touch_updated_at(rsvc):
+    made = rsvc.create("reminder", {"person_id": "id1", "due_at": "2026-12-08T08:00"}, "panel")
+    before = stored(rsvc, made["id"])
+    occurrence = before.due_at
+    rsvc.mark_reminder_notified(made["id"], occurrence)
+    after = stored(rsvc, made["id"])
+    assert after.notified_for == occurrence and after.updated_at == before.updated_at
+
+
+def test_edit_notes_of_the_interaction_do_not_change_the_reminder(rsvc):
+    interaction = rsvc.create(
+        "interaction",
+        {"summary": "Coffee", "date": "2026-12-01", "type": "Catch-up", "person_ids": ["id1"]},
+        "panel",
+    )
+    made = rsvc.create(
+        "reminder", {"person_id": "id1", "interaction_id": interaction["id"], "note": "Follow up"}, "panel"
+    )
+    before = stored(rsvc, made["id"])
+    rsvc.update("interaction", interaction["id"], {"notes": "Changed my mind"}, "panel")
+    assert stored(rsvc, made["id"]) == before
+
+
+def test_snapshot_lists_reminders_in_the_homes_zone(rsvc):
+    rsvc.create("reminder", {"person_id": "id1", "due_at": "2026-12-08T21:30"}, "panel")
+    row = rsvc.snapshot()["reminders"][0]
+    assert (row["due_date"], row["due_time"], row["state"]) == ("2026-12-08", "21:30", "upcoming")
+
+
+def test_reminder_row_for_a_saved_reminder(rsvc):
+    made = rsvc.create("reminder", {"person_id": "id1", "due_at": "2026-12-01T08:00"}, "panel")
+    row = rsvc.reminder_row(made["id"])
+    assert row["state"] == "due_today" and "anchor_at" not in row

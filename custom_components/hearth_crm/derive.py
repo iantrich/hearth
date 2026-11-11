@@ -9,12 +9,13 @@ from __future__ import annotations
 import calendar
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import date
+from datetime import UTC, date, datetime, tzinfo
 from typing import Any, Literal
 
-from .enums import ConnectionType, InteractionType
-from .models import CRMData, Interaction, Person
+from .enums import ConnectionType, InteractionType, ReminderUnit
+from .models import CRMData, Interaction, Person, Reminder
 from .naming import household_name, relationship_label
+from .reminders import reminder_state
 from .serialize import to_dict
 
 CLOSE_FRIEND_CADENCE_DAYS = 42
@@ -101,8 +102,33 @@ def upcoming_birthdays(
     return result
 
 
+def reminder_row(reminder: Reminder, today: date, tz: tzinfo) -> dict[str, Any]:
+    """A reminder as the panel and Claude see it: stored fields plus its state and local strings."""
+    row = to_dict(reminder)
+    del row["anchor_at"], row["notified_for"]
+    local = reminder.due_at.astimezone(tz) if reminder.due_at else None
+    row["state"] = reminder_state(reminder, today, tz)
+    row["due_date"] = local.date().isoformat() if local else None
+    row["due_time"] = local.strftime("%H:%M") if local else None
+    return row
+
+
+def _reminder_rows(reminders: list[Reminder], today: date, tz: tzinfo) -> list[dict[str, Any]]:
+    """Open reminders by due time (Someday last), then done ones newest first."""
+    open_ = sorted(
+        (r for r in reminders if r.done_at is None),
+        key=lambda r: (r.due_at is None, r.due_at.astimezone(UTC) if r.due_at else datetime.min.replace(tzinfo=UTC)),
+    )
+    done = sorted(
+        (r for r in reminders if r.done_at is not None),
+        key=lambda r: r.done_at.astimezone(UTC),
+        reverse=True,
+    )
+    return [reminder_row(r, today, tz) for r in open_ + done]
+
+
 def build_snapshot(
-    data: CRMData, *, me_person_id: str | None, today: date
+    data: CRMData, *, me_person_id: str | None, today: date, tz: tzinfo = UTC
 ) -> dict[str, Any]:
     """The JSON-serializable payload every surface renders from."""
     people_by_id = {p.id: p for p in data.people}
@@ -182,6 +208,8 @@ def build_snapshot(
         "interactions": [to_dict(i) for i in data.interactions],
         "interaction_types": [t.value for t in InteractionType],
         "connection_types": [t.value for t in ConnectionType],
+        "reminders": _reminder_rows(data.reminders, today, tz),
+        "reminder_units": [u.value for u in ReminderUnit],
         "me_person_id": me_person_id,
         "today": today.isoformat(),
     }

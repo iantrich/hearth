@@ -36,7 +36,7 @@ _LOGGER = logging.getLogger(__name__)
 SOURCE = "panel"
 # Base64 of MAX_PHOTO_BYTES (4,000,000 characters), well inside HA's ~4 MiB message limit.
 MAX_PHOTO_DATA_CHARS = 4 * MAX_PHOTO_BYTES // 3
-KINDS = ["person", "household", "contact_group", "relationship", "interaction"]
+KINDS = ["person", "household", "contact_group", "relationship", "interaction", "reminder"]
 PHOTO_KINDS = ["person", "household", "contact_group"]
 
 ERR_NO_CRM = "no_crm"
@@ -67,6 +67,7 @@ def async_register_websocket(hass: HomeAssistant) -> None:
         ws_set_members, ws_photo_set, ws_photo_clear, ws_settings_get, ws_settings_set,
         ws_google_status, ws_google_set_enabled, ws_google_sync_now, ws_google_preview,
         ws_google_clear_contact, ws_notifications_get, ws_notifications_set, ws_notifications_test,
+        ws_reminder_complete,
     ):
         websocket_api.async_register_command(hass, command)
 
@@ -250,6 +251,19 @@ async def ws_delete(hass, connection, msg, entry) -> None:
     )
     _notify(hass, entry, msg["kind"], msg["entity_id"], "delete")
     connection.send_result(msg["id"], dataclasses.asdict(result))
+
+
+@websocket_api.websocket_command(
+    {"type": "hearth_crm/reminder/complete", probatio.Required("entity_id"): _ID}
+)
+@websocket_api.async_response
+@_with_crm
+async def ws_reminder_complete(hass, connection, msg, entry) -> None:
+    service = entry.runtime_data.service
+    await hass.async_add_executor_job(service.complete_reminder, msg["entity_id"], SOURCE)
+    row = await hass.async_add_executor_job(service.reminder_row, msg["entity_id"])
+    _notify(hass, entry, "reminder", msg["entity_id"], "update")
+    connection.send_result(msg["id"], {"reminder": row})
 
 
 @websocket_api.websocket_command(

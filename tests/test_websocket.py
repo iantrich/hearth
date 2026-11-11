@@ -80,6 +80,7 @@ async def test_user_without_crm_gets_no_crm(hass, hass_ws_client):
         ("notifications/get", {}),
         ("notifications/set", {"changes": {}}),
         ("notifications/test", {}),
+        ("reminder/complete", {"entity_id": "r"}),
     ):
         reply = await call(ws, command, **data)
         assert not reply["success"] and reply["error"]["code"] == "no_crm", command
@@ -446,3 +447,49 @@ async def test_notifications_get_set_and_test(hass, two_crms, ws_for_a):
 async def test_notification_settings_are_each_users_own(hass, two_crms, ws_for_a, ws_for_b):
     await ok(ws_for_a, "notifications/set", changes={"log_reminder": {"enabled": True}})
     assert (await ok(ws_for_b, "notifications/get"))["settings"]["log_reminder"]["enabled"] is False
+
+
+async def test_reminder_create_update_delete_over_the_generic_commands(hass, two_crms, ws_for_a):
+    alex = await ok(ws_for_a, "create", kind="person", fields={"name": "Alex Example"})
+    made = await ok(
+        ws_for_a, "create", kind="reminder",
+        fields={"person_id": alex["id"], "note": "Send a card", "due_at": "2030-05-01T09:00"},
+    )
+    assert made["note"] == "Send a card" and made["done_at"] is None
+    rows = (await ok(ws_for_a, "snapshot"))["reminders"]
+    assert [r["id"] for r in rows] == [made["id"]]
+    assert rows[0]["state"] == "upcoming" and rows[0]["due_date"] == "2030-05-01"
+    assert "anchor_at" not in rows[0]
+    updated = await ok(
+        ws_for_a, "update", kind="reminder", entity_id=made["id"], changes={"note": "Call"}
+    )
+    assert updated["note"] == "Call"
+    await ok(ws_for_a, "delete", kind="reminder", entity_id=made["id"])
+    assert (await ok(ws_for_a, "snapshot"))["reminders"] == []
+
+
+async def test_reminder_complete_command(hass, two_crms, ws_for_a):
+    alex = await ok(ws_for_a, "create", kind="person", fields={"name": "Alex Example"})
+    once = await ok(
+        ws_for_a, "create", kind="reminder",
+        fields={"person_id": alex["id"], "due_at": "2030-05-01T09:00"},
+    )
+    result = await ok(ws_for_a, "reminder/complete", entity_id=once["id"])
+    assert result["reminder"]["state"] == "done" and result["reminder"]["done_at"]
+    weekly = await ok(
+        ws_for_a, "create", kind="reminder",
+        fields={
+            "person_id": alex["id"], "due_at": "2030-05-01T09:00",
+            "repeat_every": 1, "repeat_unit": "week",
+        },
+    )
+    result = await ok(ws_for_a, "reminder/complete", entity_id=weekly["id"])
+    assert result["reminder"]["state"] == "upcoming"
+    assert result["reminder"]["due_date"] == "2030-05-08"
+
+
+async def test_reminder_complete_is_refused_for_another_users_reminder(hass, two_crms, ws_for_a, ws_for_b):
+    alex = await ok(ws_for_a, "create", kind="person", fields={"name": "Alex Example"})
+    made = await ok(ws_for_a, "create", kind="reminder", fields={"person_id": alex["id"]})
+    reply = await call(ws_for_b, "reminder/complete", entity_id=made["id"])
+    assert reply["error"]["code"] == "not_found"

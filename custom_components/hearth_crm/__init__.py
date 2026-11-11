@@ -85,7 +85,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: HearthConfigEntry) -> bo
     runtime = HearthRuntime(
         repo=repo,
         photos=photos,
-        service=HearthService(repo, photos, today=lambda: dt_util.now().date()),
+        service=HearthService(
+            repo, photos, today=lambda: dt_util.now().date(), now=dt_util.now
+        ),
         data_dir=data_dir,
         owner_user_id=owner_user_id,
         google=GoogleLink(hass, entry),

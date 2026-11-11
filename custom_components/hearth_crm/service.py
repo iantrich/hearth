@@ -31,9 +31,18 @@ from .db import (
     DeleteResult,
 )
 from .db_entities import EntityKind
-from .derive import build_snapshot
+from . import reminders
+from .derive import build_snapshot, reminder_row
 from .google_payload import ERROR_CONTACT_MISSING, ERROR_CREATE_UNCERTAIN
-from .models import ContactGroup, CRMData, Household, Interaction, Person, Relationship
+from .models import (
+    ContactGroup,
+    CRMData,
+    Household,
+    Interaction,
+    Person,
+    Relationship,
+    Reminder,
+)
 from .photos import PhotoStore
 from .serialize import (
     group_from_dict,
@@ -41,6 +50,7 @@ from .serialize import (
     interaction_from_dict,
     person_from_dict,
     relationship_from_dict,
+    reminder_from_dict,
     to_dict,
 )
 
@@ -60,6 +70,7 @@ PhotoKind = Literal["person", "household", "contact_group"]
 _NOT_EDITABLE = frozenset({
     "id", "created_at", "updated_at", "photo_hash", "google_contact_id",
     "google_synced_at", "google_photo_hash", "google_sync_error",
+    "anchor_at", "notified_for", "done_at",
 })
 _FROM_DICT: dict[str, Callable[[dict[str, Any]], Any]] = {
     "person": person_from_dict,
@@ -67,6 +78,7 @@ _FROM_DICT: dict[str, Callable[[dict[str, Any]], Any]] = {
     "contact_group": group_from_dict,
     "relationship": relationship_from_dict,
     "interaction": interaction_from_dict,
+    "reminder": reminder_from_dict,
 }
 _MODELS = {
     "person": Person,
@@ -74,6 +86,7 @@ _MODELS = {
     "contact_group": ContactGroup,
     "relationship": Relationship,
     "interaction": Interaction,
+    "reminder": Reminder,
 }
 _GROUP_MEMBERS = "member_ids"
 
@@ -153,6 +166,7 @@ MAX_TEXT_LENGTHS: dict[str, int] = {
     "how_i_know_them": 2_000,
     "formatted": 1_000,
     "notes": 20_000,
+    "note": 20_000,
     "relationship_summary": 20_000,
     "description": 20_000,
 }
@@ -194,11 +208,13 @@ class HearthService:
         photos: PhotoStore,
         *,
         today: Callable[[], date],
+        now: Callable[[], datetime] = lambda: datetime.now().astimezone(),
         new_id: Callable[[], str] = lambda: str(uuid4()),
     ) -> None:
         self._repo = repo
         self._photos = photos
         self._today = today
+        self._now = now
         self._new_id = new_id
         self._write_lock = threading.Lock()
 
@@ -207,7 +223,13 @@ class HearthService:
             self._repo.snapshot(),
             me_person_id=self._repo.get_meta(META_ME_PERSON),
             today=self._today(),
+            tz=self._now().tzinfo,
         )
+
+    def reminder_row(self, reminder_id: str) -> dict:
+        """The snapshot row of one saved reminder (state and local strings included)."""
+        reminder = self._require("reminder", reminder_id)
+        return reminder_row(reminder, self._today(), self._now().tzinfo)
 
     # -- writes ---------------------------------------------------------
 
@@ -222,7 +244,11 @@ class HearthService:
             }
             if kind == "person" and raw.get("relationship_summary") and "summary_updated" not in fields:
                 raw["summary_updated"] = self._today().isoformat()
+            if kind == "reminder":
+                self._localize_due(raw)
             entity = self._decode(kind, raw)
+            if kind == "reminder":
+                entity.anchor_at = entity.due_at
             members = self._members(kind, fields)
             self._check_references(kind, entity, members)
             with _db_errors():
@@ -241,7 +267,11 @@ class HearthService:
             existing = self._repo.get(kind, entity_id)
             if existing is None:
                 raise NotFound(kind, entity_id)
+            if kind == "reminder" and existing.done_at is not None:
+                raise InvalidInput("reminder", "a done reminder cannot be edited")
             raw = to_dict(existing) | {k: v for k, v in changes.items() if k != _GROUP_MEMBERS}
+            if kind == "reminder":
+                self._localize_due(raw)
             raw["updated_at"] = datetime.now(UTC).isoformat()
             if (
                 kind == "person"
@@ -251,6 +281,9 @@ class HearthService:
             ):
                 raw["summary_updated"] = self._today().isoformat()
             entity = self._decode(kind, raw)
+            if kind == "reminder" and entity.due_at != existing.due_at:
+                entity.anchor_at = entity.due_at  # a new due time starts a new schedule
+                entity.notified_for = None
             members = self._members(kind, changes)
             self._check_references(kind, entity, members)
             try:
@@ -272,6 +305,25 @@ class HearthService:
                     return self._repo.delete(kind, entity_id, source)
             except KeyError:
                 raise NotFound(kind, entity_id) from None
+
+    def complete_reminder(self, reminder_id: str, source: str) -> dict:
+        """Mark a reminder done, or move a repeating one to its next future date."""
+        _check_id(reminder_id)
+        with self._write_lock:
+            existing = self._require("reminder", reminder_id)
+            if existing.done_at is not None:
+                raise InvalidInput("reminder", "this reminder is already done")
+            now = self._now()
+            entity = reminders.completed(existing, now, now.tzinfo)
+            entity.updated_at = datetime.now(UTC)
+            with _db_errors():
+                self._repo.update("reminder", entity, source)
+            return to_dict(entity)
+
+    def mark_reminder_notified(self, reminder_id: str, occurrence: datetime) -> None:
+        """Remember which scheduled instant was notified (bookkeeping: not an edit)."""
+        with self._write_lock, _db_errors():
+            self._repo.set_reminder_notified(reminder_id, occurrence)
 
     def import_data(self, bundle: Bundle, *, replace_existing: bool) -> None:
         """Replace the whole CRM with an already validated bundle, as an import.
@@ -549,6 +601,18 @@ class HearthService:
             raise InvalidInput(_GROUP_MEMBERS, "expected a list of person ids")
         return members
 
+    def _localize_due(self, raw: dict[str, Any]) -> None:
+        """Read a due time sent without an offset in Home Assistant's time zone."""
+        due = raw.get("due_at")
+        if not isinstance(due, str):
+            return
+        try:
+            parsed = datetime.fromisoformat(due)
+        except ValueError:
+            return  # the decoder reports it
+        if parsed.tzinfo is None:
+            raw["due_at"] = reminders.localize(parsed, self._now().tzinfo).isoformat()
+
     def _person_exists(self, person_id: str) -> bool:
         return self._repo.get("person", person_id) is not None
 
@@ -567,6 +631,18 @@ class HearthService:
             for person_id in entity.person_ids:
                 if not self._person_exists(person_id):
                     raise InvalidInput("person_ids", f"person {person_id!r} does not exist")
+        elif kind == "reminder":
+            if not self._person_exists(entity.person_id):
+                raise InvalidInput("person_id", "person does not exist")
+            if entity.interaction_id is not None and self._repo.get("interaction", entity.interaction_id) is None:
+                raise InvalidInput("interaction_id", "interaction does not exist")
+            if (entity.repeat_every is None) != (entity.repeat_unit is None):
+                raise InvalidInput("repeat_every", "a repeat needs both a number and a unit")
+            if entity.repeat_every is not None:
+                if entity.due_at is None:
+                    raise InvalidInput("repeat_every", "a repeat needs a due time")
+                if not 1 <= entity.repeat_every <= 999:
+                    raise InvalidInput("repeat_every", "must be between 1 and 999")
         elif kind == "person":
             if entity.household_id is not None and self._repo.get("household", entity.household_id) is None:
                 raise InvalidInput("household_id", "household does not exist")
