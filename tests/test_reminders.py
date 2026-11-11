@@ -137,3 +137,24 @@ def test_reminder_state():
     assert reminder_state(make(due_at=local(2026, 11, 10, 0, 1)), today, TZ) == "due_today"
     assert reminder_state(make(due_at=local(2026, 11, 10, 23, 59)), today, TZ) == "due_today"
     assert reminder_state(make(due_at=local(2026, 11, 11, 0, 1)), today, TZ) == "upcoming"
+
+
+def test_comparisons_ignore_how_now_is_represented_in_the_repeated_hour():
+    # Weekly from 2026-10-25 01:30 Chicago, already notified for that date.
+    first = local(2026, 10, 25, 1, 30)
+    r = replace(
+        make(due_at=first, anchor_at=first, repeat_every=1, repeat_unit=ReminderUnit.WEEK),
+        notified_for=first,
+    )
+    # 07:10 UTC is 02:10 CST, 40 minutes after the first (CDT) 01:30 on 11-01.
+    now_utc = datetime(2026, 11, 1, 7, 10, tzinfo=timezone.utc)
+    now_local = now_utc.astimezone(TZ)
+    want = datetime(2026, 11, 1, 6, 30, tzinfo=timezone.utc)
+    assert due_occurrence(r, now_utc, TZ).astimezone(timezone.utc) == want
+    assert due_occurrence(r, now_local, TZ).astimezone(timezone.utc) == want
+    # The second 01:30 (CST, fold=1) is 07:30 UTC: not yet due before that.
+    early = datetime(2026, 11, 1, 1, 30, fold=1, tzinfo=TZ)
+    one_time = make(due_at=early)
+    before = datetime(2026, 11, 1, 6, 45, tzinfo=timezone.utc)
+    assert due_occurrence(one_time, before, TZ) is None
+    assert due_occurrence(one_time, before.astimezone(TZ), TZ) is None

@@ -55,13 +55,17 @@ def _repeats(reminder: Reminder) -> bool:
     )
 
 
-def _latest_k(reminder: Reminder, moment: datetime, tz: tzinfo) -> int:
+def _utc(moment: datetime) -> datetime:
+    """Normalise to UTC: aware datetimes sharing a tzinfo compare by wall clock and ignore fold."""
+    return moment.astimezone(UTC)
+
+
+def _latest_k(
+    anchor: datetime, every: int, unit: ReminderUnit, moment: datetime, tz: tzinfo
+) -> int:
     """Largest k with occurrence(k) <= moment, or -1 if moment precedes the anchor."""
-    anchor = reminder.anchor_at
-    every = reminder.repeat_every
-    unit = reminder.repeat_unit
-    assert anchor is not None and every is not None and unit is not None
-    if moment < anchor:
+    instant = _utc(moment)
+    if instant < _utc(anchor):
         return -1
     first = anchor.astimezone(tz).date()
     last = moment.astimezone(tz).date()
@@ -73,9 +77,9 @@ def _latest_k(reminder: Reminder, moment: datetime, tz: tzinfo) -> int:
         months = (last.year - first.year) * 12 + last.month - first.month
         estimate = months // (every * (12 if unit is ReminderUnit.YEAR else 1))
     k = max(estimate, 0)
-    while k > 0 and occurrence(anchor, every, unit, k, tz) > moment:
+    while k > 0 and _utc(occurrence(anchor, every, unit, k, tz)) > instant:
         k -= 1
-    while occurrence(anchor, every, unit, k + 1, tz) <= moment:
+    while _utc(occurrence(anchor, every, unit, k + 1, tz)) <= instant:
         k += 1
     return k
 
@@ -84,29 +88,32 @@ def next_after(reminder: Reminder, moment: datetime, tz: tzinfo) -> datetime | N
     """First scheduled instant strictly after moment; None for a one-time reminder."""
     if not _repeats(reminder):
         return None
-    k = _latest_k(reminder, moment, tz) + 1
-    return occurrence(
-        reminder.anchor_at, reminder.repeat_every, reminder.repeat_unit, k, tz
-    )
+    anchor, every, unit = reminder.anchor_at, reminder.repeat_every, reminder.repeat_unit
+    k = _latest_k(anchor, every, unit, moment, tz) + 1
+    return occurrence(anchor, every, unit, k, tz)
 
 
 def due_occurrence(reminder: Reminder, now: datetime, tz: tzinfo) -> datetime | None:
     """The scheduled instant that should notify now, if any."""
     due = reminder.due_at
-    if reminder.done_at is not None or due is None or now < due:
+    if reminder.done_at is not None or due is None or _utc(now) < _utc(due):
         return None
     if _repeats(reminder):
-        k = _latest_k(reminder, now, tz)
+        anchor, every, unit = (
+            reminder.anchor_at,
+            reminder.repeat_every,
+            reminder.repeat_unit,
+        )
+        k = _latest_k(anchor, every, unit, now, tz)
         if k < 0:
             return None
-        candidate = occurrence(
-            reminder.anchor_at, reminder.repeat_every, reminder.repeat_unit, k, tz
-        )
-        if candidate < due:
+        candidate = occurrence(anchor, every, unit, k, tz)
+        if _utc(candidate) < _utc(due):
             return None
     else:
         candidate = due
-    if reminder.notified_for is not None and candidate <= reminder.notified_for:
+    notified = reminder.notified_for
+    if notified is not None and _utc(candidate) <= _utc(notified):
         return None
     return candidate
 
@@ -115,12 +122,17 @@ def completed(reminder: Reminder, now: datetime, tz: tzinfo) -> Reminder:
     """Mark done: one-time gets done_at; repeating moves to its next future date."""
     if _repeats(reminder) and reminder.due_at is not None:
         return dataclasses.replace(
-            reminder, due_at=next_after(reminder, max(now, reminder.due_at), tz)
+            reminder, due_at=next_after(
+                reminder,
+                now if _utc(now) >= _utc(reminder.due_at) else reminder.due_at,
+                tz,
+            ),
         )
     return dataclasses.replace(reminder, done_at=now)
 
 
 def reminder_state(reminder: Reminder, today: date, tz: tzinfo) -> ReminderState:
+    """Where the reminder sits relative to today's local date."""
     if reminder.done_at is not None:
         return "done"
     if reminder.due_at is None:
