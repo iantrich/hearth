@@ -2,7 +2,7 @@
 
 A Home Assistant custom integration that hosts a personal CRM (people, households, groups, relationships, interactions and reminders) on your own Home Assistant instance. Your data lives in your Home Assistant config directory, not in a third-party service.
 
-**What it is today (0.9.0):** a per-user CRM with a sidebar panel you can work from. Each Home Assistant user gets a separate CRM with its own database and photos. The Hearth panel browses it and edits it: people, relationships, households, groups, interactions and reminders, plus importing a bundle from Settings. Claude can read and edit your CRM too, through Home Assistant's MCP server (see [Claude](#claude)). You can also keep your contacts in your own Google account up to date from Hearth (see [Google Contacts](#google-contacts)). There is also import and export of the whole CRM as a portable bundle, and a websocket API plus an authenticated photo URL.
+**What it is today (0.9.1):** a per-user CRM with a sidebar panel you can work from. Each Home Assistant user gets a separate CRM with its own database and photos. The Hearth panel browses it and edits it: people, relationships, households, groups, interactions and reminders, plus importing a bundle from Settings. Claude can read and edit your CRM too, through Home Assistant's MCP server (see [Claude](#claude)). You can also keep your contacts in your own Google account up to date from Hearth (see [Google Contacts](#google-contacts)). There is also import and export of the whole CRM as a portable bundle, and a websocket API plus an authenticated photo URL.
 
 **What comes later:** dashboard cards and entities (birthdays and counts). These do not ship yet, and this README does not promise dates.
 
