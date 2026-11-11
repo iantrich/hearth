@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const ke = globalThis, ft = ke.ShadowRoot && (ke.ShadyCSS === void 0 || ke.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, un = Symbol(), Nt = /* @__PURE__ */ new WeakMap();
-let hi = class {
+let ui = class {
   constructor(e, n, i) {
     if (this._$cssResult$ = !0, i !== un) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = e, this.t = n;
@@ -22,7 +22,7 @@ let hi = class {
     return this.cssText;
   }
 };
-const pn = (t) => new hi(typeof t == "string" ? t : t + "", void 0, un), ui = (t, e) => {
+const pn = (t) => new ui(typeof t == "string" ? t : t + "", void 0, un), pi = (t, e) => {
   if (ft) t.adoptedStyleSheets = e.map((n) => n instanceof CSSStyleSheet ? n : n.styleSheet);
   else for (const n of e) {
     const i = document.createElement("style"), s = ke.litNonce;
@@ -38,10 +38,10 @@ const pn = (t) => new hi(typeof t == "string" ? t : t + "", void 0, un), ui = (t
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: pi, defineProperty: fi, getOwnPropertyDescriptor: mi, getOwnPropertyNames: gi, getOwnPropertySymbols: vi, getPrototypeOf: yi } = Object, Me = globalThis, It = Me.trustedTypes, bi = It ? It.emptyScript : "", $i = Me.reactiveElementPolyfillSupport, ie = (t, e) => t, Se = { toAttribute(t, e) {
+const { is: fi, defineProperty: mi, getOwnPropertyDescriptor: gi, getOwnPropertyNames: vi, getOwnPropertySymbols: yi, getPrototypeOf: bi } = Object, Me = globalThis, It = Me.trustedTypes, $i = It ? It.emptyScript : "", _i = Me.reactiveElementPolyfillSupport, ie = (t, e) => t, Se = { toAttribute(t, e) {
   switch (e) {
     case Boolean:
-      t = t ? bi : null;
+      t = t ? $i : null;
       break;
     case Object:
     case Array:
@@ -66,7 +66,7 @@ const { is: pi, defineProperty: fi, getOwnPropertyDescriptor: mi, getOwnProperty
       }
   }
   return n;
-} }, mt = (t, e) => !pi(t, e), Ht = { attribute: !0, type: String, converter: Se, reflect: !1, useDefault: !1, hasChanged: mt };
+} }, mt = (t, e) => !fi(t, e), Ot = { attribute: !0, type: String, converter: Se, reflect: !1, useDefault: !1, hasChanged: mt };
 Symbol.metadata ??= Symbol("metadata"), Me.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 let Y = class extends HTMLElement {
   static addInitializer(e) {
@@ -75,14 +75,14 @@ let Y = class extends HTMLElement {
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(e, n = Ht) {
+  static createProperty(e, n = Ot) {
     if (n.state && (n.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((n = Object.create(n)).wrapped = !0), this.elementProperties.set(e, n), !n.noAccessor) {
       const i = Symbol(), s = this.getPropertyDescriptor(e, i, n);
-      s !== void 0 && fi(this.prototype, e, s);
+      s !== void 0 && mi(this.prototype, e, s);
     }
   }
   static getPropertyDescriptor(e, n, i) {
-    const { get: s, set: r } = mi(this.prototype, e) ?? { get() {
+    const { get: s, set: r } = gi(this.prototype, e) ?? { get() {
       return this[n];
     }, set(a) {
       this[n] = a;
@@ -93,17 +93,17 @@ let Y = class extends HTMLElement {
     }, configurable: !0, enumerable: !0 };
   }
   static getPropertyOptions(e) {
-    return this.elementProperties.get(e) ?? Ht;
+    return this.elementProperties.get(e) ?? Ot;
   }
   static _$Ei() {
     if (this.hasOwnProperty(ie("elementProperties"))) return;
-    const e = yi(this);
+    const e = bi(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
     if (this.hasOwnProperty(ie("finalized"))) return;
     if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(ie("properties"))) {
-      const n = this.properties, i = [...gi(n), ...vi(n)];
+      const n = this.properties, i = [...vi(n), ...yi(n)];
       for (const s of i) this.createProperty(s, n[s]);
     }
     const e = this[Symbol.metadata];
@@ -149,7 +149,7 @@ let Y = class extends HTMLElement {
   }
   createRenderRoot() {
     const e = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return ui(e, this.constructor.elementStyles), e;
+    return pi(e, this.constructor.elementStyles), e;
   }
   connectedCallback() {
     this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(!0), this._$EO?.forEach((e) => e.hostConnected?.());
@@ -249,28 +249,28 @@ let Y = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-Y.elementStyles = [], Y.shadowRootOptions = { mode: "open" }, Y[ie("elementProperties")] = /* @__PURE__ */ new Map(), Y[ie("finalized")] = /* @__PURE__ */ new Map(), $i?.({ ReactiveElement: Y }), (Me.reactiveElementVersions ??= []).push("2.1.2");
+Y.elementStyles = [], Y.shadowRootOptions = { mode: "open" }, Y[ie("elementProperties")] = /* @__PURE__ */ new Map(), Y[ie("finalized")] = /* @__PURE__ */ new Map(), _i?.({ ReactiveElement: Y }), (Me.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const gt = globalThis, Ot = (t) => t, Ae = gt.trustedTypes, Dt = Ae ? Ae.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, fn = "$lit$", O = `lit$${Math.random().toFixed(9).slice(2)}$`, mn = "?" + O, _i = `<${mn}>`, j = document, oe = () => j.createComment(""), le = (t) => t === null || typeof t != "object" && typeof t != "function", vt = Array.isArray, wi = (t) => vt(t) || typeof t?.[Symbol.iterator] == "function", Ge = `[ 	
-\f\r]`, te = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Lt = /-->/g, Ut = />/g, F = RegExp(`>|${Ge}(?:([^\\s"'>=/]+)(${Ge}*=${Ge}*(?:[^ 	
+const gt = globalThis, Ht = (t) => t, Ae = gt.trustedTypes, Dt = Ae ? Ae.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, fn = "$lit$", H = `lit$${Math.random().toFixed(9).slice(2)}$`, mn = "?" + H, wi = `<${mn}>`, j = document, oe = () => j.createComment(""), le = (t) => t === null || typeof t != "object" && typeof t != "function", vt = Array.isArray, xi = (t) => vt(t) || typeof t?.[Symbol.iterator] == "function", Ge = `[ 	
+\f\r]`, te = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Ut = /-->/g, Lt = />/g, F = RegExp(`>|${Ge}(?:([^\\s"'>=/]+)(${Ge}*=${Ge}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), zt = /'/g, Gt = /"/g, gn = /^(?:script|style|textarea|title)$/i, vn = (t) => (e, ...n) => ({ _$litType$: t, strings: e, values: n }), l = vn(1), x = vn(2), I = Symbol.for("lit-noChange"), h = Symbol.for("lit-nothing"), Ft = /* @__PURE__ */ new WeakMap(), B = j.createTreeWalker(j, 129);
 function yn(t, e) {
   if (!vt(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return Dt !== void 0 ? Dt.createHTML(e) : e;
 }
-const xi = (t, e) => {
+const ki = (t, e) => {
   const n = t.length - 1, i = [];
   let s, r = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", a = te;
   for (let o = 0; o < n; o++) {
     const c = t[o];
-    let d, u, p = -1, y = 0;
-    for (; y < c.length && (a.lastIndex = y, u = a.exec(c), u !== null); ) y = a.lastIndex, a === te ? u[1] === "!--" ? a = Lt : u[1] !== void 0 ? a = Ut : u[2] !== void 0 ? (gn.test(u[2]) && (s = RegExp("</" + u[2], "g")), a = F) : u[3] !== void 0 && (a = F) : a === F ? u[0] === ">" ? (a = s ?? te, p = -1) : u[1] === void 0 ? p = -2 : (p = a.lastIndex - u[2].length, d = u[1], a = u[3] === void 0 ? F : u[3] === '"' ? Gt : zt) : a === Gt || a === zt ? a = F : a === Lt || a === Ut ? a = te : (a = F, s = void 0);
+    let d, u, p = -1, v = 0;
+    for (; v < c.length && (a.lastIndex = v, u = a.exec(c), u !== null); ) v = a.lastIndex, a === te ? u[1] === "!--" ? a = Ut : u[1] !== void 0 ? a = Lt : u[2] !== void 0 ? (gn.test(u[2]) && (s = RegExp("</" + u[2], "g")), a = F) : u[3] !== void 0 && (a = F) : a === F ? u[0] === ">" ? (a = s ?? te, p = -1) : u[1] === void 0 ? p = -2 : (p = a.lastIndex - u[2].length, d = u[1], a = u[3] === void 0 ? F : u[3] === '"' ? Gt : zt) : a === Gt || a === zt ? a = F : a === Ut || a === Lt ? a = te : (a = F, s = void 0);
     const m = a === F && t[o + 1].startsWith("/>") ? " " : "";
-    r += a === te ? c + _i : p >= 0 ? (i.push(d), c.slice(0, p) + fn + c.slice(p) + O + m) : c + O + (p === -2 ? o : m);
+    r += a === te ? c + wi : p >= 0 ? (i.push(d), c.slice(0, p) + fn + c.slice(p) + H + m) : c + H + (p === -2 ? o : m);
   }
   return [yn(t, r + (t[n] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), i];
 };
@@ -279,7 +279,7 @@ class ce {
     let s;
     this.parts = [];
     let r = 0, a = 0;
-    const o = e.length - 1, c = this.parts, [d, u] = xi(e, n);
+    const o = e.length - 1, c = this.parts, [d, u] = ki(e, n);
     if (this.el = ce.createElement(d, i), B.currentNode = this.el.content, n === 2 || n === 3) {
       const p = this.el.content.firstChild;
       p.replaceWith(...p.childNodes);
@@ -287,21 +287,21 @@ class ce {
     for (; (s = B.nextNode()) !== null && c.length < o; ) {
       if (s.nodeType === 1) {
         if (s.hasAttributes()) for (const p of s.getAttributeNames()) if (p.endsWith(fn)) {
-          const y = u[a++], m = s.getAttribute(p).split(O), g = /([.?@])?(.*)/.exec(y);
-          c.push({ type: 1, index: r, name: g[2], strings: m, ctor: g[1] === "." ? Ci : g[1] === "?" ? Ei : g[1] === "@" ? Si : Ne }), s.removeAttribute(p);
-        } else p.startsWith(O) && (c.push({ type: 6, index: r }), s.removeAttribute(p));
+          const v = u[a++], m = s.getAttribute(p).split(H), g = /([.?@])?(.*)/.exec(v);
+          c.push({ type: 1, index: r, name: g[2], strings: m, ctor: g[1] === "." ? Ei : g[1] === "?" ? Si : g[1] === "@" ? Ai : Ne }), s.removeAttribute(p);
+        } else p.startsWith(H) && (c.push({ type: 6, index: r }), s.removeAttribute(p));
         if (gn.test(s.tagName)) {
-          const p = s.textContent.split(O), y = p.length - 1;
-          if (y > 0) {
+          const p = s.textContent.split(H), v = p.length - 1;
+          if (v > 0) {
             s.textContent = Ae ? Ae.emptyScript : "";
-            for (let m = 0; m < y; m++) s.append(p[m], oe()), B.nextNode(), c.push({ type: 2, index: ++r });
-            s.append(p[y], oe());
+            for (let m = 0; m < v; m++) s.append(p[m], oe()), B.nextNode(), c.push({ type: 2, index: ++r });
+            s.append(p[v], oe());
           }
         }
       } else if (s.nodeType === 8) if (s.data === mn) c.push({ type: 2, index: r });
       else {
         let p = -1;
-        for (; (p = s.data.indexOf(O, p + 1)) !== -1; ) c.push({ type: 7, index: r }), p += O.length - 1;
+        for (; (p = s.data.indexOf(H, p + 1)) !== -1; ) c.push({ type: 7, index: r }), p += H.length - 1;
       }
       r++;
     }
@@ -317,7 +317,7 @@ function W(t, e, n = t, i) {
   const r = le(e) ? void 0 : e._$litDirective$;
   return s?.constructor !== r && (s?._$AO?.(!1), r === void 0 ? s = void 0 : (s = new r(t), s._$AT(t, n, i)), i !== void 0 ? (n._$Co ??= [])[i] = s : n._$Cl = s), s !== void 0 && (e = W(t, s._$AS(t, e.values), s, i)), e;
 }
-class ki {
+class Ci {
   constructor(e, n) {
     this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = n;
   }
@@ -334,7 +334,7 @@ class ki {
     for (; c !== void 0; ) {
       if (a === c.index) {
         let d;
-        c.type === 2 ? d = new de(r, r.nextSibling, this, e) : c.type === 1 ? d = new c.ctor(r, c.name, c.strings, this, e) : c.type === 6 && (d = new Ai(r, this, e)), this._$AV.push(d), c = i[++o];
+        c.type === 2 ? d = new de(r, r.nextSibling, this, e) : c.type === 1 ? d = new c.ctor(r, c.name, c.strings, this, e) : c.type === 6 && (d = new Ti(r, this, e)), this._$AV.push(d), c = i[++o];
       }
       a !== c?.index && (r = B.nextNode(), a++);
     }
@@ -364,7 +364,7 @@ class de {
     return this._$AB;
   }
   _$AI(e, n = this) {
-    e = W(this, e, n), le(e) ? e === h || e == null || e === "" ? (this._$AH !== h && this._$AR(), this._$AH = h) : e !== this._$AH && e !== I && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : wi(e) ? this.k(e) : this._(e);
+    e = W(this, e, n), le(e) ? e === h || e == null || e === "" ? (this._$AH !== h && this._$AR(), this._$AH = h) : e !== this._$AH && e !== I && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : xi(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -379,7 +379,7 @@ class de {
     const { values: n, _$litType$: i } = e, s = typeof i == "number" ? this._$AC(e) : (i.el === void 0 && (i.el = ce.createElement(yn(i.h, i.h[0]), this.options)), i);
     if (this._$AH?._$AD === s) this._$AH.p(n);
     else {
-      const r = new ki(s, this), a = r.u(this.options);
+      const r = new Ci(s, this), a = r.u(this.options);
       r.p(n), this.T(a), this._$AH = r;
     }
   }
@@ -396,8 +396,8 @@ class de {
   }
   _$AR(e = this._$AA.nextSibling, n) {
     for (this._$AP?.(!1, !0, n); e !== this._$AB; ) {
-      const i = Ot(e).nextSibling;
-      Ot(e).remove(), e = i;
+      const i = Ht(e).nextSibling;
+      Ht(e).remove(), e = i;
     }
   }
   setConnected(e) {
@@ -429,7 +429,7 @@ class Ne {
     e === h ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
   }
 }
-class Ci extends Ne {
+class Ei extends Ne {
   constructor() {
     super(...arguments), this.type = 3;
   }
@@ -437,7 +437,7 @@ class Ci extends Ne {
     this.element[this.name] = e === h ? void 0 : e;
   }
 }
-class Ei extends Ne {
+class Si extends Ne {
   constructor() {
     super(...arguments), this.type = 4;
   }
@@ -445,7 +445,7 @@ class Ei extends Ne {
     this.element.toggleAttribute(this.name, !!e && e !== h);
   }
 }
-class Si extends Ne {
+class Ai extends Ne {
   constructor(e, n, i, s, r) {
     super(e, n, i, s, r), this.type = 5;
   }
@@ -458,7 +458,7 @@ class Si extends Ne {
     typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, e) : this._$AH.handleEvent(e);
   }
 }
-class Ai {
+class Ti {
   constructor(e, n, i) {
     this.element = e, this.type = 6, this._$AN = void 0, this._$AM = n, this.options = i;
   }
@@ -469,9 +469,9 @@ class Ai {
     W(this, e);
   }
 }
-const Ti = gt.litHtmlPolyfillSupport;
-Ti?.(ce, de), (gt.litHtmlVersions ??= []).push("3.3.3");
-const Ri = (t, e, n) => {
+const Ri = gt.litHtmlPolyfillSupport;
+Ri?.(ce, de), (gt.litHtmlVersions ??= []).push("3.3.3");
+const Mi = (t, e, n) => {
   const i = n?.renderBefore ?? e;
   let s = i._$litPart$;
   if (s === void 0) {
@@ -496,7 +496,7 @@ let se = class extends Y {
   }
   update(e) {
     const n = this.render();
-    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Ri(n, this.renderRoot, this.renderOptions);
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Mi(n, this.renderRoot, this.renderOptions);
   }
   connectedCallback() {
     super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -509,15 +509,15 @@ let se = class extends Y {
   }
 };
 se._$litElement$ = !0, se.finalized = !0, yt.litElementHydrateSupport?.({ LitElement: se });
-const Mi = yt.litElementPolyfillSupport;
-Mi?.({ LitElement: se });
+const Ni = yt.litElementPolyfillSupport;
+Ni?.({ LitElement: se });
 (yt.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Ni = { attribute: !0, type: String, converter: Se, reflect: !1, hasChanged: mt }, Pi = (t = Ni, e, n) => {
+const Pi = { attribute: !0, type: String, converter: Se, reflect: !1, hasChanged: mt }, Ii = (t = Pi, e, n) => {
   const { kind: i, metadata: s } = n;
   let r = globalThis.litPropertyMetadata.get(s);
   if (r === void 0 && globalThis.litPropertyMetadata.set(s, r = /* @__PURE__ */ new Map()), i === "setter" && ((t = Object.create(t)).wrapped = !0), r.set(n.name, t), i === "accessor") {
@@ -539,7 +539,7 @@ const Ni = { attribute: !0, type: String, converter: Se, reflect: !1, hasChanged
   throw Error("Unsupported decorator location: " + i);
 };
 function he(t) {
-  return (e, n) => typeof n == "object" ? Pi(t, e, n) : ((i, s, r) => {
+  return (e, n) => typeof n == "object" ? Ii(t, e, n) : ((i, s, r) => {
     const a = s.hasOwnProperty(r);
     return s.constructor.createProperty(r, i), a ? Object.getOwnPropertyDescriptor(s, r) : void 0;
   })(t, e, n);
@@ -549,7 +549,7 @@ function he(t) {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function Ii(t) {
+function Oi(t) {
   return he({ ...t, state: !0, attribute: !1 });
 }
 function Hi(t) {
@@ -560,17 +560,17 @@ class A extends Error {
     super(n), this.code = e, this.field = i, this.problems = s, this.name = "HearthError";
   }
 }
-const Oi = /^([A-Za-z_][\w.]*): /;
+const Di = /^([A-Za-z_][\w.]*): /;
 function Bt(t) {
   if (t instanceof A) return t;
   const e = t ?? {}, n = typeof e.message == "string" ? e.message : String(t);
   if (typeof e.code == "string" && e.code) {
-    const i = e.code === "invalid" ? Oi.exec(n)?.[1] : void 0;
+    const i = e.code === "invalid" ? Di.exec(n)?.[1] : void 0;
     return new A(e.code, n, i);
   }
   return typeof e.code == "number" ? new A("offline", n) : t instanceof Error ? new A("unknown_error", n) : new A("offline", n);
 }
-class Di {
+class Ui {
   /** `auth` is read when an upload starts, because Home Assistant swaps it when the token refreshes. */
   constructor(e, n = () => {
   }) {
@@ -704,7 +704,7 @@ class Di {
 }
 const _ = "/hearth";
 function Li(t) {
-  const e = t.split("/").filter(Boolean).map(Ui), [n, i, s] = e;
+  const e = t.split("/").filter(Boolean).map(zi), [n, i, s] = e;
   switch (n) {
     case void 0:
       return { name: "home" };
@@ -750,7 +750,7 @@ function Li(t) {
   }
   return { name: "home" };
 }
-function Ui(t) {
+function zi(t) {
   try {
     return decodeURIComponent(t);
   } catch {
@@ -782,10 +782,10 @@ const R = encodeURIComponent, f = {
   newReminder: (t) => `${_}/person/${R(t)}/reminder/new`,
   newInteractionReminder: (t) => `${_}/interaction/${R(t)}/reminder/new`
 };
-function zi(t) {
+function Gi(t) {
   return t === _ || t.startsWith(`${_}/`) || t.startsWith(`${_}?`);
 }
-function Gi(t) {
+function Fi(t) {
   switch (t.name) {
     case "home":
     case "search":
@@ -801,11 +801,11 @@ function Ze() {
   const t = history.state?.[Xe];
   return typeof t == "number" ? t : 0;
 }
-function U(t, e = !1) {
+function L(t, e = !1) {
   e ? history.replaceState({ [Xe]: Ze() }, "", t) : history.pushState({ [Xe]: Ze() + 1 }, "", t), window.dispatchEvent(new Event("location-changed"));
 }
 function z(t) {
-  Ze() > 0 ? history.back() : U(t, !0);
+  Ze() > 0 ? history.back() : L(t, !0);
 }
 /**
  * @license
@@ -840,13 +840,13 @@ let $n = class {
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Fi = (t) => t.strings === void 0, Bi = {}, _n = (t, e = Bi) => t._$AH = e;
+const Bi = (t) => t.strings === void 0, ji = {}, _n = (t, e = ji) => t._$AH = e;
 /**
  * @license
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ji = bn(class extends $n {
+const Vi = bn(class extends $n {
   constructor() {
     super(...arguments), this.key = h;
   }
@@ -860,16 +860,16 @@ const ji = bn(class extends $n {
 function bt(t) {
   return /* @__PURE__ */ new Date(`${t}T00:00:00Z`);
 }
-const Vi = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }), qi = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }), Ki = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }), Te = (t) => Vi.format(bt(t)), Yi = (t) => qi.format(bt(t)), wn = (t) => Ki.format(bt(t));
-function Wi(t, e, n) {
+const qi = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }), Ki = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }), Yi = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }), Te = (t) => qi.format(bt(t)), Wi = (t) => Ki.format(bt(t)), wn = (t) => Yi.format(bt(t));
+function Ji(t, e, n) {
   if (e) return Te(t);
   const i = `${Te(t)}, ${t.slice(0, 4)}`;
   return n === null ? i : `${i} - ${n}`;
 }
-function Ji(t) {
+function Xi(t) {
   return t === 0 ? "Today" : `In ${t} ${t === 1 ? "day" : "days"}`;
 }
-function Xi(t) {
+function Zi(t) {
   return t.trim().split(/\s+/).slice(0, 2).map((e) => e.charAt(0)).join("").toUpperCase();
 }
 function Pe(t, e, n = `${e}s`) {
@@ -903,14 +903,14 @@ const E = (t) => x`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 function S(t, e, n = 42) {
   const i = Math.round(n * 15 / 42);
   return l`<span class="avatar" style="width:${n}px;height:${n}px;font-size:${i}px">
-    ${Xi(t)}
-    ${e ? ji(
+    ${Zi(t)}
+    ${e ? Vi(
     e,
     l`<img src=${e} alt="" loading="lazy" @error=${(s) => s.target.classList.add("broken")} />`
   ) : h}
   </span>`;
 }
-function Zi(t, e = 42, n = 3) {
+function Qi(t, e = 42, n = 3) {
   const i = t.slice(0, n), s = t.length - i.length, r = Math.round(e / 3);
   return l`<span class="stack" aria-hidden="true">
     ${i.map(
@@ -936,7 +936,7 @@ function Qe(t, e) {
     <span class="meta ${n.urgency === "overdue" ? "danger" : ""}">${s}</span>
   </a>`;
 }
-function Qi(t) {
+function es(t) {
   return t.href ? l`<a
       class="icon-btn ${t.className ?? ""}"
       href=${t.href}
@@ -955,7 +955,7 @@ function Qi(t) {
     ${t.icon}
   </button>`;
 }
-const es = (t) => l`<div class="label list-label">${t}</div>`;
+const ts = (t) => l`<div class="label list-label">${t}</div>`;
 /**
  * @license
  * Copyright 2020 Google LLC
@@ -964,7 +964,7 @@ const es = (t) => l`<div class="label list-label">${t}</div>`;
 const k = bn(class extends $n {
   constructor(t) {
     if (super(t), t.type !== q.PROPERTY && t.type !== q.ATTRIBUTE && t.type !== q.BOOLEAN_ATTRIBUTE) throw Error("The `live` directive is not allowed on child or event bindings");
-    if (!Fi(t)) throw Error("`live` bindings can only contain a single expression");
+    if (!Bi(t)) throw Error("`live` bindings can only contain a single expression");
   }
   render(t) {
     return t;
@@ -979,7 +979,7 @@ const k = bn(class extends $n {
     } else if (t.type === q.ATTRIBUTE && n.getAttribute(i) === e + "") return I;
     return _n(t), e;
   }
-}), ts = () => ({
+}), ns = () => ({
   name: "",
   phone: "",
   email: "",
@@ -987,16 +987,16 @@ const k = bn(class extends $n {
   has_birthday: !1,
   birthday: "",
   birth_year_unknown: !1
-}), ns = { name: 200, phone: 50, email: 500, how_i_know_them: 2e3 }, Fe = (t) => t.trim() || null, Vt = "add-person";
-function is(t) {
-  const e = t.drafts.open(Vt, f.add(), ts), n = (a) => t.drafts.patch(Vt, a), i = e.name.trim() !== "" && (!e.has_birthday || e.birthday !== ""), s = (a, o, c = "text", d = "off") => l`<label class="field">
+}), is = { name: 200, phone: 50, email: 500, how_i_know_them: 2e3 }, Fe = (t) => t.trim() || null, Vt = "add-person";
+function ss(t) {
+  const e = t.drafts.open(Vt, f.add(), ns), n = (a) => t.drafts.patch(Vt, a), i = e.name.trim() !== "" && (!e.has_birthday || e.birthday !== ""), s = (a, o, c = "text", d = "off") => l`<label class="field">
       <span>${o}</span>
       <input
         id=${`add-${a.replace(/_/g, "-")}`}
         class="input"
         type=${c}
         autocomplete=${d}
-        maxlength=${ns[a]}
+        maxlength=${is[a]}
         .value=${k(e[a])}
         @input=${(u) => n({ [a]: u.target.value })}
       />
@@ -1010,7 +1010,7 @@ function is(t) {
       birthday: e.has_birthday ? e.birthday : null,
       birth_year_unknown: e.has_birthday && e.birth_year_unknown
     });
-    a && U(f.person(a));
+    a && L(f.person(a));
   };
   return {
     title: "Add person",
@@ -1040,12 +1040,12 @@ function is(t) {
     </div>`
   };
 }
-const ss = new Intl.Collator("en", { numeric: !0, sensitivity: "base" });
-function L(t, e) {
-  return ss.compare(t, e);
+const rs = new Intl.Collator("en", { numeric: !0, sensitivity: "base" });
+function U(t, e) {
+  return rs.compare(t, e);
 }
 function et(t, e) {
-  return L(t.name, e.name);
+  return U(t.name, e.name);
 }
 function Ie(t) {
   return t.trim().split(/\s+/)[0] ?? "";
@@ -1053,11 +1053,11 @@ function Ie(t) {
 function X(t) {
   return t.name_status !== "needs_name" && t.name_status !== "not_a_household" && !!t.name;
 }
-function H(t) {
+function O(t) {
   return X(t) ? t.name : t.name_status === "not_a_household" ? "Not a household" : "Needs a name";
 }
 function $t(t, e) {
-  const n = H(t);
+  const n = O(t);
   if (X(t)) return n;
   const i = t.member_ids.map((s) => e.find((r) => r.id === s)).filter((s) => !!s).map((s) => Ie(s.name)).filter(Boolean);
   return i.length ? `${n} (${i.join(", ")})` : n;
@@ -1065,32 +1065,32 @@ function $t(t, e) {
 function xn(t, e) {
   return t.filter(
     (n) => n.days_until_birthday !== null && (e === void 0 || n.days_until_birthday <= e)
-  ).sort((n, i) => n.days_until_birthday - i.days_until_birthday || L(n.name, i.name));
+  ).sort((n, i) => n.days_until_birthday - i.days_until_birthday || U(n.name, i.name));
 }
-const rs = /^(\d{4})-(\d{2})-(\d{2})$/, as = 864e5;
-function os(t) {
-  const e = rs.exec(t);
+const as = /^(\d{4})-(\d{2})-(\d{2})$/, os = 864e5;
+function ls(t) {
+  const e = as.exec(t);
   if (!e) throw new Error(`Not a calendar day: ${t}`);
   return Date.UTC(Number(e[1]), Number(e[2]) - 1, Number(e[3]));
 }
-function ls(t, e) {
-  return new Date(os(t) + e * as).toISOString().slice(0, 10);
+function cs(t, e) {
+  return new Date(ls(t) + e * os).toISOString().slice(0, 10);
 }
-const cs = 6;
-function ds(t) {
-  return t.filter((e) => e.favorite).slice(0, cs);
+const ds = 6;
+function hs(t) {
+  return t.filter((e) => e.favorite).slice(0, ds);
 }
 function kn(t, e, n) {
   const i = new Set(e.map((r) => r.id)), { since: s } = n;
   return t.filter((r) => (s === void 0 || r.date >= s) && r.person_ids.some((a) => i.has(a))).sort(Cn).slice(0, n.limit);
 }
-function hs(t, e) {
+function us(t, e) {
   return t.filter((n) => n.person_ids.includes(e)).sort(Cn);
 }
 function Cn(t, e) {
   return t.date === e.date ? 0 : t.date > e.date ? -1 : 1;
 }
-function He(t, e) {
+function Oe(t, e) {
   const n = /* @__PURE__ */ new Map();
   for (const i of e) n.has(i.id) || n.set(i.id, i);
   return t.person_ids.flatMap((i) => {
@@ -1098,7 +1098,7 @@ function He(t, e) {
     return s ? [s] : [];
   });
 }
-function us(t) {
+function ps(t) {
   const e = (s) => Ie(s.name) || s.name, [n, i] = t;
   return n ? i ? t.length === 2 ? `${e(n)} & ${e(i)}` : `${e(n)} and ${t.length - 1} others` : n.name : "";
 }
@@ -1116,8 +1116,8 @@ const ue = {
   body: l`<div class="center"><div><div class="spinner"></div></div></div>`
 };
 function En(t, e) {
-  const n = e.length === 1 ? e[0] : void 0, i = l`${Zi(e)}<span class="name" style="flex:1;min-width:0"
-      >${us(e)}</span
+  const n = e.length === 1 ? e[0] : void 0, i = l`${Qi(e)}<span class="name" style="flex:1;min-width:0"
+      >${ps(e)}</span
     >`;
   return l`<div class="row" style="flex-direction:column;align-items:stretch;gap:2px">
     <a
@@ -1131,17 +1131,17 @@ function En(t, e) {
     </a>
   </div>`;
 }
-function ps(t) {
+function fs(t) {
   return l`<a class="row" href=${f.person(t.id)}>
     ${S(t.name, t.photo_url)}
     <span class="main">
       <div class="name">${t.name}</div>
-      <div class="sub">${Ji(t.days_until_birthday ?? 0)}</div>
+      <div class="sub">${Xi(t.days_until_birthday ?? 0)}</div>
     </span>
   </a>`;
 }
-function fs(t) {
-  const { people: e, interactions: n, today: i } = $(t), s = ds(e), r = xn(e, 30).slice(0, 3), a = kn(n, e, { since: ls(i, -30), limit: 10 });
+function ms(t) {
+  const { people: e, interactions: n, today: i } = $(t), s = hs(e), r = xn(e, 30).slice(0, 3), a = kn(n, e, { since: cs(i, -30), limit: 10 });
   return {
     title: "Hearth",
     back: !1,
@@ -1161,7 +1161,7 @@ function fs(t) {
       <div class="section">
         <div class="section-head"><h2>Upcoming</h2><a href=${f.birthdays()}>See all</a></div>
         <div class="list">
-          ${r.length ? r.map(ps) : l`<div class="empty">No birthdays in the next 30 days.</div>`}
+          ${r.length ? r.map(fs) : l`<div class="empty">No birthdays in the next 30 days.</div>`}
         </div>
       </div>
 
@@ -1169,13 +1169,13 @@ function fs(t) {
         <!-- "See more", not "See all": that list caps at 25. -->
         <div class="section-head"><h2>Recent</h2><a href=${f.interactions()}>See more</a></div>
         <div class="list">
-          ${a.length ? a.map((o) => En(o, He(o, e))) : l`<div class="empty">Nothing logged in the last 30 days.</div>`}
+          ${a.length ? a.map((o) => En(o, Oe(o, e))) : l`<div class="empty">Nothing logged in the last 30 days.</div>`}
         </div>
       </div>
     </div>`
   };
 }
-function ms(t) {
+function gs(t) {
   const e = xn($(t).people);
   return {
     title: "Birthdays",
@@ -1193,14 +1193,14 @@ function ms(t) {
     </div>`
   };
 }
-function gs(t) {
+function vs(t) {
   const { people: e, interactions: n } = $(t), i = kn(n, e, { limit: 25 });
   return {
     title: "Recent",
     back: !0,
     actions: [],
     body: l`<div class="page list">
-      ${i.length ? i.map((s) => En(s, He(s, e))) : l`<div class="empty">No interactions yet.</div>`}
+      ${i.length ? i.map((s) => En(s, Oe(s, e))) : l`<div class="empty">No interactions yet.</div>`}
     </div>`
   };
 }
@@ -1294,7 +1294,7 @@ function ve(t, e, n) {
 function tt(t, e, n) {
   return M(t, e, n, { maxlength: 1e3 });
 }
-function vs(t, e, n, i) {
+function ys(t, e, n, i) {
   const s = pe(t, e);
   return l`<label class="field">
       <span>${n}</span>
@@ -1349,7 +1349,7 @@ function qt(t) {
 }
 function An(t, e) {
   const n = qt(t), i = qt(e);
-  return n && i && n !== i ? n < i ? -1 : 1 : n && !i ? -1 : !n && i ? 1 : L(t.name, e.name);
+  return n && i && n !== i ? n < i ? -1 : 1 : n && !i ? -1 : !n && i ? 1 : U(t.name, e.name);
 }
 const Tn = [
   "Grandparent",
@@ -1377,18 +1377,18 @@ const Tn = [
   "Extended Family",
   "In-Law",
   "Other"
-], ys = new Map(Tn.map((t, e) => [t, e]));
+], bs = new Map(Tn.map((t, e) => [t, e]));
 function Kt(t) {
-  return (t === null ? void 0 : ys.get(t)) ?? Tn.length;
+  return (t === null ? void 0 : bs.get(t)) ?? Tn.length;
 }
-function bs(t) {
+function $s(t) {
   return [...t].sort((e, n) => {
     const i = Kt(e.connectionType) - Kt(n.connectionType);
     return i !== 0 ? i : An(e.person, n.person);
   });
 }
 const re = { parent: 0, unplaced: 1, child: 2 };
-function $s(t, e) {
+function _s(t, e) {
   const n = new Set(t), i = /* @__PURE__ */ new Set(), s = /* @__PURE__ */ new Set(), r = (o, c) => {
     c === "Parent" ? i.add(o) : c === "Child" && s.add(o);
   };
@@ -1400,46 +1400,46 @@ function $s(t, e) {
   return a;
 }
 function xt(t, e, n, i) {
-  const s = $s(e, n);
+  const s = _s(e, n);
   return [...t].sort((r, a) => {
     const o = i(r), c = i(a), d = s.get(o.id) ?? re.unplaced, u = s.get(c.id) ?? re.unplaced;
     return d !== u ? d - u : An(o, c);
   });
 }
-function Oe(t, e) {
+function He(t, e) {
   return t.person_a_id === t.person_b_id ? null : t.person_a_id === e ? { otherId: t.person_b_id, type: t.type } : t.person_b_id === e ? { otherId: t.person_a_id, type: t.inverse_type } : null;
 }
-function _s(t) {
+function ws(t) {
   return t.householdMembers.length === 0 && t.others.length === 0 && t.groups.length === 0;
 }
-function ws(t, e) {
+function xs(t, e) {
   const { people: n, households: i, groups: s, relationships: r, excludedId: a } = e, o = /* @__PURE__ */ new Map();
   for (const b of n) o.has(b.id) || o.set(b.id, b);
   const c = /* @__PURE__ */ new Map(), d = [];
   for (const b of r) {
-    const v = Oe(b, t);
-    !v || v.otherId === a || c.has(v.otherId) || (c.set(v.otherId, { type: v.type, relationshipId: b.id }), d.push(v.otherId));
+    const y = He(b, t);
+    !y || y.otherId === a || c.has(y.otherId) || (c.set(y.otherId, { type: y.type, relationshipId: b.id }), d.push(y.otherId));
   }
   const u = (b) => {
-    const v = o.get(b), T = c.get(b);
-    return v ? { person: v, connectionType: T?.type ?? null, relationshipId: T?.relationshipId ?? null } : null;
-  }, p = /* @__PURE__ */ new Set([t]), y = i.find((b) => b.member_ids.includes(t)) ?? null, m = [];
-  for (const b of y?.member_ids ?? []) {
+    const y = o.get(b), T = c.get(b);
+    return y ? { person: y, connectionType: T?.type ?? null, relationshipId: T?.relationshipId ?? null } : null;
+  }, p = /* @__PURE__ */ new Set([t]), v = i.find((b) => b.member_ids.includes(t)) ?? null, m = [];
+  for (const b of v?.member_ids ?? []) {
     if (b === a || p.has(b)) continue;
     p.add(b);
-    const v = u(b);
-    v && m.push(v);
+    const y = u(b);
+    y && m.push(y);
   }
-  const g = xt(m, y?.member_ids ?? [], r, (b) => b.person), C = bs(
+  const g = xt(m, v?.member_ids ?? [], r, (b) => b.person), C = $s(
     d.filter((b) => !p.has(b)).map(u).filter((b) => b !== null)
   );
   return {
     // Dropped when nobody is left to list under it, so the view never draws a household
     // heading over an empty group.
-    household: g.length === 0 ? null : y,
+    household: g.length === 0 ? null : v,
     householdMembers: g,
     others: C,
-    groups: s.filter((b) => b.member_ids.includes(t)).sort((b, v) => L(b.name, v.name))
+    groups: s.filter((b) => b.member_ids.includes(t)).sort((b, y) => U(b.name, y.name))
   };
 }
 function kt(t, e, n) {
@@ -1451,15 +1451,15 @@ function kt(t, e, n) {
   for (const u of n) {
     const p = [u.person_a_id, u.person_b_id].find((C) => a.has(C));
     if (p === void 0) continue;
-    const y = Oe(u, p);
-    if (!y || d.has(y.otherId)) continue;
-    d.add(y.otherId);
-    const m = o.get(y.otherId), g = a.get(p);
-    !m || !g || c.push({ person: m, reason: `${y.type} of ${g.name}` });
+    const v = He(u, p);
+    if (!v || d.has(v.otherId)) continue;
+    d.add(v.otherId);
+    const m = o.get(v.otherId), g = a.get(p);
+    !m || !g || c.push({ person: m, reason: `${v.type} of ${g.name}` });
   }
   return { direct: r, connected: c.sort((u, p) => et(u.person, p.person)) };
 }
-const xs = 8, ks = 200;
+const ks = 8, Cs = 200;
 function fe(t, e) {
   const { people: n, relationships: i } = $(t), s = `picker:${e.id}`, r = t.drafts.open(s, e.path, () => ({ query: "" })).query, a = e.selected ?? [], o = /* @__PURE__ */ new Set([...e.exclude ?? [], ...a]), c = a.map((g) => n.find((C) => C.id === g)).filter((g) => !!g), d = r.trim(), u = [];
   if (d) {
@@ -1467,7 +1467,7 @@ function fe(t, e) {
     for (const C of g.direct) u.push({ person: C });
     for (const C of g.connected) u.push(C);
   }
-  const p = u.filter((g) => !o.has(g.person.id)).slice(0, xs), y = (g) => {
+  const p = u.filter((g) => !o.has(g.person.id)).slice(0, ks), v = (g) => {
     t.drafts.patch(s, { query: "" }), e.onPick(g);
   }, m = () => {
     t.drafts.patch(s, { query: "" }), e.onCreate?.(d);
@@ -1504,7 +1504,7 @@ function fe(t, e) {
     ({ person: g, reason: C }) => l`<button
                   class="row picker-choice"
                   ?disabled=${e.disabled ?? !1}
-                  @click=${() => y(g.id)}
+                  @click=${() => v(g.id)}
                 >
                   ${S(g.name, g.photo_url)}
                   <span class="main">
@@ -1515,7 +1515,7 @@ function fe(t, e) {
   ) : l`<div class="empty">No one matches “${d}”.</div>`}
           ${e.onCreate ? l`<button
                 class="row picker-create"
-                ?disabled=${(e.disabled ?? !1) || d.length > ks}
+                ?disabled=${(e.disabled ?? !1) || d.length > Cs}
                 @click=${m}
               >
                 <span class="main"><div class="name accent">Create “${d}”</div></span>
@@ -1523,7 +1523,7 @@ function fe(t, e) {
         </div>` : h}
   </div>`;
 }
-const Cs = "08:00", Es = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const Es = "08:00", Ss = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function De(t) {
   const [e, n, i] = t.split("-").map(Number);
   return [e, n, i];
@@ -1539,7 +1539,7 @@ function Be(t, e) {
   const [n, i, s] = De(t), r = n * 12 + (i - 1) + e, a = Math.floor(r / 12), o = r % 12 + 1, c = new Date(Date.UTC(a, o, 0)).getUTCDate();
   return Rn(a, o, Math.min(s, c));
 }
-function Ss(t, e) {
+function As(t, e) {
   let n;
   switch (t) {
     case "someday":
@@ -1562,23 +1562,31 @@ function Ss(t, e) {
       n = Be(e, 12);
       break;
   }
-  return `${n}T${Cs}`;
+  return `${n}T${Es}`;
 }
 function Mn(t, e) {
   return t === 1 ? `Every ${e}` : `Every ${t} ${e}s`;
 }
 function Wt(t) {
   const [, e, n] = De(t);
-  return `${Es[e - 1]} ${n}`;
+  return `${Ss[e - 1]} ${n}`;
 }
-function As(t) {
+function Ts(t) {
   const [e, n] = t.split(":").map(Number);
   return `${e % 12 || 12}:${String(n).padStart(2, "0")} ${e < 12 ? "AM" : "PM"}`;
 }
-function Ts(t, e) {
-  return t.due_date ? t.state === "overdue" ? `Overdue · ${Wt(t.due_date)}` : t.state === "due_today" || t.due_date === e ? t.due_time ? `Today ${As(t.due_time)}` : "Today" : Wt(t.due_date) : "Someday";
+function Rs(t, e) {
+  return t.due_date ? t.state === "overdue" ? `Overdue · ${Wt(t.due_date)}` : t.state === "due_today" || t.due_date === e ? t.due_time ? `Today ${Ts(t.due_time)}` : "Today" : Wt(t.due_date) : "Someday";
 }
-const Ct = "08:00", Rs = 2e4, it = 999, Ms = [
+function Ms(t) {
+  const e = t.filter((s) => s.state !== "done"), n = (s) => `${s.due_date ?? ""}T${s.due_time ?? ""}`, i = (s, r) => n(s).localeCompare(n(r));
+  return {
+    due: e.filter((s) => s.state === "overdue" || s.state === "due_today").sort(i),
+    upcoming: e.filter((s) => s.state === "upcoming").sort(i),
+    someday: e.filter((s) => s.state === "someday")
+  };
+}
+const Ct = "08:00", Ns = 2e4, it = 999, Ps = [
   { pick: "tomorrow", label: "Tomorrow" },
   { pick: "next_week", label: "Next week" },
   { pick: "month", label: "In a month" },
@@ -1586,11 +1594,11 @@ const Ct = "08:00", Rs = 2e4, it = 999, Ms = [
   { pick: "year", label: "In a year" },
   { pick: "someday", label: "Someday" },
   { pick: "custom", label: "Custom" }
-], Ns = { day: "Days", week: "Weeks", month: "Months", year: "Years" };
+], Is = { day: "Days", week: "Weeks", month: "Months", year: "Years" };
 function Nn() {
   return { note: "", pick: null, date: "", time: Ct, repeat_every: "1", repeat_unit: "" };
 }
-function Ps(t) {
+function Os(t) {
   return {
     note: t.note ?? "",
     pick: t.due_date ? "custom" : "someday",
@@ -1614,7 +1622,7 @@ function ae(t) {
   const i = Pn(t.repeat_every);
   return i === null ? null : { note: e, due_at: n, repeat_every: i, repeat_unit: t.repeat_unit };
 }
-function Is(t, e) {
+function Hs(t, e) {
   return {
     get: (n) => (t.get(e) ?? {})[n],
     set: (n, i) => t.set(e, { ...t.get(e) ?? {}, [n]: i }),
@@ -1624,14 +1632,14 @@ function Is(t, e) {
 function In(t, e, n, i = !1) {
   const s = t.get("pick"), r = (p) => {
     if (t.set("pick", p), p === "custom") return;
-    const y = Ss(p, e);
-    t.set("date", y ? y.slice(0, 10) : ""), t.set("time", y ? y.slice(11) : Ct), t.set("repeat_unit", "");
-  }, a = String(t.get("repeat_unit") ?? ""), o = String(t.get("repeat_every") ?? ""), c = Pn(o), d = (p) => String(t.get(p) ?? ""), u = (p) => (y) => t.set(p, y.target.value);
-  return l`${J(t, "note", "Note", Rs)}
+    const v = As(p, e);
+    t.set("date", v ? v.slice(0, 10) : ""), t.set("time", v ? v.slice(11) : Ct), t.set("repeat_unit", "");
+  }, a = String(t.get("repeat_unit") ?? ""), o = String(t.get("repeat_every") ?? ""), c = Pn(o), d = (p) => String(t.get(p) ?? ""), u = (p) => (v) => t.set(p, v.target.value);
+  return l`${J(t, "note", "Note", Ns)}
     <div class="field">
       <span>Remind me</span>
       <div class="pills" style="flex-wrap:wrap">
-        ${Ms.map(
+        ${Ps.map(
     (p) => l`<button
             class="pill ${s === p.pick ? "on" : ""}"
             aria-pressed=${s === p.pick ? "true" : "false"}
@@ -1653,7 +1661,7 @@ function In(t, e, n, i = !1) {
           </label>
           ${wt(t, "repeat_unit", "Repeat", [
     { value: "", label: "Doesn't repeat" },
-    ...n.map((p) => ({ value: p, label: Ns[p] ?? p }))
+    ...n.map((p) => ({ value: p, label: Is[p] ?? p }))
   ])}
           ${a ? l`<label class="field">
                 <span>Every</span>
@@ -1662,8 +1670,8 @@ function In(t, e, n, i = !1) {
                 <div class="muted" style="font-size:12px">${c === null ? `A number from 1 to ${it}` : Mn(c, a)}</div>
               </label>` : h}` : h}`;
 }
-const Hs = "https://claude.ai/new";
-function Os(t, e, n, i) {
+const Ds = "https://claude.ai/new";
+function Us(t, e, n, i) {
   return t.drafts.open(e, n, () => {
     const { interaction_types: s, today: r } = $(t);
     return {
@@ -1681,13 +1689,13 @@ const Jt = (t) => ({
   summary: t.summary.trim(),
   notes: t.notes.trim() || null
 });
-function Hn(t, e, n) {
-  const i = n ? `edit:${n.id}` : `log:${e.id}`, s = Os(t, i, n ? f.editInteraction(n.id) : f.logInteraction(e.id), n), r = $(t).interaction_types, a = () => {
+function On(t, e, n) {
+  const i = n ? `edit:${n.id}` : `log:${e.id}`, s = Us(t, i, n ? f.editInteraction(n.id) : f.logInteraction(e.id), n), r = $(t).interaction_types, a = () => {
     t.drafts.drop(i), z(n ? f.interaction(n.id) : f.person(e.id));
   }, o = (m) => t.drafts.patch(i, m), c = !s.reminder || ae(s.reminder) !== null && $(t).people.some((m) => m.id === s.reminder?.person), d = s.summary.trim() !== "" && s.date !== "" && s.type !== "" && c, u = (m) => Sn(t.writeError, m), p = (m) => {
     const g = u(m);
     return g ? l`<div class="field-error" role="alert" data-error-for=${m}>${g}</div>` : h;
-  }, y = async () => {
+  }, v = async () => {
     if (!d) return;
     const m = Jt(s), g = t.drafts.base(i);
     if (n) {
@@ -1704,7 +1712,7 @@ function Hn(t, e, n) {
       <div class="topbar">
         <button class="icon-btn" style="padding:0 12px" @click=${a}>Cancel</button>
         <span class="title" style="text-align:center">${n ? "Edit" : "Log"}</span>
-        <button class="icon-btn accent" style="padding:0 12px;font-weight:600" ?disabled=${!d || t.busy} @click=${y}>
+        <button class="icon-btn accent" style="padding:0 12px;font-weight:600" ?disabled=${!d || t.busy} @click=${v}>
           Save
         </button>
       </div>
@@ -1745,8 +1753,8 @@ function Hn(t, e, n) {
               .value=${k(s.notes)} @input=${(m) => o({ notes: m.target.value })}></textarea>
             ${p("notes")}
           </label>
-          ${Ls(t, i, s, n, e)}
-          <a href=${Hs} target="_blank" rel="noopener noreferrer" style="display:grid;justify-items:center;gap:8px;padding:8px 0">
+          ${zs(t, i, s, n, e)}
+          <a href=${Ds} target="_blank" rel="noopener noreferrer" style="display:grid;justify-items:center;gap:8px;padding:8px 0">
             <span class="action primary" style="width:44px;height:44px;border-radius:50%">${w.mic}</span>
             <span class="muted" style="font-size:11.5px">Or tell Claude about it, and it logs it in Hearth for you.</span>
           </a>
@@ -1755,13 +1763,13 @@ function Hn(t, e, n) {
     </div>
   </div>`;
 }
-const Ds = "display:flex;align-items:center;justify-content:center";
-function Ls(t, e, n, i, s) {
+const Ls = "display:flex;align-items:center;justify-content:center";
+function zs(t, e, n, i, s) {
   if (i)
-    return l`<a class="btn secondary" style=${Ds} href=${f.newInteractionReminder(i.id)}>Add reminder</a>`;
+    return l`<a class="btn secondary" style=${Ls} href=${f.newInteractionReminder(i.id)}>Add reminder</a>`;
   const r = (p) => t.drafts.patch(e, { reminder: p });
   if (!n.reminder) return l`<button class="btn secondary" @click=${() => r({ ...Nn(), person: s.id })}>Add reminder</button>`;
-  const { people: a, today: o, reminder_units: c } = $(t), d = Is(V(t, e), "reminder"), u = a.find((p) => p.id === n.reminder?.person);
+  const { people: a, today: o, reminder_units: c } = $(t), d = Hs(V(t, e), "reminder"), u = a.find((p) => p.id === n.reminder?.person);
   return l`<div class="label">Reminder</div>
     ${fe(t, {
     id: "log-reminder-person",
@@ -1775,23 +1783,25 @@ function Ls(t, e, n, i, s) {
     ${In(d, o, c, t.busy)}
     <button class="btn secondary" @click=${() => r(null)}>Remove reminder</button>`;
 }
-function Us(t, e, n) {
-  const i = e.state !== "done", s = i ? Ts(e, n) : "Done", r = e.repeat_every && e.repeat_unit ? ` · ${Mn(e.repeat_every, e.repeat_unit)}` : "";
+function Hn(t, e, n, i) {
+  const s = e.state !== "done", r = s ? Rs(e, n) : "Done", a = e.repeat_every && e.repeat_unit ? ` · ${Mn(e.repeat_every, e.repeat_unit)}` : "";
   return l`<div class="row reminder-row">
+    ${i ? S(i.name, i.photo_url) : h}
     <a class="main" href=${f.reminder(e.id)}>
+      ${i ? l`<div class="sub">${i.name}</div>` : h}
       <div class="name">${e.note || "Reminder"}</div>
-      <div class="sub" style=${e.state === "overdue" ? "color:var(--danger)" : ""}>${s}${r}</div>
+      <div class="sub" style=${e.state === "overdue" ? "color:var(--danger)" : ""}>${r}${a}</div>
     </a>
-    ${i ? l`<button class="pill" ?disabled=${t.busy} @click=${() => void t.completeReminder(e.id)}>Done</button>` : h}
+    ${s ? l`<button class="pill" ?disabled=${t.busy} @click=${() => void t.completeReminder(e.id)}>Done</button>` : h}
   </div>`;
 }
-function On(t, e, n, i) {
+function Dn(t, e, n, i) {
   if (!e.length) return h;
   const { today: s } = $(t);
   return l`<div class="label" style=${n}>Reminders</div>
-    <div class="card" style=${i}>${e.map((r) => Us(t, r, s))}</div>`;
+    <div class="card" style=${i}>${e.map((r) => Hn(t, r, s))}</div>`;
 }
-function zs(t, e, n) {
+function Gs(t, e, n) {
   return [
     n ? { icon: w.pencil, label: "Edit", href: f.editInteraction(e.id) } : { icon: w.pencil, label: "Edit", disabled: !0 },
     {
@@ -1802,7 +1812,7 @@ function zs(t, e, n) {
   ];
 }
 const Et = (t) => `confirm-delete:interaction:${t}`;
-function Gs(t, e, n) {
+function Fs(t, e, n) {
   const i = Et(e.id);
   return N({
     title: "Delete this interaction?",
@@ -1815,14 +1825,14 @@ function Gs(t, e, n) {
     }
   });
 }
-function Dn(t, e, n) {
+function Un(t, e, n) {
   const { interactions: i, people: s, reminders: r } = $(t), a = i.find((d) => d.id === e);
   if (!a) return G("interaction");
-  const o = He(a, s), c = o[0];
+  const o = Oe(a, s), c = o[0];
   return {
     title: null,
     back: !0,
-    actions: zs(t, a, c),
+    actions: Gs(t, a, c),
     body: l`<div class="page" style="padding:20px;display:grid;gap:18px">
       ${o.length ? l`<div style="display:grid;gap:12px">
             ${o.length > 1 ? l`<div class="label">People</div>` : h}
@@ -1839,20 +1849,20 @@ function Dn(t, e, n) {
       <div class="h-serif" style="font-size:19px">${a.summary}</div>
       ${a.notes ? l`<div><div class="label" style="margin-bottom:6px">Notes</div><div style="white-space:pre-wrap">${a.notes}</div></div>` : h}
       <div>
-        ${On(t, r.filter((d) => d.interaction_id === a.id), "margin-bottom:6px", "margin:0;padding:0")}
+        ${Dn(t, r.filter((d) => d.interaction_id === a.id), "margin-bottom:6px", "margin:0;padding:0")}
         <a class="accent" href=${f.newInteractionReminder(a.id)} style="display:block;font-size:12.5px;padding:8px 0">Add reminder</a>
       </div>
     </div>`,
-    overlay: l`${n === "edit" && c ? Hn(t, c, a) : h}${t.drafts.get(Et(e)) ? Gs(t, a, c) : h}`
+    overlay: l`${n === "edit" && c ? On(t, c, a) : h}${t.drafts.get(Et(e)) ? Fs(t, a, c) : h}`
   };
 }
-const Ln = "That file isn't a photo Hearth can use.", Fs = 4e6;
+const Ln = "That file isn't a photo Hearth can use.", Bs = 4e6;
 class ne extends Error {
   constructor(e = Ln) {
     super(e), this.name = "PhotoUnusable";
   }
 }
-const Un = {
+const zn = {
   decode: (t) => createImageBitmap(t, { imageOrientation: "from-image" }),
   async encode(t, e, n, i) {
     const s = t;
@@ -1870,12 +1880,12 @@ function Xt(t, e, n, i) {
   if (!t) throw new Error("no 2d canvas");
   t.fillStyle = "white", t.fillRect(0, 0, n, i), t.drawImage(e, 0, 0, n, i);
 }
-function Bs(t) {
+function js(t) {
   let e = "";
   for (let i = 0; i < t.length; i += 32768) e += String.fromCharCode(...t.subarray(i, i + 32768));
   return btoa(e);
 }
-async function js(t, e = 1024, n = 0.85, i = Un) {
+async function Vs(t, e = 1024, n = 0.85, i = zn) {
   let s;
   try {
     s = await i.decode(t);
@@ -1894,22 +1904,22 @@ async function js(t, e = 1024, n = 0.85, i = Un) {
     }
     let p;
     try {
-      p = Bs(new Uint8Array(await u.arrayBuffer()));
+      p = js(new Uint8Array(await u.arrayBuffer()));
     } catch {
       throw new ne();
     }
-    if (p.length > Fs) throw new ne();
+    if (p.length > Bs) throw new ne();
     return p;
   } finally {
     s.close?.();
   }
 }
-async function Vs(t, e, n, i, s = Un) {
+async function qs(t, e, n, i, s = zn) {
   if (t.shrinkingPhoto) return !1;
   let r;
   t.setShrinkingPhoto(!0);
   try {
-    r = await js(i, 1024, 0.85, s);
+    r = await Vs(i, 1024, 0.85, s);
   } catch {
     return t.showToast(Ln), !1;
   } finally {
@@ -1917,29 +1927,29 @@ async function Vs(t, e, n, i, s = Un) {
   }
   return t.setPhoto(e, n, r);
 }
-function zn(t, e, n, i) {
+function Gn(t, e, n, i) {
   return l`<input class="file-input" type="file" accept="image/*" ?disabled=${i} @change=${(r) => {
     const a = r.target, o = a.files?.[0];
-    a.value = "", o && Vs(t, e, n, o);
+    a.value = "", o && qs(t, e, n, o);
   }} />`;
 }
-const Gn = (t) => t.busy || t.shrinkingPhoto;
+const Fn = (t) => t.busy || t.shrinkingPhoto;
 function St(t, e) {
-  const { kind: n, id: i, name: s, photoUrl: r } = e, a = Gn(t);
+  const { kind: n, id: i, name: s, photoUrl: r } = e, a = Fn(t);
   return l`<div class="photo-picker">
     ${S(s, r, 76)}
     <div class="actions">
       <label class="btn secondary file-btn" aria-disabled=${a ? "true" : "false"}>
-        ${t.shrinkingPhoto ? "Preparing photo…" : r ? "Change photo" : "Add photo"} ${zn(t, n, i, a)}
+        ${t.shrinkingPhoto ? "Preparing photo…" : r ? "Change photo" : "Add photo"} ${Gn(t, n, i, a)}
       </label>
       ${r ? l`<button class="btn secondary" ?disabled=${a} @click=${() => void t.clearPhoto(n, i)}>Remove photo</button>` : h}
     </div>
   </div>`;
 }
-function qs(t, e, n = 76) {
-  const { kind: i, id: s, name: r, photoUrl: a } = e, o = Gn(t), c = a ? "Change photo" : "Add photo";
+function Ks(t, e, n = 76) {
+  const { kind: i, id: s, name: r, photoUrl: a } = e, o = Fn(t), c = a ? "Change photo" : "Add photo";
   return l`<label class="file-btn photo-tap" aria-label=${c} title=${c} aria-disabled=${o ? "true" : "false"}>
-    ${S(r, a, n)} ${zn(t, i, s, o)}
+    ${S(r, a, n)} ${Gn(t, i, s, o)}
   </label>`;
 }
 function At(t, e) {
@@ -1954,31 +1964,31 @@ function At(t, e) {
   }
   return s.sort(et);
 }
-const Fn = (t) => `edit:group:${t}`, ye = "edit:group:new", st = (t) => `confirm-delete:group:${t}`, je = (t, e) => l`<div class="label form-section">${t}</div>
+const Bn = (t) => `edit:group:${t}`, ye = "edit:group:new", st = (t) => `confirm-delete:group:${t}`, je = (t, e) => l`<div class="label form-section">${t}</div>
     ${e}`;
-function Bn(t, e, n) {
+function jn(t, e, n) {
   const i = V(t, e), s = { ...i, error: (r) => r === "name" && n ? "Enter a name." : i.error(r) };
   return l`${M(s, "name", "Name", { required: !0, maxlength: 200 })}
   ${J(s, "description", "Description", 2e4)}`;
 }
-function Ks(t) {
+function Ys(t) {
   const n = !t.drafts.open(ye, f.newGroup(), () => ({ name: "", description: "" })).name.trim(), i = async () => {
     const s = t.drafts.get(ye);
     if (!s || !s.name.trim()) return;
     const r = await t.save("contact_group", null, { ...s });
-    r && (t.drafts.drop(ye), U(f.editGroup(r.id), !0));
+    r && (t.drafts.drop(ye), L(f.editGroup(r.id), !0));
   };
   return {
     title: "New group",
     back: !0,
     actions: [],
     body: l`<div class="page form">
-      ${Bn(t, ye, n)}
+      ${jn(t, ye, n)}
       <button class="btn" ?disabled=${n || t.busy} @click=${i}>Create group</button>
     </div>`
   };
 }
-function Ys(t, e) {
+function Ws(t, e) {
   const n = At(e.member_ids, $(t).people);
   return fe(t, {
     id: "group-members",
@@ -1991,7 +2001,7 @@ function Ys(t, e) {
     disabled: t.busy
   });
 }
-function Ws(t, e) {
+function Js(t, e) {
   const n = st(e.id), i = e.member_ids.length;
   return N({
     title: `Delete ${e.name}?`,
@@ -2000,14 +2010,14 @@ function Ws(t, e) {
     busy: t.busy,
     onCancel: () => t.drafts.drop(n),
     onConfirm: async () => {
-      await t.remove("contact_group", e.id) && (t.drafts.drop(n), t.drafts.drop(Fn(e.id)), t.setSearch({ chip: "groups" }), U(f.search(), !0));
+      await t.remove("contact_group", e.id) && (t.drafts.drop(n), t.drafts.drop(Bn(e.id)), t.setSearch({ chip: "groups" }), L(f.search(), !0));
     }
   });
 }
-function Js(t, e) {
+function Xs(t, e) {
   const n = $(t).groups.find((c) => c.id === e);
   if (!n) return t.isArriving(e) ? ue : G("group");
-  const i = Fn(e), s = f.editGroup(e), a = !t.drafts.open(i, s, () => ({ name: n.name, description: n.description ?? "" })).name.trim(), o = async () => {
+  const i = Bn(e), s = f.editGroup(e), a = !t.drafts.open(i, s, () => ({ name: n.name, description: n.description ?? "" })).name.trim(), o = async () => {
     const c = t.drafts.get(i), d = t.drafts.base(i);
     !c || !d || !c.name.trim() || await t.save("contact_group", e, { ...c }, { ...d }) && (t.drafts.drop(i), z(f.group(e)));
   };
@@ -2017,50 +2027,50 @@ function Js(t, e) {
     actions: [],
     body: l`<div class="page form">
       ${je("Photo", St(t, { kind: "contact_group", id: e, name: n.name, photoUrl: n.photo_url }))}
-      ${je("Details", Bn(t, i, a))}
+      ${je("Details", jn(t, i, a))}
       <button class="btn" ?disabled=${a || t.busy} @click=${o}>Save</button>
-      ${je("Members", Ys(t, n))}
+      ${je("Members", Ws(t, n))}
       <button class="btn danger" style="margin-top:24px" ?disabled=${t.busy} @click=${() => t.drafts.put(st(e), s, {})}>
         Delete group
       </button>
     </div>`,
-    overlay: t.drafts.get(st(e)) ? Ws(t, n) : void 0
+    overlay: t.drafts.get(st(e)) ? Js(t, n) : void 0
   };
 }
-const jn = (t) => ({
+const Vn = (t) => ({
   name: t.trim(),
   phone: null,
   email: null,
   how_i_know_them: null,
   birthday: null,
   birth_year_unknown: !1
-}), Xs = "Name (leave blank to use the generated name)", Vn = (t) => `edit:household:${t}`, be = "edit:household:new", Le = (t) => `confirm-delete:household:${t}`, Ue = (t) => `confirm-dissolve:household:${t}`, ze = (t) => `confirm-move:household:${t}`, Ve = (t, e) => l`<div class="label form-section">${t}</div>
+}), Zs = "Name (leave blank to use the generated name)", qn = (t) => `edit:household:${t}`, be = "edit:household:new", Ue = (t) => `confirm-delete:household:${t}`, Le = (t) => `confirm-dissolve:household:${t}`, ze = (t) => `confirm-move:household:${t}`, Ve = (t, e) => l`<div class="label form-section">${t}</div>
     ${e}`, rt = (t) => ({ name_override: t.name_override, address: t.address, notes: t.notes });
-function qn(t, e) {
-  const n = M(t, "name_override", Xs, { maxlength: 200 });
+function Kn(t, e) {
+  const n = M(t, "name_override", Zs, { maxlength: 200 });
   return l`${e ? l`<div class="highlight">${n}</div>` : n} ${tt(t, "address", "Address")}
   ${J(t, "notes", "Notes", 2e4)}`;
 }
-function Zs(t) {
+function Qs(t) {
   const e = f.newHousehold();
   t.drafts.open(be, e, () => ({ name_override: "", address: "", notes: "" }));
   const n = async () => {
     const i = t.drafts.get(be);
     if (!i) return;
     const s = await t.save("household", null, rt(i));
-    s && (t.drafts.drop(be), U(f.editHousehold(s.id), !0));
+    s && (t.drafts.drop(be), L(f.editHousehold(s.id), !0));
   };
   return {
     title: "New household",
     back: !0,
     actions: [],
     body: l`<div class="page form">
-      ${qn(V(t, be), !1)}
+      ${Kn(V(t, be), !1)}
       <button class="btn" ?disabled=${t.busy} @click=${n}>Create household</button>
     </div>`
   };
 }
-function Qs(t, e) {
+function er(t, e) {
   const n = f.editHousehold(e.id);
   let i = h;
   switch (e.name_status) {
@@ -2081,19 +2091,19 @@ function Qs(t, e) {
           class="btn secondary"
           style="justify-self:start"
           ?disabled=${t.busy}
-          @click=${() => t.drafts.put(Ue(e.id), n, {})}
+          @click=${() => t.drafts.put(Le(e.id), n, {})}
         >
           Dissolve household
         </button>`;
       break;
   }
   return l`<div style="display:grid;gap:6px">
-    <div class="h-serif members-title ${X(e) ? "" : "muted"}" style="font-size:21px">${H(e)}</div>
+    <div class="h-serif members-title ${X(e) ? "" : "muted"}" style="font-size:21px">${O(e)}</div>
     ${i}
   </div>`;
 }
 const at = (t, e, n) => t.save("person", e, { household_id: n });
-function er(t, e) {
+function tr(t, e) {
   const { people: n, relationships: i } = $(t), s = xt(At(e.member_ids, n), e.member_ids, i, (o) => o), r = f.editHousehold(e.id), a = (o) => {
     const c = n.find((d) => d.id === o);
     if (c?.household_id && c.household_id !== e.id) {
@@ -2110,11 +2120,11 @@ function er(t, e) {
     onPick: a,
     onRemove: (o) => void at(t, o, null),
     // A new person goes straight into this household, so they needn't be in the snapshot first.
-    onCreate: (o) => void t.addPerson({ ...jn(o), household_id: e.id }),
+    onCreate: (o) => void t.addPerson({ ...Vn(o), household_id: e.id }),
     disabled: t.busy
   });
 }
-function tr(t, e, n) {
+function nr(t, e, n) {
   const i = ze(e.id), s = $(t), r = s.households.find((o) => o.id === n.household_id), a = r ? $t(r, s.people) : "their household";
   return N({
     title: `Move ${n.name} from ${a} to this household?`,
@@ -2127,26 +2137,26 @@ function tr(t, e, n) {
     }
   });
 }
-const nr = (t) => `${t} ${t === 1 ? "person stays" : "people stay"}; they just won't have a household.`;
-function Kn(t, e) {
-  for (const n of [Vn(e), Le(e), Ue(e), ze(e)]) t.drafts.drop(n);
-  t.setSearch({ chip: "households" }), U(f.search(), !0);
+const ir = (t) => `${t} ${t === 1 ? "person stays" : "people stay"}; they just won't have a household.`;
+function Yn(t, e) {
+  for (const n of [qn(e), Ue(e), Le(e), ze(e)]) t.drafts.drop(n);
+  t.setSearch({ chip: "households" }), L(f.search(), !0);
 }
-function ir(t, e) {
-  const n = Le(e.id);
+function sr(t, e) {
+  const n = Ue(e.id);
   return N({
-    title: `Delete ${H(e)}?`,
-    lines: [nr(e.member_ids.length), "This can't be undone."],
+    title: `Delete ${O(e)}?`,
+    lines: [ir(e.member_ids.length), "This can't be undone."],
     confirmLabel: "Delete household",
     busy: t.busy,
     onCancel: () => t.drafts.drop(n),
     onConfirm: async () => {
-      await t.remove("household", e.id) && Kn(t, e.id);
+      await t.remove("household", e.id) && Yn(t, e.id);
     }
   });
 }
-function sr(t, e) {
-  const n = Ue(e.id);
+function rr(t, e) {
+  const n = Le(e.id);
   return N({
     title: "Dissolve this household?",
     lines: ["Members stay; they just won't have a household."],
@@ -2154,21 +2164,21 @@ function sr(t, e) {
     busy: t.busy,
     onCancel: () => t.drafts.drop(n),
     onConfirm: async () => {
-      await t.remove("household", e.id) && Kn(t, e.id);
+      await t.remove("household", e.id) && Yn(t, e.id);
     }
   });
 }
-function rr(t, e) {
-  const n = e.id;
-  if (t.drafts.get(Le(n))) return ir(t, e);
-  if (t.drafts.get(Ue(n))) return sr(t, e);
-  const i = t.drafts.get(ze(n)), s = i && $(t).people.find((r) => r.id === i.personId);
-  return s ? tr(t, e, s) : void 0;
-}
 function ar(t, e) {
+  const n = e.id;
+  if (t.drafts.get(Ue(n))) return sr(t, e);
+  if (t.drafts.get(Le(n))) return rr(t, e);
+  const i = t.drafts.get(ze(n)), s = i && $(t).people.find((r) => r.id === i.personId);
+  return s ? nr(t, e, s) : void 0;
+}
+function or(t, e) {
   const n = $(t).households.find((a) => a.id === e);
   if (!n) return t.isArriving(e) ? ue : G("household");
-  const i = Vn(e), s = f.editHousehold(e);
+  const i = qn(e), s = f.editHousehold(e);
   t.drafts.open(i, s, () => ({
     name_override: n.name_override ?? "",
     address: n.address?.formatted ?? "",
@@ -2183,19 +2193,19 @@ function ar(t, e) {
     back: !0,
     actions: [],
     body: l`<div class="page form">
-      ${Qs(t, n)}
-      ${Ve("Photo", St(t, { kind: "household", id: e, name: H(n), photoUrl: n.photo_url }))}
-      ${Ve("Details", qn(V(t, i), n.name_status === "needs_name"))}
+      ${er(t, n)}
+      ${Ve("Photo", St(t, { kind: "household", id: e, name: O(n), photoUrl: n.photo_url }))}
+      ${Ve("Details", Kn(V(t, i), n.name_status === "needs_name"))}
       <button class="btn" ?disabled=${t.busy} @click=${r}>Save</button>
-      ${Ve("Members", er(t, n))}
-      <button class="btn danger" style="margin-top:24px" ?disabled=${t.busy} @click=${() => t.drafts.put(Le(e), s, {})}>
+      ${Ve("Members", tr(t, n))}
+      <button class="btn danger" style="margin-top:24px" ?disabled=${t.busy} @click=${() => t.drafts.put(Ue(e), s, {})}>
         Delete household
       </button>
     </div>`,
-    overlay: rr(t, n)
+    overlay: ar(t, n)
   };
 }
-function Yn(t, e, n, i) {
+function Wn(t, e, n, i) {
   const { people: s, relationships: r } = $(t), a = At(n, s), o = i ? xt(a, n, r, (c) => c) : a;
   return {
     title: null,
@@ -2213,17 +2223,17 @@ function Yn(t, e, n, i) {
     </div>`
   };
 }
-function or(t, e) {
+function lr(t, e) {
   const n = $(t).households.find((a) => a.id === e);
   if (!n) return G("household");
-  const i = f.editHousehold(e), s = n.name_status === "needs_name" ? { text: "This household needs a name. Name it", href: i } : n.name_status === "not_a_household" ? { text: "This isn't a household any more. Review it", href: i } : null, r = { title: H(n), muted: !X(n), subtitle: null, prompt: s, editHref: i };
-  return Yn(t, r, n.member_ids, !0);
+  const i = f.editHousehold(e), s = n.name_status === "needs_name" ? { text: "This household needs a name. Name it", href: i } : n.name_status === "not_a_household" ? { text: "This isn't a household any more. Review it", href: i } : null, r = { title: O(n), muted: !X(n), subtitle: null, prompt: s, editHref: i };
+  return Wn(t, r, n.member_ids, !0);
 }
-function lr(t, e) {
+function cr(t, e) {
   const n = $(t).groups.find((i) => i.id === e);
-  return n ? Yn(t, { title: n.name, muted: !1, subtitle: n.description, prompt: null, editHref: f.editGroup(e) }, n.member_ids, !1) : G("group");
+  return n ? Wn(t, { title: n.name, muted: !1, subtitle: n.description, prompt: null, editHref: f.editGroup(e) }, n.member_ids, !1) : G("group");
 }
-function Wn(t) {
+function Jn(t) {
   if (!t) return null;
   if (t.startsWith("+")) {
     const n = t.slice(1).replace(/\D/g, "");
@@ -2232,26 +2242,26 @@ function Wn(t) {
   const e = t.replace(/\D/g, "");
   return e.length === 10 ? `+1${e}` : e.length === 11 && e.startsWith("1") ? `+${e}` : null;
 }
-function cr(t) {
-  const e = Wn(t);
+function dr(t) {
+  const e = Jn(t);
   return e ? `tel:${e}` : null;
 }
-function dr(t) {
-  const e = Wn(t);
+function hr(t) {
+  const e = Jn(t);
   return e ? `sms:${e}` : null;
 }
-function hr(t) {
+function ur(t) {
   const e = t?.trim() ?? "";
   return e === "" || /\s/.test(e) ? null : `mailto:${e}`;
 }
 function Zt(t) {
   return t ? typeof t.lat == "number" && typeof t.lon == "number" ? !0 : (t.formatted?.trim() ?? "") !== "" : !1;
 }
-function ur(t, e) {
+function pr(t, e) {
   return Zt(t.address) ? t.address : Zt(e?.address) ? e.address : null;
 }
-function pr(t, e) {
-  const n = ur(t, e);
+function fr(t, e) {
+  const n = pr(t, e);
   if (!n) return null;
   const i = n.formatted ?? "";
   return typeof n.lat == "number" && typeof n.lon == "number" ? `https://maps.apple.com/?ll=${n.lat},${n.lon}&q=${encodeURIComponent(i)}` : i ? `https://maps.apple.com/?q=${encodeURIComponent(i)}` : null;
@@ -2266,18 +2276,18 @@ function $e(t) {
     return null;
   }
 }
-const fr = "/config/integrations/integration/hearth_crm", Jn = "contact missing", Xn = "create uncertain", Ce = "confirm-google-enable", Ee = "confirm-google-clear";
-function Zn(t) {
+const mr = "/config/integrations/integration/hearth_crm", Xn = "contact missing", Zn = "create uncertain", Ce = "confirm-google-enable", Ee = "confirm-google-clear";
+function Qn(t) {
   switch (t) {
-    case Jn:
-      return "This contact was deleted in Google.";
     case Xn:
+      return "This contact was deleted in Google.";
+    case Zn:
       return "Hearth couldn't confirm whether Google created this contact.";
     default:
       return t;
   }
 }
-function Qn(t) {
+function ei(t) {
   switch (t.stopped_reason) {
     case "auth":
       return "Google needs you to sign in again (Settings → Devices & services → Hearth).";
@@ -2293,15 +2303,15 @@ function Qn(t) {
       return null;
   }
 }
-function mr(t) {
+function gr(t) {
   const e = new Date(t);
   return Number.isNaN(e.getTime()) ? t : e.toLocaleString();
 }
-function ei(t) {
+function ti(t) {
   const e = [`${t.created} created`, `${t.updated} updated`];
   return t.photos && e.push(`${t.photos} photos`), t.errors && e.push(`${t.errors} with errors`), t.missing && e.push(`${t.missing} missing in Google`), t.pending && e.push(`${t.pending} still to do`), e.join(", ");
 }
-function gr() {
+function vr() {
   return l`<div class="card" style="padding:13px;display:grid;gap:10px">
     <div class="muted" style="font-size:12.5px">
       Hearth can keep your contacts in your Google account up to date. It's optional, and Hearth works the same without it.
@@ -2309,22 +2319,22 @@ function gr() {
     <div class="muted" style="font-size:12.5px">
       To connect: Settings → Devices & services → Hearth → Reconfigure.
     </div>
-    <a class="accent" style="font-size:12.5px" href=${fr} target="_blank" rel="noopener noreferrer">Open Hearth in Home Assistant</a>
+    <a class="accent" style="font-size:12.5px" href=${mr} target="_blank" rel="noopener noreferrer">Open Hearth in Home Assistant</a>
   </div>`;
 }
-function vr(t) {
-  const { counts: e, last_run: n } = t, i = n ? Qn(n) : null;
+function yr(t) {
+  const { counts: e, last_run: n } = t, i = n ? ei(n) : null;
   return l`<div id="google-status" style="display:grid;gap:4px;font-size:12.5px">
     <div>
       ${e.synced} synced, ${e.pending} waiting, ${e.skipped} skipped${e.missing ? l`, ${e.missing} missing in Google` : h}${e.errors ? l`, ${e.errors} with errors` : h}
     </div>
     ${t.running ? l`<div class="muted">Syncing now…</div>` : h}
-    ${n && !n.dry_run ? l`<div class="muted">Last run ${mr(n.started_at)}: ${ei(n)}</div>` : l`<div class="muted">No sync has run yet.</div>`}
+    ${n && !n.dry_run ? l`<div class="muted">Last run ${gr(n.started_at)}: ${ti(n)}</div>` : l`<div class="muted">No sync has run yet.</div>`}
     ${i ? l`<div role="alert">${i}</div>` : h}
     ${t.last_error ? l`<div role="alert">The last run failed: ${t.last_error}</div>` : h}
   </div>`;
 }
-function yr(t, e) {
+function br(t, e) {
   const n = !e.cutover_confirmed && !e.enabled, i = (s) => {
     const r = s.target;
     r.checked ? (r.checked = !1, t.drafts.put(Ce, f.settings(), {})) : t.setGoogleEnabled(!1);
@@ -2347,7 +2357,7 @@ function yr(t, e) {
         </div>` : h}
   </div>`;
 }
-function br(t) {
+function $r(t) {
   const e = t.created - t.would_create.length;
   return l`<div id="google-preview" role="status" style="display:grid;gap:6px;font-size:12.5px">
     <div>
@@ -2360,26 +2370,26 @@ function br(t) {
           ${e > 0 ? l`<div class="muted" id="google-preview-more">and ${e} more</div>` : h}` : h}
   </div>`;
 }
-function $r(t) {
-  const e = Qn(t);
+function _r(t) {
+  const e = ei(t);
   return l`<div id="google-sync-result" role="status" style="display:grid;gap:4px;font-size:12.5px">
-    <div>Sync finished: ${ei(t)}</div>
+    <div>Sync finished: ${ti(t)}</div>
     ${e ? l`<div>${e}</div>` : h}
   </div>`;
 }
-function _r(t) {
+function wr(t) {
   return $(t).people.filter((e) => e.google_sync_error);
 }
-function wr(t) {
-  const e = _r(t);
+function xr(t) {
+  const e = wr(t);
   return e.length ? l`<div id="google-problems" style="display:grid;gap:10px">
     <div class="label" style="padding:0">Needs attention</div>
     ${e.map((n) => {
-    const i = n.google_sync_error, s = i === Xn && !n.google_contact_id, r = s || i === Jn && !!n.google_contact_id;
+    const i = n.google_sync_error, s = i === Zn && !n.google_contact_id, r = s || i === Xn && !!n.google_contact_id;
     return l`<div class="google-problem" style="display:flex;align-items:center;gap:10px">
         <span style="flex:1;min-width:0">
           <a href=${f.person(n.id)} style="font-weight:600">${n.name}</a>
-          <div class="muted" style="font-size:12.5px">${Zn(i)}</div>
+          <div class="muted" style="font-size:12.5px">${Qn(i)}</div>
         </span>
         ${r ? l`<button
               class="btn secondary"
@@ -2392,11 +2402,11 @@ function wr(t) {
   })}
   </div>` : h;
 }
-function xr(t) {
+function kr(t) {
   const { status: e, loadError: n, preview: i, lastSync: s, working: r } = t.google;
   return e ? e.connected ? l`<div class="card" style="padding:13px;display:grid;gap:12px">
     ${n ? l`<div class="muted" id="google-refresh-error" role="status" style="font-size:12.5px">Couldn't refresh Google status</div>` : h}
-    ${vr(e)} ${yr(t, e)}
+    ${yr(e)} ${br(t, e)}
     <div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn secondary" id="google-preview-btn" ?disabled=${t.busy || r !== null} @click=${() => void t.previewGoogle()}>
         ${r === "preview" ? "Previewing…" : "Preview"}
@@ -2410,12 +2420,12 @@ function xr(t) {
         ${r === "sync" ? "Syncing…" : "Sync now"}
       </button>
     </div>
-    ${i ? br(i) : h} ${s ? $r(s) : h} ${wr(t)}
-  </div>` : gr() : l`<div class="card" style="padding:13px">
+    ${i ? $r(i) : h} ${s ? _r(s) : h} ${xr(t)}
+  </div>` : vr() : l`<div class="card" style="padding:13px">
       <div class="muted" style="font-size:12.5px">${n ? `Couldn't load the Google sync status: ${n}` : "Loading…"}</div>
     </div>`;
 }
-function kr(t) {
+function Cr(t) {
   if (t.drafts.get(Ce))
     return N({
       title: "Turn on Google sync?",
@@ -2447,8 +2457,8 @@ function _e(t, e, n) {
     >${t}</a
   >`;
 }
-function Cr(t, e) {
-  const n = cr(t.phone), i = dr(t.phone), s = hr(t.email), r = pr(t, e);
+function Er(t, e) {
+  const n = dr(t.phone), i = hr(t.phone), s = ur(t.email), r = fr(t, e);
   return l`<div class="actions-row">
     <a class="action primary" href=${f.logInteraction(t.id)} aria-label="Log interaction" title="Log interaction"
       >${w.plus}</a
@@ -2458,7 +2468,7 @@ function Cr(t, e) {
     ${s ? _e(w.envelope, "Email", s) : h} ${r ? _e(w.mapPin, "Map", r) : h}
   </div>`;
 }
-function Er(t, e) {
+function Sr(t, e) {
   const n = e.person;
   return l`<div style="display:flex;align-items:center;gap:10px;padding:6px 0">
     <a class="connection" href=${f.person(n.id)} style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
@@ -2475,22 +2485,22 @@ function Er(t, e) {
   </div>`;
 }
 const Qt = l`<div style="border-top:1px solid var(--border);margin:9px 0"></div>`;
-function Sr(t) {
+function Ar(t) {
   const e = X(t);
   return l`<a href=${f.household(t.id)} style="display:flex;justify-content:space-between;padding-bottom:2px">
     <span class="mono household-name ${e ? "accent" : "muted"}" style="font-size:9.5px"
-      >${e ? H(t).toUpperCase() : H(t)}</span
+      >${e ? O(t).toUpperCase() : O(t)}</span
     >
     <span class="mono muted" style="font-size:9px">HOUSEHOLD</span>
   </a>`;
 }
-function Ar(t, e) {
-  const { people: n, households: i, groups: s, relationships: r, me_person_id: a } = e, o = ws(t.id, { people: n, households: i, groups: s, relationships: r, excludedId: a }), c = (u) => Er(t.id, u), d = l`<a class="accent add-relationship" href=${f.newRelationship(t.id)} style="display:block;font-size:12.5px;padding:8px 20px 18px"
+function Tr(t, e) {
+  const { people: n, households: i, groups: s, relationships: r, me_person_id: a } = e, o = xs(t.id, { people: n, households: i, groups: s, relationships: r, excludedId: a }), c = (u) => Sr(t.id, u), d = l`<a class="accent add-relationship" href=${f.newRelationship(t.id)} style="display:block;font-size:12.5px;padding:8px 20px 18px"
     >Add relationship</a
   >`;
-  return _s(o) ? l`<div class="label" style="padding:0 20px 8px">Connections</div>${d}` : l`<div class="label" style="padding:0 20px 8px">Connections</div>
+  return ws(o) ? l`<div class="label" style="padding:0 20px 8px">Connections</div>${d}` : l`<div class="label" style="padding:0 20px 8px">Connections</div>
     <div class="card">
-      ${o.household ? l`${Sr(o.household)} ${o.householdMembers.map(c)}` : h}
+      ${o.household ? l`${Ar(o.household)} ${o.householdMembers.map(c)}` : h}
       ${o.others.length ? l`${o.household ? l`${Qt}<div class="mono muted" style="font-size:9.5px">ELSEWHERE</div>` : h}
           ${o.others.map(c)}` : h}
       ${o.groups.length ? l`${o.household || o.others.length ? Qt : h}
@@ -2505,7 +2515,7 @@ function Ar(t, e) {
     </div>
     ${d}`;
 }
-function Tr(t) {
+function Rr(t) {
   const n = [
     [$e(t.website), w.globe, "Website"],
     [$e(t.linkedin), w.linkedIn, "LinkedIn profile"],
@@ -2520,14 +2530,14 @@ function Tr(t) {
   )}
   </div>` : h;
 }
-function Rr(t) {
+function Mr(t) {
   return t.length ? l`<div class="label" style="padding:0 20px 8px">Timeline</div>
     <div style="display:grid;gap:16px;padding:0 20px 20px">
       ${t.map(
     (e) => l`<a href=${f.interaction(e.id)} style="display:flex;gap:12px;align-items:flex-start">
           <span style="width:11px;height:11px;border:2px solid var(--accent);border-radius:50%;margin-top:3px;flex:none"></span>
           <span>
-            <div class="mono muted" style="font-size:9.5px">${Yi(e.date).toUpperCase()} · ${e.type.toUpperCase()}</div>
+            <div class="mono muted" style="font-size:9.5px">${Wi(e.date).toUpperCase()} · ${e.type.toUpperCase()}</div>
             <div style="font-weight:600;font-size:13px">${e.summary}</div>
           </span>
         </a>`
@@ -2552,26 +2562,26 @@ function Tt(t, e, n) {
     ],
     body: l`<div class="page">
       <div style="display:grid;justify-items:center;gap:6px;padding:8px 20px 18px;text-align:center">
-        ${qs(t, { kind: "person", id: s.id, name: s.name, photoUrl: s.photo_url })}
+        ${Ks(t, { kind: "person", id: s.id, name: s.name, photoUrl: s.photo_url })}
         <div class="h-serif" style="font-size:21px">${s.name}</div>
         ${a ? l`<div class="muted" style="font-size:12.5px">${a}</div>` : h}
         ${o ? l`<div class="muted" style="font-size:12.5px">${o}</div>` : h}
-        ${s.birthday ? l`<div class="muted" style="font-size:12.5px">${Wi(s.birthday, s.birth_year_unknown, s.age)}</div>` : h}
+        ${s.birthday ? l`<div class="muted" style="font-size:12.5px">${Ji(s.birthday, s.birth_year_unknown, s.age)}</div>` : h}
         ${s.close_friend ? l`<div class="mono accent" style="font-size:10px;padding:4px 12px;border:1px dashed var(--thread);border-radius:999px;margin-top:4px">
               ◆ Close Friend rotation
             </div>` : h}
       </div>
-      ${s.google_sync_error ? l`<a class="notice google-error" href=${f.settings()} style="display:block">Google sync: ${Zn(s.google_sync_error)}</a>` : h}
-      ${Cr(s, r)}
+      ${s.google_sync_error ? l`<a class="notice google-error" href=${f.settings()} style="display:block">Google sync: ${Qn(s.google_sync_error)}</a>` : h}
+      ${Er(s, r)}
       ${s.relationship_summary ? l`<div class="label" style="padding:0 20px 8px">Relationship summary</div>
             <div class="card" style="border-left:3px solid var(--accent);padding:14px;font-size:12.5px;white-space:pre-wrap">${s.relationship_summary}</div>` : h}
-      ${On(t, i.reminders.filter((c) => c.person_id === s.id && c.state !== "done"), "padding:0 20px 8px", "padding:0")}
-      ${Ar(s, i)} ${Tr(s)} ${Rr(hs(i.interactions, s.id))}
+      ${Dn(t, i.reminders.filter((c) => c.person_id === s.id && c.state !== "done"), "padding:0 20px 8px", "padding:0")}
+      ${Tr(s, i)} ${Rr(s)} ${Mr(us(i.interactions, s.id))}
     </div>`,
-    overlay: n === "log" ? Hn(t, s, null) : void 0
+    overlay: n === "log" ? On(t, s, null) : void 0
   };
 }
-const ot = "new", ti = [
+const ot = "new", ni = [
   "name",
   "how_i_know_them",
   "occupation",
@@ -2586,13 +2596,13 @@ const ot = "new", ti = [
   "instagram",
   "notes",
   "relationship_summary"
-], Mr = ["favorite", "close_friend"], Rt = (t) => `edit:person:${t}`, lt = (t) => `confirm-delete:person:${t}`;
-function Nr(t, e) {
+], Nr = ["favorite", "close_friend"], Rt = (t) => `edit:person:${t}`, lt = (t) => `confirm-delete:person:${t}`;
+function Pr(t, e) {
   return t.groups.filter((n) => n.member_ids.includes(e)).map((n) => n.id);
 }
-function Pr(t, e) {
+function Ir(t, e) {
   return {
-    ...Object.fromEntries(ti.map((i) => [i, t[i] ?? ""])),
+    ...Object.fromEntries(ni.map((i) => [i, t[i] ?? ""])),
     favorite: t.favorite,
     close_friend: t.close_friend,
     birthday: t.birthday ?? "",
@@ -2600,38 +2610,38 @@ function Pr(t, e) {
     address: t.address?.formatted ?? "",
     school: t.school?.formatted ?? "",
     household_id: t.household_id ?? "",
-    group_ids: Nr(e, t.id),
+    group_ids: Pr(e, t.id),
     saving: !1
   };
 }
 function en(t, e) {
   const n = {};
-  for (const i of ti) n[i] = t[i];
-  for (const i of Mr) n[i] = t[i];
+  for (const i of ni) n[i] = t[i];
+  for (const i of Nr) n[i] = t[i];
   return n.birthday = t.birthday, n.birth_year_unknown = t.birthday !== "" && t.birth_year_unknown, n.address = t.address, n.school = t.school, n.household_id = e, n;
 }
-function Ir(t, e) {
-  const n = t.relationships.filter((c) => c.person_a_id === e || c.person_b_id === e).length, i = t.groups.filter((c) => c.member_ids.includes(e)).length, s = t.interactions.filter((c) => c.person_ids.includes(e)), r = s.filter((c) => c.person_ids.every((d) => d === e)).length, a = s.length - r, o = (c, d, u) => `${c} ${c === 1 ? d : u}`;
-  return `Also removes ${o(n, "relationship", "relationships")} and ${o(i, "group membership", "group memberships")}. ${o(r, "interaction with only them is", "interactions with only them are")} deleted; ${o(a, "shared interaction keeps", "shared interactions keep")} the other people.`;
+function Or(t, e) {
+  const n = t.relationships.filter((d) => d.person_a_id === e || d.person_b_id === e).length, i = t.groups.filter((d) => d.member_ids.includes(e)).length, s = t.interactions.filter((d) => d.person_ids.includes(e)), r = s.filter((d) => d.person_ids.every((u) => u === e)).length, a = s.length - r, o = t.reminders.filter((d) => d.person_id === e).length, c = (d, u, p) => `${d} ${d === 1 ? u : p}`;
+  return `Also removes ${c(n, "relationship", "relationships")} and ${c(i, "group membership", "group memberships")}. ${c(r, "interaction with only them is", "interactions with only them are")} deleted; ${c(a, "shared interaction keeps", "shared interactions keep")} the other people.` + (o ? ` ${c(o, "reminder about them is", "reminders about them are")} deleted.` : "");
 }
 function Hr(t, e) {
   const n = e.household_id ? t.households.find((i) => i.id === e.household_id) : void 0;
   return n ? [`They leave ${$t(n, t.people)}.`] : [];
 }
-function Or(t, e) {
+function Dr(t, e) {
   const n = lt(e.id), i = $(t);
   return N({
     title: `Delete ${e.name}?`,
-    lines: [Ir(i, e.id), ...Hr(i, e), "This can't be undone."],
+    lines: [Or(i, e.id), ...Hr(i, e), "This can't be undone."],
     confirmLabel: "Delete",
     busy: t.busy,
     onCancel: () => t.drafts.drop(n),
     onConfirm: async () => {
-      await t.remove("person", e.id) && (t.drafts.drop(n), t.drafts.drop(Rt(e.id)), U(f.home(), !0));
+      await t.remove("person", e.id) && (t.drafts.drop(n), t.drafts.drop(Rt(e.id)), L(f.home(), !0));
     }
   });
 }
-async function Dr(t, e) {
+async function Ur(t, e) {
   const n = Rt(e.id), i = t.drafts.get(n), s = t.drafts.base(n);
   if (!(!i || !s || i.saving || !i.name.trim())) {
     t.drafts.patch(n, { saving: !0 });
@@ -2661,12 +2671,12 @@ async function Dr(t, e) {
 const P = (t, e) => l`<div class="label form-section">${t}</div>
     ${e}`;
 function Lr(t, e) {
-  const n = t.households.map((i) => ({ value: i.id, label: $t(i, t.people) })).sort((i, s) => L(i.label, s.label));
+  const n = t.households.map((i) => ({ value: i.id, label: $t(i, t.people) })).sort((i, s) => U(i.label, s.label));
   return e && e !== ot && !n.some((i) => i.value === e) && n.push({ value: e, label: "New household" }), [{ value: "", label: "None" }, ...n, { value: ot, label: "New household…" }];
 }
-function Ur(t, e, n, i) {
+function zr(t, e, n, i) {
   if (!n.groups.length) return l`<div class="muted" style="font-size:12.5px">No groups yet.</div>`;
-  const s = [...n.groups].sort((a, o) => L(a.name, o.name)), r = (a, o) => {
+  const s = [...n.groups].sort((a, o) => U(a.name, o.name)), r = (a, o) => {
     const c = t.drafts.get(e)?.group_ids ?? [], d = o ? [...c.filter((u) => u !== a), a] : c.filter((u) => u !== a);
     t.drafts.patch(e, { group_ids: d });
   };
@@ -2684,10 +2694,10 @@ function Ur(t, e, n, i) {
   )}
   </div>`;
 }
-function zr(t, e) {
+function Gr(t, e) {
   const n = $(t), i = n.people.find((p) => p.id === e);
   if (!i) return t.isArriving(e) ? ue : G("person");
-  const s = Rt(e), r = f.editPerson(e), a = t.drafts.open(s, r, () => Pr(i, n)), o = !a.name.trim(), c = V(t, s), d = { ...c, error: (p) => p === "name" && o ? "Enter a name." : c.error(p) }, u = o || a.saving || t.busy;
+  const s = Rt(e), r = f.editPerson(e), a = t.drafts.open(s, r, () => Ir(i, n)), o = !a.name.trim(), c = V(t, s), d = { ...c, error: (p) => p === "name" && o ? "Enter a name." : c.error(p) }, u = o || a.saving || t.busy;
   return {
     title: "Edit person",
     back: !0,
@@ -2707,7 +2717,7 @@ function zr(t, e) {
         ${M(d, "email", "Email", { type: "email", autocomplete: "email", maxlength: 500 })}
         ${M(d, "email2", "Email 2", { type: "email", maxlength: 500 })}`
     )}
-      ${P("Dates", vs(d, "birthday", "Birthday", "birth_year_unknown"))}
+      ${P("Dates", ys(d, "birthday", "Birthday", "birth_year_unknown"))}
       ${P(
       "Flags",
       l`${nt(d, "favorite", "Favorite")} ${nt(d, "close_friend", "Close friend")}`
@@ -2723,8 +2733,8 @@ function zr(t, e) {
       l`${J(d, "notes", "Notes", 2e4)} ${J(d, "relationship_summary", "Relationship summary", 2e4)}`
     )}
       ${P("Household", wt(d, "household_id", "Household", Lr(n, a.household_id)))}
-      ${P("Groups", Ur(t, s, n, a.group_ids))}
-      <button class="btn" ?disabled=${u} @click=${() => void Dr(t, i)}>Save</button>
+      ${P("Groups", zr(t, s, n, a.group_ids))}
+      <button class="btn" ?disabled=${u} @click=${() => void Ur(t, i)}>Save</button>
       <button
         class="btn danger"
         style="margin-top:24px"
@@ -2734,43 +2744,43 @@ function zr(t, e) {
         Delete person
       </button>
     </div>`,
-    overlay: t.drafts.get(lt(e)) ? Or(t, i) : void 0
+    overlay: t.drafts.get(lt(e)) ? Dr(t, i) : void 0
   };
 }
-const Gr = (t, e) => `edit:relationship:${t}:${e ?? "new"}`, ct = (t) => `confirm-delete:relationship:${t}`;
-function Fr(t, e, n) {
+const Fr = (t, e) => `edit:relationship:${t}:${e ?? "new"}`, ct = (t) => `confirm-delete:relationship:${t}`;
+function Br(t, e, n) {
   const i = Tt(t, e, null), s = $(t), r = s.people.find((c) => c.id === e);
   if (!r) return i;
   let a, o = null;
-  return n !== null && (a = s.relationships.find((c) => c.id === n), o = a ? Oe(a, e) : null, !a || !o) ? i : { ...i, overlay: Br(t, r, a ?? null, o) };
+  return n !== null && (a = s.relationships.find((c) => c.id === n), o = a ? He(a, e) : null, !a || !o) ? i : { ...i, overlay: jr(t, r, a ?? null, o) };
 }
-function Br(t, e, n, i) {
-  const s = $(t), r = n?.id ?? null, a = Gr(e.id, r), o = n ? f.relationship(e.id, n.id) : f.newRelationship(e.id), c = t.drafts.open(a, o, () => ({
+function jr(t, e, n, i) {
+  const s = $(t), r = n?.id ?? null, a = Fr(e.id, r), o = n ? f.relationship(e.id, n.id) : f.newRelationship(e.id), c = t.drafts.open(a, o, () => ({
     other: i?.otherId ?? "",
     type: i?.type ?? "",
     notes: n?.notes ?? ""
-  })), d = s.people.find((v) => v.id === c.other), u = s.relationships.flatMap((v) => {
-    const T = Oe(v, e.id);
+  })), d = s.people.find((y) => y.id === c.other), u = s.relationships.flatMap((y) => {
+    const T = He(y, e.id);
     return T && T.otherId !== i?.otherId ? [T.otherId] : [];
-  }), p = [{ value: "", label: "Choose…" }, ...s.connection_types.map((v) => ({ value: v, label: v }))];
+  }), p = [{ value: "", label: "Choose…" }, ...s.connection_types.map((y) => ({ value: y, label: y }))];
   c.type && !s.connection_types.includes(c.type) && p.push({ value: c.type, label: c.type });
-  const y = () => {
+  const v = () => {
     t.drafts.drop(a), z(f.person(e.id));
   }, m = !!d && c.type !== "", g = async () => {
-    const v = t.drafts.get(a), T = t.drafts.base(a);
-    if (!v || !T || !v.other || !v.type) return;
-    const ci = v.other !== T.other || v.type !== T.type, Mt = { person_a_id: e.id, person_b_id: v.other, type: v.type };
+    const y = t.drafts.get(a), T = t.drafts.base(a);
+    if (!y || !T || !y.other || !y.type) return;
+    const di = y.other !== T.other || y.type !== T.type, Mt = { person_a_id: e.id, person_b_id: y.other, type: y.type };
     (await t.save(
       "relationship",
       r,
-      { ...Mt, notes: v.notes },
-      ci ? { notes: T.notes } : { ...Mt, notes: T.notes }
-    ) || r && !$(t).relationships.some((di) => di.id === r)) && y();
+      { ...Mt, notes: y.notes },
+      di ? { notes: T.notes } : { ...Mt, notes: T.notes }
+    ) || r && !$(t).relationships.some((hi) => hi.id === r)) && v();
   }, C = V(t, a), b = Ie(e.name);
-  return l`<div class="sheet-backdrop" @click=${(v) => v.target === v.currentTarget && y()}>
+  return l`<div class="sheet-backdrop" @click=${(y) => y.target === y.currentTarget && v()}>
     <div class="sheet" role="dialog" aria-label=${n ? "Edit relationship" : "Add relationship"}>
       <div class="topbar">
-        <button class="icon-btn" style="padding:0 12px" @click=${y}>Cancel</button>
+        <button class="icon-btn" style="padding:0 12px" @click=${v}>Cancel</button>
         <span class="title" style="text-align:center">${n ? "Relationship" : "Add relationship"}</span>
         <button class="icon-btn accent" style="padding:0 12px;font-weight:600" ?disabled=${!m || t.busy} @click=${g}>
           Save
@@ -2784,11 +2794,11 @@ function Br(t, e, n, i) {
     path: o,
     exclude: [e.id, ...u],
     selected: d ? [d.id] : [],
-    onPick: (v) => t.drafts.patch(a, { other: v }),
+    onPick: (y) => t.drafts.patch(a, { other: y }),
     onRemove: () => t.drafts.patch(a, { other: "" }),
     // Just a name: the rest can be filled in from their own screen later.
-    onCreate: async (v) => {
-      const T = await t.addPerson(jn(v));
+    onCreate: async (y) => {
+      const T = await t.addPerson(Vn(y));
       T && t.drafts.patch(a, { other: T });
     },
     disabled: t.busy
@@ -2807,9 +2817,9 @@ function Br(t, e, n, i) {
       </div>
     </div>
   </div>
-  ${n && t.drafts.get(ct(n.id)) ? jr(t, e, s.people.find((v) => v.id === i?.otherId), n, y) : h}`;
+  ${n && t.drafts.get(ct(n.id)) ? Vr(t, e, s.people.find((y) => y.id === i?.otherId), n, v) : h}`;
 }
-function jr(t, e, n, i, s) {
+function Vr(t, e, n, i, s) {
   const r = ct(i.id), a = n?.name ?? "them";
   return N({
     title: `Remove the link between ${e.name} and ${a}?`,
@@ -2834,14 +2844,25 @@ function tn(t, e) {
     <span class="meta" style="color:${i}">${n.days_since_contact === null ? "—" : `${n.days_since_contact}d`}</span>
   </a>`;
 }
-const nn = (t, e) => (t.contact_status.days_since_contact ?? 1 / 0) - (e.contact_status.days_since_contact ?? 1 / 0);
-function ni(t) {
+const nn = (t, e) => (t.contact_status.days_since_contact ?? 1 / 0) - (e.contact_status.days_since_contact ?? 1 / 0), qr = 10;
+function Kr(t) {
+  const { people: e, reminders: n, today: i } = $(t), { due: s, upcoming: r, someday: a } = Ms(n), o = new Map(e.map((p) => [p.id, p])), c = (p) => p.map((v) => Hn(t, v, i, o.get(v.person_id))), d = (p, v) => v.length ? l`<div class="label list-label">${p}</div><div class="list">${c(v)}</div>` : h, u = !s.length && !r.length && !a.length;
+  return l`<div class="label list-label" style="font-size:12px">Reminders</div>
+    ${u ? l`<div class="empty">No reminders.</div>` : h}
+    ${d("Due", s)} ${d("Upcoming", r.slice(0, qr))}
+    ${a.length ? l`<details class="someday">
+          <summary class="label list-label">Someday · ${a.length}</summary>
+          <div class="list">${c(a)}</div>
+        </details>` : h}`;
+}
+function ii(t) {
   const e = $(t).people.filter((s) => s.close_friend), n = e.filter((s) => s.contact_status.urgency === "overdue").sort(nn), i = e.filter((s) => s.contact_status.urgency === "due_soon").sort(nn);
   return {
     title: "Reach out",
     back: !1,
     actions: [],
     body: l`<div class="page">
+      ${Kr(t)}
       <div class="reach-card">
         <div class="mono accent" style="font-size:10px">CLOSE FRIEND ROTATION · ~6WK CADENCE</div>
         <div class="h-serif" style="font-size:17px;margin-top:6px">${Pe(n.length, "person", "people")} overdue</div>
@@ -2854,7 +2875,7 @@ function ni(t) {
     </div>`
   };
 }
-function Vr(t, e) {
+function Yr(t, e) {
   const n = $(t);
   switch (e.name) {
     case "reminderNew": {
@@ -2864,9 +2885,9 @@ function Vr(t, e) {
       return { ...i, overlay: qe(t, { key: `reminder:new:person:${s.id}`, path: r, closeTo: f.person(s.id), person: s, locked: !0, interaction: null, existing: null }) };
     }
     case "interactionReminderNew": {
-      const i = Dn(t, e.interactionId, null), s = n.interactions.find((o) => o.id === e.interactionId);
+      const i = Un(t, e.interactionId, null), s = n.interactions.find((o) => o.id === e.interactionId);
       if (!s) return i;
-      const r = He(s, n.people)[0] ?? null, a = f.newInteractionReminder(s.id);
+      const r = Oe(s, n.people)[0] ?? null, a = f.newInteractionReminder(s.id);
       return {
         ...i,
         overlay: qe(t, { key: `reminder:new:interaction:${s.id}`, path: a, closeTo: f.interaction(s.id), person: r, locked: !1, interaction: s, existing: null })
@@ -2876,14 +2897,14 @@ function Vr(t, e) {
       const i = n.reminders.find((o) => o.id === e.id);
       if (!i) return t.isArriving(e.id) ? ue : G("reminder");
       const s = n.people.find((o) => o.id === i.person_id) ?? null, r = i.interaction_id ? n.interactions.find((o) => o.id === i.interaction_id) ?? null : null, a = { key: `edit:reminder:${i.id}`, path: f.reminder(i.id), closeTo: f.reachOut(), person: s, locked: !0, interaction: r, existing: i };
-      return { ...ni(t), overlay: qe(t, a) };
+      return { ...ii(t), overlay: qe(t, a) };
     }
   }
 }
 const dt = (t) => `confirm-delete:reminder:${t}`;
 function qe(t, e) {
   const n = $(t), { key: i, path: s, existing: r, interaction: a } = e, o = t.drafts.open(i, s, () => ({
-    ...r ? Ps(r) : Nn(),
+    ...r ? Os(r) : Nn(),
     person: e.person?.id ?? r?.person_id ?? ""
   })), c = e.locked ? e.person : n.people.find((m) => m.id === o.person) ?? null, d = () => {
     t.drafts.drop(i), z(e.closeTo);
@@ -2896,7 +2917,7 @@ function qe(t, e) {
       return;
     }
     await t.addReminder({ person_id: c.id, interaction_id: a?.id ?? null, ...g }) && d();
-  }, y = V(t, i);
+  }, v = V(t, i);
   return l`<div class="sheet-backdrop" @click=${(m) => m.target === m.currentTarget && d()}>
       <div class="sheet" role="dialog" aria-label=${r ? "Edit reminder" : "Add reminder"}>
         <div class="topbar">
@@ -2921,7 +2942,7 @@ function qe(t, e) {
     disabled: t.busy
   })}
             ${a ? l`<div class="muted" style="font-size:12.5px">From: ${a.summary}</div>` : h}
-            ${In(y, n.today, n.reminder_units, t.busy)}
+            ${In(v, n.today, n.reminder_units, t.busy)}
             ${r ? l`<button
                   class="btn danger"
                   style="margin-top:12px"
@@ -2934,9 +2955,9 @@ function qe(t, e) {
         </div>
       </div>
     </div>
-    ${r && t.drafts.get(dt(r.id)) ? qr(t, r, c, d) : h}`;
+    ${r && t.drafts.get(dt(r.id)) ? Wr(t, r, c, d) : h}`;
 }
-function qr(t, e, n, i) {
+function Wr(t, e, n, i) {
   const s = dt(e.id), r = e.note ? `“${e.note}”` : "This reminder";
   return N({
     title: "Delete this reminder?",
@@ -2949,20 +2970,20 @@ function qr(t, e, n, i) {
     }
   });
 }
-const Kr = [
+const Jr = [
   ["people", "People"],
   ["households", "Households"],
   ["groups", "Groups"]
 ], sn = (t, e) => e === "" || t.toLocaleLowerCase().includes(e.toLocaleLowerCase());
-function Yr(t) {
-  const e = H(t);
+function Xr(t) {
+  const e = O(t);
   return l`<a class="row" href=${f.household(t.id)}>
     ${S(e, t.photo_url)}
     <span class="main"><div class="name ${X(t) ? "" : "muted"}">${e}</div></span>
     <span class="meta">${Pe(t.member_ids.length, "member")}</span>
   </a>`;
 }
-function Wr(t) {
+function Zr(t) {
   return l`<a class="row" href=${f.group(t.id)}>
     ${S(t.name, t.photo_url)}
     <span class="main">
@@ -2972,27 +2993,27 @@ function Wr(t) {
     <span class="meta">${Pe(t.member_ids.length, "member")}</span>
   </a>`;
 }
-function Jr(t) {
+function Qr(t) {
   const { people: e, households: n, groups: i, relationships: s } = $(t), r = t.search.text.trim();
   switch (t.search.chip) {
     case "people": {
       const a = kt(r, e, s);
       return l`${a.direct.map((o) => Qe(o))}
-      ${a.connected.length ? l`${es("Connected")} ${a.connected.map((o) => Qe(o.person, o.reason))}` : h}
+      ${a.connected.length ? l`${ts("Connected")} ${a.connected.map((o) => Qe(o.person, o.reason))}` : h}
       ${a.direct.length + a.connected.length === 0 ? l`<div class="empty">No one matches “${r}”.</div>` : h}`;
     }
     case "households":
-      return n.map((a) => ({ h: a, name: H(a) })).filter(({ name: a }) => sn(a, r)).sort((a, o) => L(a.name, o.name)).map(({ h: a }) => Yr(a));
+      return n.map((a) => ({ h: a, name: O(a) })).filter(({ name: a }) => sn(a, r)).sort((a, o) => U(a.name, o.name)).map(({ h: a }) => Xr(a));
     case "groups":
-      return i.filter((a) => sn(a.name, r)).sort((a, o) => L(a.name, o.name)).map(Wr);
+      return i.filter((a) => sn(a.name, r)).sort((a, o) => U(a.name, o.name)).map(Zr);
   }
 }
-function Xr(t) {
+function ea(t) {
   if (t === "people") return h;
   const [e, n] = t === "households" ? ["New household", f.newHousehold()] : ["New group", f.newGroup()];
   return l`<div style="padding:0 16px 8px"><a class="btn secondary new-record" style="display:inline-flex;align-items:center" href=${n}>${e}</a></div>`;
 }
-function Zr(t) {
+function ta(t) {
   const { text: e, chip: n } = t.search;
   return {
     title: null,
@@ -3012,7 +3033,7 @@ function Zr(t) {
         />
       </div>
       <div class="pills" style="padding:8px 16px">
-        ${Kr.map(
+        ${Jr.map(
       ([i, s]) => l`<button
             class="pill mono ${n === i ? "on" : ""}"
             aria-pressed=${n === i ? "true" : "false"}
@@ -3022,12 +3043,12 @@ function Zr(t) {
           </button>`
     )}
       </div>
-      ${Xr(n)}
-      <div class="list">${Jr(t)}</div>
+      ${ea(n)}
+      <div class="list">${Qr(t)}</div>
     </div>`
   };
 }
-const Qr = new URL(import.meta.url).searchParams.get("v"), ea = [
+const na = new URL(import.meta.url).searchParams.get("v"), ia = [
   {
     kind: "birthdays",
     id: "notify-birthdays",
@@ -3039,9 +3060,11 @@ const Qr = new URL(import.meta.url).searchParams.get("v"), ea = [
     id: "notify-log",
     label: "Log reminder",
     help: "A reminder if you haven't logged an interaction today."
-  }
+  },
+  // No time: each reminder notifies when it comes due.
+  { kind: "reminders", id: "notify-reminders", label: "Reminders", help: "A notification when a reminder you set comes due." }
 ];
-function ta(t) {
+function sa(t) {
   const { status: e, loadError: n, testing: i } = t.notifications;
   if (!e)
     return l`<div class="card" style="padding:13px">
@@ -3052,7 +3075,7 @@ function ta(t) {
     ${s ? l`<div class="muted" id="notify-no-phone" role="status" style="font-size:12.5px">
           No phone is set up for notifications. Install the Home Assistant Companion app and sign in as yourself.
         </div>` : h}
-    ${ea.map(({ kind: r, id: a, label: o, help: c }) => {
+    ${ia.map(({ kind: r, id: a, label: o, help: c }) => {
     const d = e.settings[r];
     return l`<div style="display:grid;gap:6px">
         <label class="check">
@@ -3067,7 +3090,7 @@ function ta(t) {
           <span>${o}</span>
         </label>
         <div class="muted" style="font-size:12.5px">${c}</div>
-        <label class="field">
+        ${d.time === void 0 ? h : l`<label class="field">
           <span>Time</span>
           <input
             id=${`${a}-time`}
@@ -3081,7 +3104,7 @@ function ta(t) {
       p && t.setNotification(r, { time: p });
     }}
           />
-        </label>
+        </label>`}
       </div>`;
   })}
     <button class="btn secondary" id="notify-test" ?disabled=${t.busy || i || s} @click=${() => void t.sendTestNotification()}>
@@ -3089,8 +3112,8 @@ function ta(t) {
     </button>
   </div>`;
 }
-const na = 8, we = "me-picker";
-function ia(t) {
+const ra = 8, we = "me-picker";
+function aa(t) {
   const { people: e, relationships: n, me_person_id: i } = $(t), s = i ? e.find((u) => u.id === i) : void 0, r = t.drafts.get(we)?.query ?? null, a = () => t.drafts.drop(we), o = async (u) => {
     await t.setMe(u) && a();
   }, c = l`<div style="display:flex;align-items:center;gap:12px">
@@ -3099,7 +3122,7 @@ function ia(t) {
           ${s ? l`<button class="btn secondary" ?disabled=${t.busy} @click=${() => o(null)}>Clear</button>` : h}` : h}
   </div>`;
   if (r === null) return l`<div class="card" style="padding:13px">${c}</div>`;
-  const d = kt(r.trim(), e, n).direct.slice(0, na);
+  const d = kt(r.trim(), e, n).direct.slice(0, ra);
   return l`<div class="card" style="padding:13px;display:grid;gap:10px">
     ${c}
     <input
@@ -3122,7 +3145,7 @@ function ia(t) {
     <button class="btn secondary" @click=${a}>Cancel</button>
   </div>`;
 }
-function sa(t) {
+function oa(t) {
   switch (t.reason) {
     case "local_changes":
       return "Your Hearth has changes made here since the last import. Importing replaces everything in it.";
@@ -3139,7 +3162,7 @@ function sa(t) {
   }
 }
 const Re = "confirm-import";
-function ra(t, e) {
+function la(t, e) {
   return N({
     title: `Import ${e.name}?`,
     lines: ["Everything in your Hearth is replaced by what's in this file."],
@@ -3151,7 +3174,7 @@ function ra(t, e) {
     }
   });
 }
-function aa(t) {
+function ca(t) {
   const e = t.importState, n = e.kind === "uploading", i = (s) => {
     const r = s.target, a = r.files?.[0];
     r.value = "", a && t.drafts.put(Re, f.settings(), { file: a });
@@ -3169,7 +3192,7 @@ function aa(t) {
     ${n ? l`<div class="notice" role="status" style="margin:0">Uploading and importing…</div>` : h}
     ${e.kind === "done" ? l`<div class="notice" role="status" style="margin:0">${e.summary}</div>` : h}
     ${e.kind === "refused" ? l`<div role="alert" style="display:grid;gap:8px">
-          <div>${sa(e)}</div>
+          <div>${oa(e)}</div>
           ${e.reason === "invalid" && e.problems.length ? l`<ul class="muted" style="margin:0;padding-left:18px;font-size:12.5px">
                 ${e.problems.map((s) => l`<li>${s}</li>`)}
               </ul>` : h}
@@ -3180,19 +3203,19 @@ function aa(t) {
         </div>` : h}
   </div>`;
 }
-function oa(t) {
+function da(t) {
   const e = t.drafts.get(Re);
   return {
-    overlay: e ? ra(t, e.file) : kr(t),
+    overlay: e ? la(t, e.file) : Cr(t),
     title: "Settings",
     back: !0,
     actions: [],
     body: l`<div class="page">
       <div class="label" style="padding:16px 20px 8px">This is me</div>
-      ${ia(t)}
+      ${aa(t)}
 
       <div class="label" style="padding:0 20px 8px">Notifications</div>
-      ${ta(t)}
+      ${sa(t)}
 
       <div class="label" style="padding:0 20px 8px">Export</div>
       <div class="card" style="padding:13px;display:grid;gap:10px">
@@ -3201,57 +3224,57 @@ function oa(t) {
       </div>
 
       <div class="label" style="padding:0 20px 8px">Import</div>
-      ${aa(t)}
+      ${ca(t)}
 
       <div class="label" style="padding:0 20px 8px">Google Contacts</div>
-      ${xr(t)}
+      ${kr(t)}
 
       <div class="label" style="padding:0 20px 8px">About</div>
-      <div class="card" style="padding:13px">Version ${Qr ?? "unknown"}</div>
+      <div class="card" style="padding:13px">Version ${na ?? "unknown"}</div>
     </div>`
   };
 }
-const la = "https://claude.ai/new", ca = "Offline. Showing what was last loaded; changes are paused.";
-function da(t, e) {
+const ha = "https://claude.ai/new", ua = "Offline. Showing what was last loaded; changes are paused.";
+function pa(t, e) {
   switch (e.name) {
     case "home":
-      return fs(t);
-    case "search":
-      return Zr(t);
-    case "reachOut":
-      return ni(t);
-    case "add":
-      return is(t);
-    case "birthdays":
       return ms(t);
-    case "interactions":
+    case "search":
+      return ta(t);
+    case "reachOut":
+      return ii(t);
+    case "add":
+      return ss(t);
+    case "birthdays":
       return gs(t);
+    case "interactions":
+      return vs(t);
     case "settings":
-      return oa(t);
+      return da(t);
     case "person":
       return Tt(t, e.id, e.sheet);
     case "personEdit":
-      return zr(t, e.id);
+      return Gr(t, e.id);
     case "relationship":
-      return Fr(t, e.personId, e.relId);
+      return Br(t, e.personId, e.relId);
     case "household":
-      return or(t, e.id);
-    case "householdNew":
-      return Zs(t);
-    case "householdEdit":
-      return ar(t, e.id);
-    case "group":
       return lr(t, e.id);
+    case "householdNew":
+      return Qs(t);
+    case "householdEdit":
+      return or(t, e.id);
+    case "group":
+      return cr(t, e.id);
     case "groupNew":
-      return Ks(t);
+      return Ys(t);
     case "groupEdit":
-      return Js(t, e.id);
+      return Xs(t, e.id);
     case "interaction":
-      return Dn(t, e.id, e.sheet);
+      return Un(t, e.id, e.sheet);
     case "reminder":
     case "reminderNew":
     case "interactionReminderNew":
-      return Vr(t, e);
+      return Yr(t, e);
   }
 }
 const rn = [
@@ -3260,54 +3283,54 @@ const rn = [
   { tab: "reachOut", href: f.reachOut(), icon: w.bell, label: "Reach out" },
   { tab: "add", href: f.add(), icon: w.plusCircle, label: "Add" }
 ];
-function ha(t) {
+function fa(t) {
   const e = (n) => l`<a href=${n.href} class=${t === n.tab ? "active" : ""} aria-label=${n.label} title=${n.label}
       aria-current=${t === n.tab ? "page" : "false"}>${n.icon}</a>`;
   return l`<nav class="tabbar">
     ${rn.slice(0, 2).map(e)}
-    <a href=${la} target="_blank" rel="noopener noreferrer" aria-label="Talk to Claude" title="Talk to Claude">${w.mic}</a>
+    <a href=${ha} target="_blank" rel="noopener noreferrer" aria-label="Talk to Claude" title="Talk to Claude">${w.mic}</a>
     ${rn.slice(2).map(e)}
   </nav>`;
 }
-function ii() {
+function si() {
   return l`<button class="icon-btn" aria-label="Menu" title="Menu" @click=${(e) => e.currentTarget.dispatchEvent(new Event("hass-toggle-menu", { bubbles: !0, composed: !0 }))}>${w.menu}</button>`;
 }
-function si(t) {
+function ri(t) {
   return t ? l`<div class="toast" role="status">${t}</div>` : h;
 }
-function ua(t, e) {
+function ma(t, e) {
   const n = e.narrow || t.back || t.title || t.actions.length;
   return l`<div class="shell">
     ${n ? l`<header class="topbar">
-          ${e.narrow ? ii() : h}
+          ${e.narrow ? si() : h}
           ${t.back ? l`<button class="icon-btn" aria-label="Back" title="Back" @click=${() => z(f.home())}>
                 ${w.back}
               </button>` : h}
           <span class="title">${t.title ?? ""}</span>
-          ${t.actions.map(Qi)}
+          ${t.actions.map(es)}
           <button class="icon-btn muted" aria-label="Refresh" title="Refresh" ?disabled=${e.refreshing} @click=${e.onRefresh}>
             ${w.refresh}
           </button>
         </header>` : h}
     <main class="content" id="content">
-      ${e.store.offline ? l`<div class="notice" role="status">${ca}</div>` : h} ${t.body}
+      ${e.store.offline ? l`<div class="notice" role="status">${ua}</div>` : h} ${t.body}
     </main>
-    ${ha(e.lastTab)} ${t.overlay ?? h} ${si(e.toast)}
+    ${fa(e.lastTab)} ${t.overlay ?? h} ${ri(e.toast)}
   </div>`;
 }
 function K(t, e) {
   return l`<div class="shell">
-    ${e.narrow ? l`<header class="topbar">${ii()}<span class="title">Hearth</span></header>` : h}
+    ${e.narrow ? l`<header class="topbar">${si()}<span class="title">Hearth</span></header>` : h}
     <main class="content status">${t}</main>
-    ${si(e.toast)}
+    ${ri(e.toast)}
   </div>`;
 }
 const an = (t) => t.length > 1 ? t.replace(/\/+$/, "") : t;
-function pa(t, e) {
+function ga(t, e) {
   const n = an(t), i = an(e);
   return n === i || n.startsWith(`${i}/`);
 }
-class fa {
+class va {
   /** `onChange` is called after every change made by a user action (put, patch, drop). */
   constructor(e = () => {
   }) {
@@ -3344,14 +3367,14 @@ class fa {
   }
   /** The route is now `path`: every draft whose form path it isn't on is dropped. Called before drawing. */
   leaveTo(e) {
-    for (const [n, i] of this.entries) pa(e, i.path) || this.entries.delete(n);
+    for (const [n, i] of this.entries) ga(e, i.path) || this.entries.delete(n);
   }
 }
-const ma = {
+const ya = {
   person: ["address", "school"],
   household: ["address"]
-}, ri = (t, e) => ma[t]?.includes(e) ?? !1;
-function ai(t, e) {
+}, ai = (t, e) => ya[t]?.includes(e) ?? !1;
+function oi(t, e) {
   switch (e) {
     case "person":
       return t.people;
@@ -3368,16 +3391,16 @@ function ai(t, e) {
   }
 }
 function Ke(t, e, n) {
-  return ai(t, e).find((i) => i.id === n);
+  return oi(t, e).find((i) => i.id === n);
 }
-function ga(t, e) {
-  return ["person", "household", "contact_group", "relationship", "interaction", "reminder"].some((i) => ai(t, i).some((s) => s.id === e));
+function ba(t, e) {
+  return ["person", "household", "contact_group", "relationship", "interaction", "reminder"].some((i) => oi(t, i).some((s) => s.id === e));
 }
 const ht = (t, e) => t === e || typeof t == "object" && typeof e == "object" && JSON.stringify(t) === JSON.stringify(e);
 function ut(t, e, n) {
   if (typeof n != "string") return n;
   const i = n.trim();
-  return ri(t, e) ? i ? { formatted: i } : null : i || null;
+  return ai(t, e) ? i ? { formatted: i } : null : i || null;
 }
 function Ye(t, e) {
   return e ? Object.fromEntries(Object.entries(t).filter(([n, i]) => !(n in e) || !ht(i, e[n]))) : t;
@@ -3387,7 +3410,7 @@ function We(t, e, n) {
   for (const [s, r] of Object.entries(n)) {
     if (r === void 0) continue;
     const a = e[s] ?? null;
-    if (ri(t, s) && typeof r == "string") {
+    if (ai(t, s) && typeof r == "string") {
       const c = (a?.formatted ?? "").trim();
       r.trim() !== c && (i[s] = ut(t, s, r));
       continue;
@@ -3406,19 +3429,19 @@ function on(t, e) {
   }
   return n;
 }
-const oi = "You're offline. Changes are paused.", Je = "Still saving…", pt = "That was already deleted.", ln = "hearth_crm:snapshot:";
+const li = "You're offline. Changes are paused.", Je = "Still saving…", pt = "That was already deleted.", ln = "hearth_crm:snapshot:";
 function cn(t) {
   return t.reminders && t.reminder_units ? t : { ...t, reminders: t.reminders ?? [], reminder_units: t.reminder_units ?? [] };
 }
-const va = 250, ya = 3500, dn = [2e3, 5e3, 1e4], ba = 1e4;
-class $a {
+const $a = 250, _a = 3500, dn = [2e3, 5e3, 1e4], wa = 1e4;
+class xa {
   constructor(e, n, i, s, r) {
-    this.api = e, this.conn = n, this.userId = i, this.storage = s, this.onChange = r, this.phase = { kind: "loading" }, this.snapshot = null, this.entryId = null, this.offline = !1, this.lastError = null, this.createError = null, this.creating = !1, this.retrying = !1, this.search = { text: "", chip: "people" }, this.drafts = new fa(() => this.onChange()), this.busy = !1, this.shrinkingPhoto = !1, this.importState = { kind: "idle" }, this.google = { status: null, loadError: null, preview: null, lastSync: null, working: null }, this.notifications = { status: null, loadError: null, testing: !1 }, this.toast = null, this.writeError = null, this.subscription = null, this.connEpoch = 0, this.timer = null, this.retryTimer = null, this.retryAttempt = 0, this.generation = 0, this.stopped = !1, this.startRun = null, this.retryRun = null, this.toastTimer = null, this.fetchSeq = 0, this.arriving = null, this.pendingMembers = /* @__PURE__ */ new Map(), this.arrivingTimer = null, this.pendingFavorites = /* @__PURE__ */ new Map(), this.onSettings = !1, this.onDisconnected = () => {
+    this.api = e, this.conn = n, this.userId = i, this.storage = s, this.onChange = r, this.phase = { kind: "loading" }, this.snapshot = null, this.entryId = null, this.offline = !1, this.lastError = null, this.createError = null, this.creating = !1, this.retrying = !1, this.search = { text: "", chip: "people" }, this.drafts = new va(() => this.onChange()), this.busy = !1, this.shrinkingPhoto = !1, this.importState = { kind: "idle" }, this.google = { status: null, loadError: null, preview: null, lastSync: null, working: null }, this.notifications = { status: null, loadError: null, testing: !1 }, this.toast = null, this.writeError = null, this.subscription = null, this.connEpoch = 0, this.timer = null, this.retryTimer = null, this.retryAttempt = 0, this.generation = 0, this.stopped = !1, this.startRun = null, this.retryRun = null, this.toastTimer = null, this.fetchSeq = 0, this.arriving = null, this.pendingMembers = /* @__PURE__ */ new Map(), this.arrivingTimer = null, this.pendingFavorites = /* @__PURE__ */ new Map(), this.onSettings = !1, this.onDisconnected = () => {
       this.connEpoch++, this.subscription = null, this.offline = !0, this.onChange();
     }, this.onReady = () => {
       this.connEpoch++, this.retryAttempt = 0, this.load();
     }, this.onVisibilityChange = () => {
-      document.visibilityState !== "visible" || this.offline || !this.snapshot || _a(/* @__PURE__ */ new Date()) !== this.snapshot.today && this.refresh();
+      document.visibilityState !== "visible" || this.offline || !this.snapshot || ka(/* @__PURE__ */ new Date()) !== this.snapshot.today && this.refresh();
     };
   }
   get cacheKey() {
@@ -3468,7 +3491,7 @@ class $a {
   showToast(e) {
     this.toastTimer && clearTimeout(this.toastTimer), this.toast = e, this.onChange(), this.toastTimer = setTimeout(() => {
       this.toastTimer = null, this.toast = null, this.onChange();
-    }, ya);
+    }, _a);
   }
   // ---- Writes ----
   // Each waits for the server, then relies on the subscription's change notice to re-fetch the
@@ -3616,7 +3639,7 @@ class $a {
   markArriving(e) {
     this.stopArriving(), this.arriving = { id: e, afterSeq: this.fetchSeq }, this.arrivingTimer = setTimeout(() => {
       this.arrivingTimer = null, this.arriving?.id === e && (this.arriving = null, this.onChange());
-    }, ba), this.onChange();
+    }, wa), this.onChange();
   }
   stopArriving() {
     this.arrivingTimer && clearTimeout(this.arrivingTimer), this.arrivingTimer = null, this.arriving = null;
@@ -3732,7 +3755,7 @@ class $a {
     } }) ? (await this.loadGoogle(), !0) : !1;
   }
   refuseOffline() {
-    return this.offline ? (this.showToast(oi), !0) : !1;
+    return this.offline ? (this.showToast(li), !0) : !1;
   }
   /** Runs one write at a time. Resolves to null, with a toast, when refused or failed. */
   async write(e, n = {}) {
@@ -3830,7 +3853,7 @@ class $a {
   /** `seq` is the fetch's number from fetchSeq, taken when the request started. */
   accept(e, n) {
     const i = this.arriving;
-    i && (n > i.afterSeq || ga(e, i.id)) && this.stopArriving();
+    i && (n > i.afterSeq || ba(e, i.id)) && this.stopArriving();
     const s = this.pendingFavorites.size ? {
       ...e,
       people: e.people.map(
@@ -3883,7 +3906,7 @@ class $a {
   scheduleRefresh() {
     this.stopped || (this.timer && clearTimeout(this.timer), this.timer = setTimeout(() => {
       this.timer = null, this.refresh();
-    }, va));
+    }, $a));
   }
   async dropSubscription() {
     const e = this.subscription;
@@ -3894,14 +3917,14 @@ class $a {
       }
   }
 }
-function _a(t) {
+function ka(t) {
   const e = (n) => String(n).padStart(2, "0");
   return `${t.getFullYear()}-${e(t.getMonth() + 1)}-${e(t.getDate())}`;
 }
 function xe(t, e = "Couldn't save") {
   switch (t instanceof A ? t.code : null) {
     case "offline":
-      return oi;
+      return li;
     case "backup_in_progress":
       return "Home Assistant is making a backup. Try again in a moment.";
     case "invalid":
@@ -3922,11 +3945,11 @@ function xe(t, e = "Couldn't save") {
 function D(t) {
   return t instanceof Error ? t.message : String(t);
 }
-const wa = ':host{--bg: var(--primary-background-color, #fafafa);--surface: var(--card-background-color, var(--ha-card-background, #ffffff));--text: var(--primary-text-color, #212121);--text-2: var(--secondary-text-color, #727272);--border: var(--divider-color, rgba(0, 0, 0, .12));--accent: var(--primary-color, #03a9f4);--on-accent: var(--text-primary-color, #ffffff);--accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);--hover: color-mix(in srgb, var(--text) 6%, transparent);--thread: var(--divider-color, rgba(0, 0, 0, .12));--danger: var(--error-color, #db4437);--warning: var(--warning-color, #ffa600);--scrim: var(--mdc-dialog-scrim-color, rgba(0, 0, 0, .32));--sans: var(--ha-font-family-body, var(--paper-font-body1_-_font-family, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif));--serif: var(--sans);--mono: var(--ha-font-family-code, ui-monospace, "SF Mono", Menlo, Consolas, monospace);--tabbar: 56px;position:relative;display:flex;flex-direction:column;height:100dvh;box-sizing:border-box;padding:var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) var(--safe-area-content-inset-right, var(--safe-area-inset-right, env(safe-area-inset-right, 0px))) 0 var(--safe-area-content-inset-left, var(--safe-area-inset-left, env(safe-area-inset-left, 0px)));background:var(--bg);color:var(--text);font:14px/1.4 var(--sans);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}*{box-sizing:border-box}button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}a{color:inherit;text-decoration:none}input,textarea{font:inherit;color:var(--text)}:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.shell{display:flex;flex-direction:column;flex:1;min-height:0}.topbar{display:flex;align-items:center;gap:4px;min-height:48px;padding:0 8px;border-bottom:1px solid var(--border);background:var(--bg);flex:none}.topbar .title{flex:1;font:600 16px var(--serif);padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.icon-btn{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border-radius:10px;color:var(--text)}.icon-btn:hover{background:var(--hover)}.icon-btn.accent{color:var(--accent)}.icon-btn.muted{color:var(--text-2)}.icon-btn[disabled]{opacity:.4;cursor:default}.icon-btn svg{width:20px;height:20px}.content{flex:1;overflow-y:auto;overscroll-behavior:contain;padding-bottom:24px;position:relative}.content.status{padding-bottom:calc(24px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))}.page{max-width:640px;margin:0 auto}.tabbar{flex:none;display:flex;height:calc(var(--tabbar) + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));padding-bottom:var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));border-top:1px solid var(--border);background:var(--bg)}.tabbar a,.tabbar button{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-2)}.tabbar .active{color:var(--accent)}.tabbar svg{width:22px;height:22px}.h-serif{font-family:var(--serif);font-weight:600}.mono{font-family:var(--mono)}.label{font:500 10.5px var(--mono);color:var(--text-2);letter-spacing:.02em;text-transform:uppercase}.muted{color:var(--text-2)}.accent{color:var(--accent)}.danger{color:var(--danger)}.warning{color:var(--warning)}.section{margin:16px 0 0}.section-head{display:flex;align-items:baseline;justify-content:space-between;padding:0 16px 6px}.section-head h2{margin:0;font:600 17px var(--serif)}.section-head a,.section-head button{font:600 12px var(--sans);color:var(--accent)}.list{background:var(--surface)}.row{display:flex;align-items:center;gap:12px;padding:8px 16px;min-height:56px;border-bottom:1px solid var(--border);width:100%;text-align:left}.row:last-child{border-bottom:0}.row:hover{background:var(--hover)}.row .main{flex:1;min-width:0}.row .name{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row .sub{font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row .meta{font:500 10.5px var(--mono);color:var(--text-2);flex:none}.row .star{color:var(--accent);display:inline-block;width:10px;height:10px;margin-left:6px;vertical-align:1px}svg{display:block;width:100%;height:100%}.list-label{padding:10px 16px 4px}.empty{padding:24px 16px;color:var(--text-2);text-align:center}.avatar{flex:none;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent);font-family:var(--serif);font-weight:600;position:relative}.avatar img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}.avatar img.broken{display:none}.stack{display:inline-flex;flex:none}.stack .avatar{box-shadow:0 0 0 2px var(--surface)}.card{background:var(--surface);border-radius:14px;margin:0 16px 18px;padding:10px 13px}.reach-card{margin:16px;padding:16px;border-radius:16px;background:var(--surface);border:1px solid var(--border)}.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--thread);border-radius:999px;font-size:10.5px;color:var(--accent)}.chips{display:flex;flex-wrap:wrap;gap:6px}.pills{display:flex;gap:7px;overflow-x:auto;padding:4px 0}.pill{flex:none;min-height:36px;padding:6px 14px;border-radius:999px;background:var(--surface);color:var(--text-2);font:500 11.5px var(--sans)}.pill.on{background:var(--accent);color:var(--on-accent)}.pill.mono{font:500 11px var(--mono)}.pill.mono.on{background:var(--text);color:var(--bg)}.form{padding:8px 16px;display:grid;gap:16px}.field{display:grid;gap:6px}.field>span{font:500 10.5px var(--mono);color:var(--text-2);text-transform:uppercase}.input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 12px;font-size:15px}.input:focus{border-color:var(--accent);outline:none}textarea.input{min-height:110px;resize:vertical}.check{display:flex;align-items:center;gap:10px;min-height:44px}.check input{width:20px;height:20px;accent-color:var(--accent)}.btn{min-height:44px;padding:0 18px;border-radius:12px;background:var(--accent);color:var(--on-accent);font-weight:600}.btn[disabled]{opacity:.4;cursor:default}.btn.danger{background:var(--danger);color:var(--on-accent)}.btn.secondary{background:var(--surface);color:var(--text);border:1px solid var(--thread)}.highlight .input{border-color:var(--warning);box-shadow:0 0 0 1px var(--warning)}.field-error{color:var(--danger);font-size:12px}.input[aria-invalid=true]{border-color:var(--danger)}select.input{appearance:auto}.chip-remove{margin-left:2px;min-width:24px;min-height:24px;color:var(--text-2);font-size:14px}.person-picker .chip{color:var(--text)}.photo-picker{display:grid;justify-items:center;gap:10px;padding:8px 0}.photo-picker .actions{display:flex;gap:8px}.file-btn{display:inline-flex;align-items:center;cursor:pointer;position:relative}.file-btn[aria-disabled=true]{opacity:.4;cursor:default}.file-btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}.photo-tap{border-radius:50%}.file-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.banner{margin:8px 16px;padding:8px 12px;border-radius:12px;background:var(--danger);color:var(--on-accent);font:500 11px var(--mono)}.notice{margin:8px 16px;padding:8px 12px;border-radius:12px;background:var(--accent-soft);color:var(--text);font:500 11px var(--mono)}.center{min-height:60vh;display:grid;place-items:center;text-align:center;padding:24px}.spinner{width:22px;height:22px;border:2px solid var(--thread);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}@keyframes spin{to{transform:rotate(360deg)}}.sheet-backdrop{position:absolute;inset:0;background:var(--scrim);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}.sheet{background:var(--bg);width:100%;max-width:640px;max-height:100%;border-radius:16px;display:flex;flex-direction:column;overflow:hidden}.sheet .sheet-body{overflow-y:auto;padding-bottom:calc(16px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))}.dialog{background:var(--surface);border-radius:16px;padding:20px;margin:auto 16px;max-width:360px;width:100%;display:grid;gap:14px;text-align:center}.dialog .actions{display:flex;gap:8px;justify-content:center}.toast{position:absolute;left:50%;transform:translate(-50%);bottom:calc(var(--tabbar) + 16px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));background:var(--surface);color:var(--text);border:1px solid var(--border);padding:10px 16px;border-radius:12px;z-index:20;font-size:13px;box-shadow:0 2px 8px var(--scrim)}.actions-row{display:flex;gap:8px;padding:0 20px 18px}.action{width:54px;height:38px;border-radius:12px;background:var(--surface);color:var(--text);display:inline-flex;align-items:center;justify-content:center}.action svg{width:17px;height:17px}.action.primary{background:var(--accent);color:var(--on-accent)}';
+const Ca = ':host{--bg: var(--primary-background-color, #fafafa);--surface: var(--card-background-color, var(--ha-card-background, #ffffff));--text: var(--primary-text-color, #212121);--text-2: var(--secondary-text-color, #727272);--border: var(--divider-color, rgba(0, 0, 0, .12));--accent: var(--primary-color, #03a9f4);--on-accent: var(--text-primary-color, #ffffff);--accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);--hover: color-mix(in srgb, var(--text) 6%, transparent);--thread: var(--divider-color, rgba(0, 0, 0, .12));--danger: var(--error-color, #db4437);--warning: var(--warning-color, #ffa600);--scrim: var(--mdc-dialog-scrim-color, rgba(0, 0, 0, .32));--sans: var(--ha-font-family-body, var(--paper-font-body1_-_font-family, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif));--serif: var(--sans);--mono: var(--ha-font-family-code, ui-monospace, "SF Mono", Menlo, Consolas, monospace);--tabbar: 56px;position:relative;display:flex;flex-direction:column;height:100dvh;box-sizing:border-box;padding:var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) var(--safe-area-content-inset-right, var(--safe-area-inset-right, env(safe-area-inset-right, 0px))) 0 var(--safe-area-content-inset-left, var(--safe-area-inset-left, env(safe-area-inset-left, 0px)));background:var(--bg);color:var(--text);font:14px/1.4 var(--sans);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}*{box-sizing:border-box}button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}a{color:inherit;text-decoration:none}input,textarea{font:inherit;color:var(--text)}:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.shell{display:flex;flex-direction:column;flex:1;min-height:0}.topbar{display:flex;align-items:center;gap:4px;min-height:48px;padding:0 8px;border-bottom:1px solid var(--border);background:var(--bg);flex:none}.topbar .title{flex:1;font:600 16px var(--serif);padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.icon-btn{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border-radius:10px;color:var(--text)}.icon-btn:hover{background:var(--hover)}.icon-btn.accent{color:var(--accent)}.icon-btn.muted{color:var(--text-2)}.icon-btn[disabled]{opacity:.4;cursor:default}.icon-btn svg{width:20px;height:20px}.content{flex:1;overflow-y:auto;overscroll-behavior:contain;padding-bottom:24px;position:relative}.content.status{padding-bottom:calc(24px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))}.page{max-width:640px;margin:0 auto}.tabbar{flex:none;display:flex;height:calc(var(--tabbar) + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));padding-bottom:var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));border-top:1px solid var(--border);background:var(--bg)}.tabbar a,.tabbar button{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-2)}.tabbar .active{color:var(--accent)}.tabbar svg{width:22px;height:22px}.h-serif{font-family:var(--serif);font-weight:600}.mono{font-family:var(--mono)}.label{font:500 10.5px var(--mono);color:var(--text-2);letter-spacing:.02em;text-transform:uppercase}.muted{color:var(--text-2)}.accent{color:var(--accent)}.danger{color:var(--danger)}.warning{color:var(--warning)}.section{margin:16px 0 0}.section-head{display:flex;align-items:baseline;justify-content:space-between;padding:0 16px 6px}.section-head h2{margin:0;font:600 17px var(--serif)}.section-head a,.section-head button{font:600 12px var(--sans);color:var(--accent)}.list{background:var(--surface)}.row{display:flex;align-items:center;gap:12px;padding:8px 16px;min-height:56px;border-bottom:1px solid var(--border);width:100%;text-align:left}.row:last-child{border-bottom:0}.row:hover{background:var(--hover)}.row .main{flex:1;min-width:0}.row .name{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row .sub{font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row .meta{font:500 10.5px var(--mono);color:var(--text-2);flex:none}.row .star{color:var(--accent);display:inline-block;width:10px;height:10px;margin-left:6px;vertical-align:1px}svg{display:block;width:100%;height:100%}.list-label{padding:10px 16px 4px}.empty{padding:24px 16px;color:var(--text-2);text-align:center}.avatar{flex:none;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent);font-family:var(--serif);font-weight:600;position:relative}.avatar img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}.avatar img.broken{display:none}.stack{display:inline-flex;flex:none}.stack .avatar{box-shadow:0 0 0 2px var(--surface)}.card{background:var(--surface);border-radius:14px;margin:0 16px 18px;padding:10px 13px}.reach-card{margin:16px;padding:16px;border-radius:16px;background:var(--surface);border:1px solid var(--border)}.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--thread);border-radius:999px;font-size:10.5px;color:var(--accent)}.chips{display:flex;flex-wrap:wrap;gap:6px}.pills{display:flex;gap:7px;overflow-x:auto;padding:4px 0}.pill{flex:none;min-height:36px;padding:6px 14px;border-radius:999px;background:var(--surface);color:var(--text-2);font:500 11.5px var(--sans)}.pill.on{background:var(--accent);color:var(--on-accent)}.pill.mono{font:500 11px var(--mono)}.pill.mono.on{background:var(--text);color:var(--bg)}.form{padding:8px 16px;display:grid;gap:16px}.field{display:grid;gap:6px}.field>span{font:500 10.5px var(--mono);color:var(--text-2);text-transform:uppercase}.input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 12px;font-size:15px}.input:focus{border-color:var(--accent);outline:none}textarea.input{min-height:110px;resize:vertical}.check{display:flex;align-items:center;gap:10px;min-height:44px}.check input{width:20px;height:20px;accent-color:var(--accent)}.btn{min-height:44px;padding:0 18px;border-radius:12px;background:var(--accent);color:var(--on-accent);font-weight:600}.btn[disabled]{opacity:.4;cursor:default}.btn.danger{background:var(--danger);color:var(--on-accent)}.btn.secondary{background:var(--surface);color:var(--text);border:1px solid var(--thread)}.highlight .input{border-color:var(--warning);box-shadow:0 0 0 1px var(--warning)}.field-error{color:var(--danger);font-size:12px}.input[aria-invalid=true]{border-color:var(--danger)}select.input{appearance:auto}.chip-remove{margin-left:2px;min-width:24px;min-height:24px;color:var(--text-2);font-size:14px}.person-picker .chip{color:var(--text)}.photo-picker{display:grid;justify-items:center;gap:10px;padding:8px 0}.photo-picker .actions{display:flex;gap:8px}.file-btn{display:inline-flex;align-items:center;cursor:pointer;position:relative}.file-btn[aria-disabled=true]{opacity:.4;cursor:default}.file-btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}.photo-tap{border-radius:50%}.file-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.banner{margin:8px 16px;padding:8px 12px;border-radius:12px;background:var(--danger);color:var(--on-accent);font:500 11px var(--mono)}.notice{margin:8px 16px;padding:8px 12px;border-radius:12px;background:var(--accent-soft);color:var(--text);font:500 11px var(--mono)}.center{min-height:60vh;display:grid;place-items:center;text-align:center;padding:24px}.spinner{width:22px;height:22px;border:2px solid var(--thread);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}@keyframes spin{to{transform:rotate(360deg)}}.sheet-backdrop{position:absolute;inset:0;background:var(--scrim);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}.sheet{background:var(--bg);width:100%;max-width:640px;max-height:100%;border-radius:16px;display:flex;flex-direction:column;overflow:hidden}.sheet .sheet-body{overflow-y:auto;padding-bottom:calc(16px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))}.dialog{background:var(--surface);border-radius:16px;padding:20px;margin:auto 16px;max-width:360px;width:100%;display:grid;gap:14px;text-align:center}.dialog .actions{display:flex;gap:8px;justify-content:center}.toast{position:absolute;left:50%;transform:translate(-50%);bottom:calc(var(--tabbar) + 16px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));background:var(--surface);color:var(--text);border:1px solid var(--border);padding:10px 16px;border-radius:12px;z-index:20;font-size:13px;box-shadow:0 2px 8px var(--scrim)}.actions-row{display:flex;gap:8px;padding:0 20px 18px}.action{width:54px;height:38px;border-radius:12px;background:var(--surface);color:var(--text);display:inline-flex;align-items:center;justify-content:center}.action svg{width:17px;height:17px}.action.primary{background:var(--accent);color:var(--on-accent)}';
 function hn() {
   return l`<div class="center"><div class="spinner" role="progressbar" aria-label="Loading"></div></div>`;
 }
-function xa(t) {
+function Ea(t) {
   return l`<div class="center">
     <div style="max-width:420px">
       <div class="h-serif" style="font-size:21px;margin-bottom:12px">Start your Hearth</div>
@@ -3938,28 +3961,28 @@ function xa(t) {
     </div>
   </div>`;
 }
-function ka(t) {
+function Sa(t) {
   return l`<div class="center">
     <div style="max-width:420px">
       <p>Your Hearth didn't load. Check Settings → Devices &amp; services → Hearth.</p>
-      ${li(t)}
+      ${ci(t)}
     </div>
   </div>`;
 }
-function li(t) {
+function ci(t) {
   return l`<button class="btn" ?disabled=${t.retrying} aria-busy=${t.retrying ? "true" : "false"} @click=${() => void t.retry()}>
     ${t.retrying ? "Retrying…" : "Retry"}
   </button>`;
 }
-function Ca(t, e) {
+function Aa(t, e) {
   return l`<div class="center">
     <div style="max-width:420px">
       <p>${e}</p>
-      ${li(t)}
+      ${ci(t)}
     </div>
   </div>`;
 }
-function Ea(t) {
+function Ta(t) {
   const e = t instanceof Error ? `${t.name}: ${t.message}` : String(t);
   return l`<div class="center">
     <div style="max-width:460px">
@@ -3969,18 +3992,18 @@ function Ea(t) {
     </div>
   </div>`;
 }
-var Sa = Object.defineProperty, me = (t, e, n, i) => {
+var Ra = Object.defineProperty, me = (t, e, n, i) => {
   for (var s = void 0, r = t.length - 1, a; r >= 0; r--)
     (a = t[r]) && (s = a(e, n, s) || s);
-  return s && Sa(e, n, s), s;
+  return s && Ra(e, n, s), s;
 };
-function Aa(t, e) {
+function Ma(t, e) {
   return t?.user?.id !== e?.user?.id || t?.connection !== e?.connection;
 }
-function Ta(t, e) {
+function Na(t, e) {
   return t?.path !== e?.path || t?.prefix !== e?.prefix;
 }
-function Ra() {
+function Pa() {
   try {
     return window.localStorage;
   } catch {
@@ -4003,11 +4026,11 @@ class ee extends se {
       const n = e.composedPath().find((s) => s.localName === "a");
       if (!n || n.hasAttribute("target") || n.hasAttribute("download")) return;
       const i = n.getAttribute("href");
-      !i || !zi(i) || (e.preventDefault(), i !== `${location.pathname}${location.search}` && U(i));
+      !i || !Gi(i) || (e.preventDefault(), i !== `${location.pathname}${location.search}` && L(i));
     };
   }
   static {
-    this.styles = pn(wa);
+    this.styles = pn(Ca);
   }
   createRenderRoot() {
     const e = super.createRenderRoot();
@@ -4025,7 +4048,7 @@ class ee extends se {
   willUpdate(e) {
     if (this.syncStore(), e.has("route")) {
       const n = e.get("route"), i = this.renderRoot.querySelector("#content");
-      n && i && this.scrollPositions.set(n.path, i.scrollTop), this.lastTab = Gi(this.currentRoute) ?? this.lastTab, this.store?.routeChanged(`${_}${this.route?.path ?? ""}`);
+      n && i && this.scrollPositions.set(n.path, i.scrollTop), this.lastTab = Fi(this.currentRoute) ?? this.lastTab, this.store?.routeChanged(`${_}${this.route?.path ?? ""}`);
     }
   }
   updated(e) {
@@ -4037,11 +4060,11 @@ class ee extends se {
   syncStore() {
     const e = this.isConnected ? this.hass?.user?.id ?? null : null;
     if (e === this.storeUserId || (this.dropStore(), !e || !this.hass)) return;
-    const n = new $a(
-      new Di(this.hass.connection, () => this.hass?.auth),
+    const n = new xa(
+      new Ui(this.hass.connection, () => this.hass?.auth),
       this.hass.connection,
       e,
-      Ra(),
+      Pa(),
       () => this.onStoreChange(n)
     );
     this.store = n, this.storeUserId = e, n.start();
@@ -4061,39 +4084,39 @@ class ee extends se {
         case "loading":
           return K(hn(), n);
         case "noCrm":
-          return K(xa(e), n);
+          return K(Ea(e), n);
         case "notLoaded":
-          return K(ka(e), n);
+          return K(Sa(e), n);
         case "error":
-          return K(Ca(e, i.message), n);
+          return K(Aa(e, i.message), n);
         case "ready": {
           const s = { ...n, store: e, lastTab: this.lastTab, refreshing: this.refreshing, onRefresh: this.onRefresh };
-          return ua(da(e, this.currentRoute), s);
+          return ma(pa(e, this.currentRoute), s);
         }
       }
     } catch (i) {
-      return console.error(i), K(Ea(i), n);
+      return console.error(i), K(Ta(i), n);
     }
   }
 }
 me([
-  he({ attribute: !1, hasChanged: Aa })
+  he({ attribute: !1, hasChanged: Ma })
 ], ee.prototype, "hass");
 me([
   he({ type: Boolean })
 ], ee.prototype, "narrow");
 me([
-  he({ attribute: !1, hasChanged: Ta })
+  he({ attribute: !1, hasChanged: Na })
 ], ee.prototype, "route");
 me([
   he({ attribute: !1 })
 ], ee.prototype, "panel");
 me([
-  Ii()
+  Oi()
 ], ee.prototype, "refreshing");
 customElements.get("hearth-panel") || customElements.define("hearth-panel", ee);
 export {
   ee as HearthPanel,
-  Qr as PANEL_VERSION,
-  Aa as hassChanged
+  na as PANEL_VERSION,
+  Ma as hassChanged
 };

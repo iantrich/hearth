@@ -156,12 +156,12 @@ export interface CrmStatus {
 
 // Phone notifications, from custom_components/hearth_crm/notifications.py.
 
-export type NotificationKind = "birthdays" | "log_reminder";
+export type NotificationKind = "birthdays" | "log_reminder" | "reminders";
 
 export interface NotificationSetting {
   enabled: boolean;
-  /** "HH:MM", in Home Assistant's time zone. */
-  time: string;
+  /** "HH:MM", in Home Assistant's time zone. Reminders have none: they fire when each one comes due. */
+  time?: string;
 }
 
 export interface NotificationsStatus {

@@ -87,7 +87,8 @@ describe("reading screens", () => {
   });
 
   it("reach out lists the overdue close friend before the due-soon one, using contact_status", async () => {
-    const { el } = await mount("/reach-out");
+    // No reminders here, so names below only come from the rotation (reminders have their own tests).
+    const { el } = await mount("/reach-out", () => ({ ...sampleSnapshot(), reminders: [] }));
     expect(text(el)).toContain("1 person overdue");
     const sam = indexOf(el, "Sam Okafor");
     const casey = indexOf(el, "Casey Lindqvist");

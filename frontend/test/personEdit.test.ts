@@ -3,7 +3,7 @@ import "../src/hearth-panel";
 import type { HearthPanel } from "../src/hearth-panel";
 import { href, parseRoute } from "../src/router";
 import type { Snapshot } from "../src/types";
-import { fakeConnection, group, interaction, person, relationship, sampleSnapshot, type Handler } from "./fixtures";
+import { fakeConnection, group, interaction, person, relationship, reminder, sampleSnapshot, type Handler } from "./fixtures";
 
 const LOADED = { has_crm: true, loaded: true, entry_id: "e1" };
 const WRITE_TYPES = [
@@ -357,6 +357,23 @@ describe("edit a person", () => {
     button(el, "Cancel", '[role="alertdialog"]')!.click();
     await settle(el);
     expect(root(el).querySelector('[role="alertdialog"]')).toBeNull();
+  });
+
+  it("test_delete_person_warns_about_their_reminders", async () => {
+    const warn = async (reminders: number) => {
+      const data = () => {
+        const s = samSnapshot();
+        s.reminders = Array.from({ length: reminders }, (_, i) => reminder(`n${i}`, "p4", { note: `Note ${i}` }));
+        return s;
+      };
+      const { el } = await mount("/person/p4/edit", {}, data);
+      button(el, "Delete person", "#content")!.click();
+      await settle(el);
+      return root(el).querySelector('[role="alertdialog"]')!.textContent!;
+    };
+    expect(await warn(1)).toContain("keep the other people. 1 reminder about them is deleted.");
+    expect(await warn(3)).toContain("3 reminders about them are deleted.");
+    expect(await warn(0)).not.toContain("reminder");
   });
 
   it("the delete confirmation says when they leave their household", async () => {

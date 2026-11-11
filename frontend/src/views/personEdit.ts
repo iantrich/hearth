@@ -93,11 +93,13 @@ function deleteSentence(snapshot: Snapshot, personId: string): string {
   const theirs = snapshot.interactions.filter((i) => i.person_ids.includes(personId));
   const solo = theirs.filter((i) => i.person_ids.every((p) => p === personId)).length;
   const shared = theirs.length - solo;
+  const reminders = snapshot.reminders.filter((r) => r.person_id === personId).length;
   const n = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
   return (
     `Also removes ${n(relationships, "relationship", "relationships")} and ${n(memberships, "group membership", "group memberships")}. ` +
     `${n(solo, "interaction with only them is", "interactions with only them are")} deleted; ` +
-    `${n(shared, "shared interaction keeps", "shared interactions keep")} the other people.`
+    `${n(shared, "shared interaction keeps", "shared interactions keep")} the other people.` +
+    (reminders ? ` ${n(reminders, "reminder about them is", "reminders about them are")} deleted.` : "")
   );
 }
 

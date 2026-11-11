@@ -18,6 +18,8 @@ const ROWS: { kind: NotificationKind; id: string; label: string; help: string }[
     label: "Log reminder",
     help: "A reminder if you haven't logged an interaction today.",
   },
+  // No time: each reminder notifies when it comes due.
+  { kind: "reminders", id: "notify-reminders", label: "Reminders", help: "A notification when a reminder you set comes due." },
 ];
 
 export function notificationsSection(store: Store): TemplateResult {
@@ -49,7 +51,9 @@ export function notificationsSection(store: Store): TemplateResult {
           <span>${label}</span>
         </label>
         <div class="muted" style="font-size:12.5px">${help}</div>
-        <label class="field">
+        ${setting.time === undefined
+          ? nothing
+          : html`<label class="field">
           <span>Time</span>
           <input
             id=${`${id}-time`}
@@ -63,7 +67,7 @@ export function notificationsSection(store: Store): TemplateResult {
               if (time) void store.setNotification(kind, { time });
             }}
           />
-        </label>
+        </label>`}
       </div>`;
     })}
     <button class="btn secondary" id="notify-test" ?disabled=${store.busy || testing || noPhone} @click=${() => void store.sendTestNotification()}>

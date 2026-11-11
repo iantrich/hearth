@@ -20,7 +20,7 @@ const sentOf = (conn: FakeConnection, type: string) => conn.sent.filter((m) => m
 
 function status(extra: Partial<NotificationsStatus> = {}): NotificationsStatus {
   return {
-    settings: { birthdays: { enabled: false, time: "09:00" }, log_reminder: { enabled: true, time: "20:00" } },
+    settings: { birthdays: { enabled: false, time: "09:00" }, log_reminder: { enabled: true, time: "20:00" }, reminders: { enabled: true } },
     devices: 1,
     ...extra,
   };
@@ -65,10 +65,28 @@ describe("Notifications in Settings", () => {
     expect(root(el).querySelector("#notify-no-phone")).toBeNull();
   });
 
+  it("test_notifications_card_has_a_reminders_switch_without_a_time", async () => {
+    const off = status({
+      settings: { birthdays: { enabled: false, time: "09:00" }, log_reminder: { enabled: true, time: "20:00" }, reminders: { enabled: false } },
+    });
+    const { el, conn } = await mount({ "hearth_crm/notifications/set": () => off });
+    expect(content(el)).toContain("A notification when a reminder you set comes due.");
+    expect(input(el, "notify-reminders").checked).toBe(true);
+    expect(root(el).querySelector("#notify-reminders-time")).toBeNull();
+    const box = input(el, "notify-reminders");
+    box.checked = false;
+    box.dispatchEvent(new Event("change"));
+    await settle(el);
+    expect(sentOf(conn, "hearth_crm/notifications/set")).toEqual([
+      { type: "hearth_crm/notifications/set", changes: { reminders: { enabled: false } } },
+    ]);
+    expect(input(el, "notify-reminders").checked).toBe(false);
+  });
+
   it("turning one on sends only that change and shows what the server answers", async () => {
     const { el, conn } = await mount({
       "hearth_crm/notifications/set": () =>
-        status({ settings: { birthdays: { enabled: true, time: "09:00" }, log_reminder: { enabled: true, time: "20:00" } } }),
+        status({ settings: { birthdays: { enabled: true, time: "09:00" }, log_reminder: { enabled: true, time: "20:00" }, reminders: { enabled: true } } }),
     });
     const box = input(el, "notify-birthdays");
     box.checked = true;
@@ -83,7 +101,7 @@ describe("Notifications in Settings", () => {
   it("changing a time sends it; clearing the field sends nothing", async () => {
     const { el, conn } = await mount({
       "hearth_crm/notifications/set": () =>
-        status({ settings: { birthdays: { enabled: false, time: "09:00" }, log_reminder: { enabled: true, time: "21:15" } } }),
+        status({ settings: { birthdays: { enabled: false, time: "09:00" }, log_reminder: { enabled: true, time: "21:15" }, reminders: { enabled: true } } }),
     });
     const time = input(el, "notify-log-time");
     time.value = "";

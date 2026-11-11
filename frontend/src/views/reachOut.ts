@@ -1,9 +1,11 @@
-import { html, nothing } from "lit";
+import { html, nothing, type TemplateResult } from "lit";
 import { avatar } from "../components";
 import { formatMonthDay, plural } from "../format";
 import { href } from "../router";
 import type { Store } from "../store";
-import type { Person } from "../types";
+import type { Person, Reminder } from "../types";
+import { splitReminders } from "../logic/reminders";
+import { reminderRow } from "./reminderRows";
 import { snapshotOf, type View } from "./view";
 
 // Each person's urgency, last contact and day count are the snapshot's contact_status
@@ -26,6 +28,28 @@ function row(person: Person, overdue: boolean) {
 const byDays = (a: Person, b: Person) =>
   (a.contact_status.days_since_contact ?? Infinity) - (b.contact_status.days_since_contact ?? Infinity);
 
+const UPCOMING_LIMIT = 10;
+
+// Open reminders on every person: due now first, then the next few, then Someday folded away.
+function remindersSection(store: Store): TemplateResult {
+  const { people, reminders, today } = snapshotOf(store);
+  const { due, upcoming, someday } = splitReminders(reminders);
+  const byId = new Map(people.map((p) => [p.id, p]));
+  const rows = (list: Reminder[]) => list.map((r) => reminderRow(store, r, today, byId.get(r.person_id)));
+  const group = (label: string, list: Reminder[]) =>
+    list.length ? html`<div class="label list-label">${label}</div><div class="list">${rows(list)}</div>` : nothing;
+  const none = !due.length && !upcoming.length && !someday.length;
+  return html`<div class="label list-label" style="font-size:12px">Reminders</div>
+    ${none ? html`<div class="empty">No reminders.</div>` : nothing}
+    ${group("Due", due)} ${group("Upcoming", upcoming.slice(0, UPCOMING_LIMIT))}
+    ${someday.length
+      ? html`<details class="someday">
+          <summary class="label list-label">Someday · ${someday.length}</summary>
+          <div class="list">${rows(someday)}</div>
+        </details>`
+      : nothing}`;
+}
+
 export function reachOutView(store: Store): View {
   const friends = snapshotOf(store).people.filter((p) => p.close_friend);
   const overdue = friends.filter((p) => p.contact_status.urgency === "overdue").sort(byDays);
@@ -36,6 +60,7 @@ export function reachOutView(store: Store): View {
     back: false,
     actions: [],
     body: html`<div class="page">
+      ${remindersSection(store)}
       <div class="reach-card">
         <div class="mono accent" style="font-size:10px">CLOSE FRIEND ROTATION · ~6WK CADENCE</div>
         <div class="h-serif" style="font-size:17px;margin-top:6px">${plural(overdue.length, "person", "people")} overdue</div>
