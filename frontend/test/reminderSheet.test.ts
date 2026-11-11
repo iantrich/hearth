@@ -224,6 +224,36 @@ describe("reminder sheet", () => {
     expect(sheetEl(el)).toBeNull();
   });
 
+  it("a done reminder opens read-only, with only Delete", async () => {
+    const data = () => {
+      const s = sampleSnapshot();
+      s.reminders.push(
+        reminder("m3", "p4", {
+          note: "Return the tent", state: "done", done_at: "2026-11-01T10:00:00+00:00",
+          due_at: "2026-10-30T08:00:00-05:00", due_date: "2026-10-30", due_time: "08:00",
+        }),
+      );
+      return s;
+    };
+    const { el, writes } = await mount("/reminder/m3", data, { "hearth_crm/delete": () => ({}) });
+    expect(sheetEl(el)!.getAttribute("aria-label")).toBe("Done reminder");
+    const text = sheetText(el);
+    expect(text).toContain("Return the tent");
+    expect(text).toContain("Sam Okafor");
+    expect(text).toContain("Done");
+    expect(text).toMatch(/Oct 30|2026-10-30/);
+    // Nothing to edit or save: no inputs, no Save.
+    expect(sheetEl(el)!.querySelectorAll("input, textarea, select")).toHaveLength(0);
+    expect(button(el, "Save")).toBeUndefined();
+    const labels = [...sheetEl(el)!.querySelectorAll("button")].map((b) => b.textContent?.trim());
+    expect(labels.sort()).toEqual(["Close", "Delete reminder"]);
+
+    await click(el, "Delete reminder");
+    await click(el, "Delete", '[role="alertdialog"]');
+    expect(writes()).toEqual([{ type: "hearth_crm/delete", kind: "reminder", entity_id: "m3" }]);
+    expect(sheetEl(el)).toBeNull();
+  });
+
   it("test_the_edit_sheet_for_a_reminder_deleted_elsewhere_shows_the_not_found_state", async () => {
     let deleted = false;
     const data = () => {
@@ -304,9 +334,17 @@ describe("log sheet reminders", () => {
     expect(writes().map((w) => w.kind)).toEqual(["interaction"]);
   });
 
-  it("editing an interaction links Add reminder to the interaction's reminder sheet", async () => {
+  it("editing an interaction offers no Add reminder, so unsaved edits can't be dropped by it", async () => {
     const { el } = await mount("/interaction/i1/edit");
-    const link = [...root(el).querySelectorAll<HTMLAnchorElement>('[role="dialog"] a')].find((a) => a.textContent?.trim() === "Add reminder");
+    const offers = [...root(el).querySelectorAll<HTMLElement>('[role="dialog"] a, [role="dialog"] button')].filter(
+      (a) => a.textContent?.trim() === "Add reminder",
+    );
+    expect(offers).toEqual([]);
+  });
+
+  it("the interaction screen itself still links Add reminder to its reminder sheet", async () => {
+    const { el } = await mount("/interaction/i1");
+    const link = [...root(el).querySelectorAll<HTMLAnchorElement>("#content a")].find((a) => a.textContent?.trim() === "Add reminder");
     expect(link?.getAttribute("href")).toBe(href.newInteractionReminder("i1"));
   });
 });

@@ -1,7 +1,7 @@
 // Add or change one reminder, as a sheet over the screen it opened from: a person's screen (add,
 // for them), an interaction's (add, linked to it, for its first person unless another is chosen)
-// or Reach out (edit; a reminder's person doesn't change). The
-// form is a draft for the sheet's path. An edit sends only what changed since the sheet opened.
+// or Reach out (edit; a reminder's person doesn't change). A done reminder opens read-only,
+// with only Delete. The form is a draft for the sheet's path. An edit sends only what changed since the sheet opened.
 import { html, nothing, type TemplateResult } from "lit";
 import { avatar } from "../components";
 import { confirmDialog } from "../forms/confirm";
@@ -9,6 +9,7 @@ import { bindDraft } from "../forms/fields";
 import { personPicker } from "../forms/personPicker";
 import { blankReminder, reminderChangesOf, reminderFields, reminderFormOf, type ReminderForm } from "../forms/reminderFields";
 import { interactionPeople } from "../logic/interactionFeed";
+import { dueLabel, repeatLabel } from "../logic/reminders";
 import { goBack, href, type Route } from "../router";
 import type { Store } from "../store";
 import type { Interaction, Person, Reminder } from "../types";
@@ -70,6 +71,8 @@ export function reminderSheetView(store: Store, route: ReminderRoute): View {
       const person = snapshot.people.find((p) => p.id === existing.person_id) ?? null;
       const interaction = existing.interaction_id ? (snapshot.interactions.find((i) => i.id === existing.interaction_id) ?? null) : null;
       const spec = { key: `edit:reminder:${existing.id}`, path: href.reminder(existing.id), closeTo: href.reachOut(), person, locked: true, interaction, existing };
+      // A done reminder can't be edited (the server refuses it): it can only be read or deleted.
+      if (existing.state === "done" || existing.done_at) return { ...reachOutView(store), overlay: doneSheet(store, spec, existing) };
       return { ...reachOutView(store), overlay: sheet(store, spec) };
     }
   }
@@ -152,6 +155,49 @@ function sheet(store: Store, spec: SheetSpec): TemplateResult {
       </div>
     </div>
     ${existing && store.drafts.get(confirmKey(existing.id)) ? confirmDelete(store, existing, chosen, done) : nothing}`;
+}
+
+// A done reminder, read-only: its note, person, due date and that it's done, with only Delete.
+function doneSheet(store: Store, spec: SheetSpec, existing: Reminder): TemplateResult {
+  const { path, person, interaction } = spec;
+  const done = () => {
+    store.drafts.drop(confirmKey(existing.id));
+    goBack(spec.closeTo);
+  };
+  const today = snapshotOf(store).today;
+  const repeat = existing.repeat_every && existing.repeat_unit ? ` · ${repeatLabel(existing.repeat_every, existing.repeat_unit)}` : "";
+  return html`<div class="sheet-backdrop" @click=${(e: Event) => e.target === e.currentTarget && done()}>
+      <div class="sheet" role="dialog" aria-label="Done reminder">
+        <div class="topbar">
+          <button class="icon-btn" style="padding:0 12px" @click=${done}>Close</button>
+          <span class="title" style="text-align:center">Reminder</span>
+          <span style="padding:0 12px"></span>
+        </div>
+        <div class="sheet-body">
+          <div class="form">
+            <div class="field">
+              <span>Person</span>
+              ${person
+                ? html`<div style="display:flex;align-items:center;gap:10px">${avatar(person.name, person.photo_url, 26)} ${person.name}</div>`
+                : html`<div class="muted">No longer in Hearth</div>`}
+            </div>
+            ${interaction ? html`<div class="muted" style="font-size:12.5px">From: ${interaction.summary}</div>` : nothing}
+            <div class="field"><span>Note</span><div>${existing.note ?? html`<span class="muted">No note</span>`}</div></div>
+            <div class="field"><span>Due</span><div>${dueLabel(existing, today)}${repeat}</div></div>
+            <div class="field"><span>Status</span><div>Done</div></div>
+            <button
+              class="btn danger"
+              style="margin-top:12px"
+              ?disabled=${store.busy}
+              @click=${() => store.drafts.put(confirmKey(existing.id), path, {})}
+            >
+              Delete reminder
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    ${store.drafts.get(confirmKey(existing.id)) ? confirmDelete(store, existing, person, done) : nothing}`;
 }
 
 // Says exactly what goes. Deletes in Hearth are permanent; one already deleted elsewhere counts as done.

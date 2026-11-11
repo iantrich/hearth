@@ -146,13 +146,11 @@ export function logSheet(store: Store, person: Person, editing: Interaction | nu
   </div>`;
 }
 
-const buttonLink = "display:flex;align-items:center;justify-content:center";
-
-// Editing an interaction: its reminders are their own records, added from their own sheet.
-// Logging one: a reminder can be added here and is saved with it.
+// Editing an interaction: its reminders are their own records, added from the interaction's
+// screen (a link here would leave the sheet and drop unsaved edits). Logging one: a reminder
+// can be added here and is saved with it.
 function reminderPart(store: Store, key: string, form: LogForm, editing: Interaction | null, person: Person) {
-  if (editing)
-    return html`<a class="btn secondary" style=${buttonLink} href=${href.newInteractionReminder(editing.id)}>Add reminder</a>`;
+  if (editing) return nothing;
   const set = (reminder: LogReminder | null) => store.drafts.patch<LogForm>(key, { reminder });
   if (!form.reminder) return html`<button class="btn secondary" @click=${() => set({ ...blankReminder(), person: person.id })}>Add reminder</button>`;
   const { people, today, reminder_units } = snapshotOf(store);
