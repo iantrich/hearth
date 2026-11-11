@@ -735,3 +735,130 @@ async def test_stopping_waits_for_a_check_that_is_mid_send_and_nothing_runs_afte
     await tick(hass, freezer, BASE + 10 * MINUTE)
     await runtime.notifications._check_reminders()
     assert calls == after  # nothing reads or writes once stop has returned
+
+
+async def test_a_mark_refused_during_a_backup_is_not_resent_and_is_marked_after_it(hass, crm, freezer):
+    from custom_components.hearth_crm.db import BackupInProgress
+
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    service = entry.runtime_data.service
+    freezer.move_to(BASE)
+    blocked = await make_reminder(hass, entry, due_at=iso(BASE - timedelta(hours=1)), note="Blocked")
+    other = await make_reminder(hass, entry, due_at=iso(BASE - timedelta(hours=1)), note="Other")
+    backup = {"on": True}
+    real_mark = service.mark_reminder_notified
+
+    def mark(reminder_id, occurrence):
+        if backup["on"] and reminder_id == blocked["id"]:
+            raise BackupInProgress
+        return real_mark(reminder_id, occurrence)
+
+    service.mark_reminder_notified = mark
+    await start_at(hass, freezer, entry)
+    assert sorted(c.data["message"] for c in sent) == ["Blocked", "Other"]
+    assert (await stored_reminder(hass, entry, blocked["id"])).notified_for is None
+    assert (await stored_reminder(hass, entry, other["id"])).notified_for is not None
+
+    await tick(hass, freezer, BASE + MINUTE)  # still backing up: the mark is retried, not the send
+    await tick(hass, freezer, BASE + 2 * MINUTE)
+    assert len(sent) == 2
+    assert (await stored_reminder(hass, entry, blocked["id"])).notified_for is None
+
+    backup["on"] = False
+    await tick(hass, freezer, BASE + 3 * MINUTE)
+    assert len(sent) == 2
+    assert (await stored_reminder(hass, entry, blocked["id"])).notified_for == BASE - timedelta(hours=1)
+    assert entry.runtime_data.notifications._unmarked == {}
+    await tick(hass, freezer, BASE + 4 * MINUTE)
+    assert len(sent) == 2
+
+
+async def test_an_unmarked_send_is_forgotten_when_its_reminder_goes(hass, crm, freezer):
+    from custom_components.hearth_crm.db import BackupInProgress
+
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    service = entry.runtime_data.service
+    freezer.move_to(BASE)
+    made = await make_reminder(hass, entry, due_at=iso(BASE - timedelta(hours=1)))
+
+    def refuse(reminder_id, occurrence):
+        raise BackupInProgress
+
+    service.mark_reminder_notified = refuse
+    await start_at(hass, freezer, entry)
+    runtime = entry.runtime_data.notifications
+    assert set(runtime._unmarked) == {made["id"]}
+    await hass.async_add_executor_job(service.delete, "reminder", made["id"], "panel")
+    await tick(hass, freezer, BASE + MINUTE)
+    assert runtime._unmarked == {}
+    assert len(sent) == 1
+
+
+async def test_one_reminder_failing_unexpectedly_does_not_stop_the_others(hass, crm, freezer, caplog):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    MockConfigEntry(domain="mobile_app", data={"user_id": user.id, "device_name": "Test Phone"}).add_to_hass(hass)
+    broken = {"on": True}
+
+    async def handler(call: ServiceCall) -> None:
+        if broken["on"] and call.data["message"] == "the secret note text":
+            raise RuntimeError("the secret note text")
+        sent.append(call)
+
+    hass.services.async_register("notify", "mobile_app_test_phone", handler)
+    freezer.move_to(BASE)
+    notes = ["First", "the secret note text", "Third", "Fourth", "Fifth"]
+    made = [
+        await make_reminder(hass, entry, due_at=iso(BASE - timedelta(minutes=10 - i)), note=note)
+        for i, note in enumerate(notes)
+    ]
+    await start_at(hass, freezer, entry)
+    assert sorted(c.data["message"] for c in sent) == ["Fifth", "First", "Fourth", "Third"]
+    assert (await stored_reminder(hass, entry, made[1]["id"])).notified_for is None
+    for good in (made[0], *made[2:]):
+        assert (await stored_reminder(hass, entry, good["id"])).notified_for is not None
+
+    def failures() -> int:
+        return sum("RuntimeError" in r.getMessage() for r in caplog.records)
+
+    assert failures() == 1
+    assert "the secret note text" not in caplog.text
+    assert "Roy Example" not in caplog.text
+
+    await tick(hass, freezer, BASE + MINUTE)  # retried, not logged again within the hour
+    assert len(sent) == 4 and failures() == 1
+
+    broken["on"] = False  # the interval timer is still running and picks it up
+    await tick(hass, freezer, BASE + 2 * MINUTE)
+    assert len(sent) == 5
+    assert (await stored_reminder(hass, entry, made[1]["id"])).notified_for is not None
+
+
+async def test_a_check_that_fails_outright_is_logged_by_type_and_the_timer_keeps_going(
+    hass, crm, freezer, caplog
+):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    service = entry.runtime_data.service
+    freezer.move_to(BASE)
+    await make_reminder(hass, entry, due_at=iso(BASE - timedelta(hours=1)), note="the secret note text")
+    real_read = service.read_data
+    failing = {"on": True}
+
+    def read():
+        if failing["on"]:
+            raise RuntimeError("the secret note text")
+        return real_read()
+
+    service.read_data = read
+    await start_at(hass, freezer, entry)
+    assert sent == []
+    assert "RuntimeError" in caplog.text and "the secret note text" not in caplog.text
+    failing["on"] = False
+    await tick(hass, freezer, BASE + MINUTE)
+    assert len(sent) == 1

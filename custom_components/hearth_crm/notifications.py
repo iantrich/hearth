@@ -27,7 +27,6 @@ from urllib.parse import quote
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.event import async_track_time_change, async_track_time_interval
 from homeassistant.util import dt as dt_util
 from homeassistant.util import slugify
@@ -49,6 +48,7 @@ NO_PHONE = (
 )
 REMINDER_CHECK_EVERY = timedelta(seconds=60)
 REMINDER_LOG_EVERY = timedelta(hours=1)
+_WHOLE_CHECK = ""  # the throttle key for a check that failed before reaching any reminder
 
 
 @dataclass(frozen=True)
@@ -161,6 +161,9 @@ class NotificationRuntime:
         self._start_check: asyncio.Task | None = None
         self._stopped = False
         self._last_failure_log: dict[str, datetime] = {}
+        # Sends a phone accepted whose notified date is not saved yet (say, a backup held the
+        # database): later checks retry only the save, so the phone is not told twice.
+        self._unmarked: dict[str, datetime] = {}
 
     async def async_start(self) -> None:
         self._stopped = False
@@ -253,35 +256,72 @@ class NotificationRuntime:
 
     async def _check_reminders(self, now: datetime | None = None) -> None:
         """Send each due, not yet notified reminder (``now`` is the timer's, and in UTC, so the
-        zone and the instant come from Home Assistant instead)."""
+        zone and the instant come from Home Assistant instead).
+
+        Each reminder is tried on its own: one that fails, for any reason, is logged by type
+        (about once an hour) and retried on the next check, and the others still go out.
+        """
         async with self._check_lock:
             if self._stopped:
                 return
-            service = self._runtime.service
-            tz = dt_util.get_default_time_zone()
             instant = dt_util.utcnow()
-            data = await self._hass.async_add_executor_job(service.read_data)
-            due = [
-                (r, occurrence)
-                for r in data.reminders
-                if (occurrence := reminders.due_occurrence(r, instant, tz)) is not None
-            ]
-            if not due:
-                return
-            enabled = (await self._settings())["reminders"]["enabled"]
-            people = {p.id: p for p in data.people}
-            for reminder, occurrence in due:
-                if enabled:
-                    if reminder.person_id not in people:
-                        continue
-                    errors: list[str] = []
-                    note = reminder_notification(people[reminder.person_id], reminder)
-                    if not await self._send([note], errors=errors):
-                        self._log_reminder_failure(reminder.id, errors, instant)
-                        continue
-                await self._hass.async_add_executor_job(
-                    service.mark_reminder_notified, reminder.id, occurrence
-                )
+            try:
+                await self._check_reminders_at(instant)
+            except Exception as err:  # the next check tries again
+                self._log_reminder_failure(_WHOLE_CHECK, [type(err).__name__], instant)
+
+    async def _check_reminders_at(self, instant: datetime) -> None:
+        service = self._runtime.service
+        tz = dt_util.get_default_time_zone()
+        data = await self._hass.async_add_executor_job(service.read_data)
+        due: dict[str, tuple[Reminder, datetime]] = {}
+        for r in data.reminders:
+            try:
+                occurrence = reminders.due_occurrence(r, instant, tz)
+            except Exception as err:  # a bad row must not stop the others
+                self._log_reminder_failure(r.id, [type(err).__name__], instant)
+                continue
+            if occurrence is not None:
+                due[r.id] = (r, occurrence)
+        # Forget sends whose reminder is gone, or whose due date moved on (done, edited).
+        self._unmarked = {
+            rid: occ
+            for rid, occ in self._unmarked.items()
+            if rid in due and due[rid][1] == occ
+        }
+        if not due:
+            return
+        enabled = (await self._settings())["reminders"]["enabled"]
+        people = {p.id: p for p in data.people}
+        for reminder, occurrence in due.values():
+            try:
+                await self._notify_reminder(reminder, occurrence, people, enabled, instant)
+            except Exception as err:  # the next check tries again
+                self._log_reminder_failure(reminder.id, [type(err).__name__], instant)
+
+    async def _notify_reminder(
+        self,
+        reminder: Reminder,
+        occurrence: datetime,
+        people: dict[str, Person],
+        enabled: bool,
+        instant: datetime,
+    ) -> None:
+        """Send one due reminder (unless it already went out) and save its notified date."""
+        if self._unmarked.get(reminder.id) != occurrence:
+            if enabled:
+                if reminder.person_id not in people:
+                    return
+                errors: list[str] = []
+                note = reminder_notification(people[reminder.person_id], reminder)
+                if not await self._send([note], errors=errors):
+                    self._log_reminder_failure(reminder.id, errors, instant)
+                    return
+            self._unmarked[reminder.id] = occurrence
+        await self._hass.async_add_executor_job(
+            self._runtime.service.mark_reminder_notified, reminder.id, occurrence
+        )
+        self._unmarked.pop(reminder.id, None)
 
     def _log_reminder_failure(self, reminder_id: str, errors: list[str], instant: datetime) -> None:
         """Log why a reminder could not be sent, by type only and about once an hour."""
@@ -307,7 +347,7 @@ class NotificationRuntime:
                         blocking=True,
                     )
                     sent += 1
-                except HomeAssistantError as err:
+                except Exception as err:  # a broken notify service is one failed device
                     if errors is None:
                         _LOGGER.warning(
                             "A Hearth notification could not be sent (%s)", type(err).__name__
