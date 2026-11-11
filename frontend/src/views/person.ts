@@ -12,6 +12,7 @@ import type { Store } from "../store";
 import type { Household, Interaction, Person, Snapshot } from "../types";
 import { googleErrorText } from "./googleSettings";
 import { logSheet } from "./log";
+import { reminderSection } from "./reminderRows";
 import { arriving, notFound, snapshotOf, type View } from "./view";
 
 // tel:, sms: and mailto: open with target="_blank": inside the Companion app that's the only
@@ -23,7 +24,8 @@ function actionLink(icon: TemplateResult, label: string, url: string) {
 }
 
 // Unavailable actions are left out rather than dimmed, so the row shows only how this person
-// can actually be reached. Log goes to the person's /log route, which opens the log sheet.
+// can actually be reached. Log goes to the person's /log route, which opens the log sheet, and
+// Add reminder to the reminder sheet.
 function actionRow(person: Person, household: Household | null) {
   const call = callUrl(person.phone);
   const message = messageUrl(person.phone);
@@ -33,6 +35,7 @@ function actionRow(person: Person, household: Household | null) {
     <a class="action primary" href=${href.logInteraction(person.id)} aria-label="Log interaction" title="Log interaction"
       >${icons.plus}</a
     >
+    <a class="action" href=${href.newReminder(person.id)} aria-label="Add reminder" title="Add reminder">${icons.bell}</a>
     ${call ? actionLink(icons.phone, "Call", call) : nothing} ${message ? actionLink(icons.message, "Message", message) : nothing}
     ${email ? actionLink(icons.envelope, "Email", email) : nothing} ${map ? actionLink(icons.mapPin, "Map", map) : nothing}
   </div>`;
@@ -185,6 +188,7 @@ export function personView(store: Store, id: string, sheet: "log" | null): View 
         ? html`<div class="label" style="padding:0 20px 8px">Relationship summary</div>
             <div class="card" style="border-left:3px solid var(--accent);padding:14px;font-size:12.5px;white-space:pre-wrap">${person.relationship_summary}</div>`
         : nothing}
+      ${reminderSection(store, snapshot.reminders.filter((r) => r.person_id === person.id && r.state !== "done"), "padding:0 20px 8px", "padding:0")}
       ${connectionsCard(person, snapshot)} ${socials(person)} ${timeline(interactionsFor(snapshot.interactions, person.id))}
     </div>`,
     overlay: sheet === "log" ? logSheet(store, person, null) : undefined,

@@ -327,8 +327,14 @@ export class Store {
   }
 
   async addInteraction(fields: InteractionChanges & { person_ids: string[] }): Promise<boolean> {
+    return (await this.createInteraction(fields)) !== null;
+  }
+
+  /** Saves a new interaction and resolves to its id (null if it failed), for a reminder linked to it. */
+  async createInteraction(fields: InteractionChanges & { person_ids: string[] }): Promise<string | null> {
     const { person_ids, type, date, summary, notes } = fields;
-    return (await this.write(() => this.api.create("interaction", { person_ids, type, date, summary, notes }))) !== null;
+    const created = await this.write(() => this.api.create("interaction", { person_ids, type, date, summary, notes }) as Promise<{ id: string }>);
+    return created ? created.value.id : null;
   }
 
   /**

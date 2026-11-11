@@ -8,6 +8,7 @@ import type { Store } from "../store";
 import { goBack, href } from "../router";
 import type { Interaction, Person } from "../types";
 import { logSheet } from "./log";
+import { reminderSection } from "./reminderRows";
 import { notFound, snapshotOf, type View } from "./view";
 
 /**
@@ -49,7 +50,7 @@ function confirmDelete(store: Store, interaction: Interaction, lead: Person | un
 }
 
 export function interactionView(store: Store, id: string, sheet: "edit" | null): View {
-  const { interactions, people: everyone } = snapshotOf(store);
+  const { interactions, people: everyone, reminders } = snapshotOf(store);
   const interaction = interactions.find((i) => i.id === id);
   if (!interaction) return notFound("interaction");
   const people = interactionPeople(interaction, everyone);
@@ -78,6 +79,10 @@ export function interactionView(store: Store, id: string, sheet: "edit" | null):
       ${interaction.notes
         ? html`<div><div class="label" style="margin-bottom:6px">Notes</div><div style="white-space:pre-wrap">${interaction.notes}</div></div>`
         : nothing}
+      <div>
+        ${reminderSection(store, reminders.filter((r) => r.interaction_id === interaction.id), "margin-bottom:6px", "margin:0;padding:0")}
+        <a class="accent" href=${href.newInteractionReminder(interaction.id)} style="display:block;font-size:12.5px;padding:8px 0">Add reminder</a>
+      </div>
     </div>`,
     overlay: html`${sheet === "edit" && lead ? logSheet(store, lead, interaction) : nothing}${store.drafts.get(confirmKey(id))
       ? confirmDelete(store, interaction, lead)

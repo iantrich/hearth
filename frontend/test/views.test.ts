@@ -142,6 +142,7 @@ describe("reading screens", () => {
     const hrefs = [...root(el).querySelectorAll(".actions-row a")].map((a) => a.getAttribute("href"));
     expect(hrefs).toEqual([
       "/hearth/person/p1/log",
+      "/hearth/person/p1/reminder/new",
       "tel:+15550142233",
       "sms:+15550142233",
       "mailto:alex@example.com",

@@ -27,7 +27,7 @@ export function snapshotOf(store: Store): Snapshot {
  * A detail screen whose record is gone: deleted elsewhere (by Claude, an import, another tab)
  * while it was open, or a stale link. The next snapshot redraws the screen into this.
  */
-export function notFound(what: "person" | "household" | "group" | "interaction"): View {
+export function notFound(what: "person" | "household" | "group" | "interaction" | "reminder"): View {
   return { title: null, back: true, actions: [], body: html`<div class="empty">This ${what} no longer exists.</div>` };
 }
 

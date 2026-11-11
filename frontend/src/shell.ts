@@ -12,6 +12,7 @@ import { groupView, householdView } from "./views/members";
 import { personView } from "./views/person";
 import { personEditView } from "./views/personEdit";
 import { relationshipView } from "./views/relationshipSheet";
+import { reminderSheetView } from "./views/reminderSheet";
 import { reachOutView } from "./views/reachOut";
 import { searchView } from "./views/search";
 import { settingsView } from "./views/settings";
@@ -59,11 +60,10 @@ export function viewFor(store: Store, route: Route): View {
       return groupEditView(store, route.id);
     case "interaction":
       return interactionView(store, route.id, route.sheet);
-    // The reminder screens arrive with the views; until then these land on home.
     case "reminder":
     case "reminderNew":
     case "interactionReminderNew":
-      return homeView(store);
+      return reminderSheetView(store, route);
   }
 }
 
