@@ -260,8 +260,7 @@ async def ws_delete(hass, connection, msg, entry) -> None:
 @_with_crm
 async def ws_reminder_complete(hass, connection, msg, entry) -> None:
     service = entry.runtime_data.service
-    await hass.async_add_executor_job(service.complete_reminder, msg["entity_id"], SOURCE)
-    row = await hass.async_add_executor_job(service.reminder_row, msg["entity_id"])
+    row = await hass.async_add_executor_job(service.complete_reminder, msg["entity_id"], SOURCE)
     _notify(hass, entry, "reminder", msg["entity_id"], "update")
     connection.send_result(msg["id"], {"reminder": row})
 

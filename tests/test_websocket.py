@@ -488,6 +488,34 @@ async def test_reminder_complete_command(hass, two_crms, ws_for_a):
     assert result["reminder"]["due_date"] == "2030-05-08"
 
 
+async def test_reminder_complete_sends_its_notice_even_if_the_reminder_is_deleted_right_after(
+    hass, two_crms, ws_for_a
+):
+    from homeassistant.helpers.dispatcher import async_dispatcher_connect
+
+    entry = two_crms[2]
+    service = entry.runtime_data.service
+    alex = await ok(ws_for_a, "create", kind="person", fields={"name": "Alex Example"})
+    made = await ok(
+        ws_for_a, "create", kind="reminder",
+        fields={"person_id": alex["id"], "due_at": "2030-05-01T09:00"},
+    )
+    seen = []
+    async_dispatcher_connect(hass, SIGNAL_CHANGED.format(entry.entry_id), seen.append)
+    real_complete = service.complete_reminder
+
+    def complete_then_someone_deletes(reminder_id, source):
+        result = real_complete(reminder_id, source)
+        service.delete("reminder", reminder_id, "claude")  # a concurrent delete
+        return result
+
+    service.complete_reminder = complete_then_someone_deletes
+    result = await ok(ws_for_a, "reminder/complete", entity_id=made["id"])
+    assert result["reminder"]["state"] == "done" and result["reminder"]["id"] == made["id"]
+    await hass.async_block_till_done()
+    assert {"source": "panel", "entity": "reminder", "entity_id": made["id"], "action": "update"} in seen
+
+
 async def test_reminder_complete_is_refused_for_another_users_reminder(hass, two_crms, ws_for_a, ws_for_b):
     alex = await ok(ws_for_a, "create", kind="person", fields={"name": "Alex Example"})
     made = await ok(ws_for_a, "create", kind="reminder", fields={"person_id": alex["id"]})

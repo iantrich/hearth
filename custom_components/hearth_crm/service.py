@@ -316,7 +316,11 @@ class HearthService:
                 raise NotFound(kind, entity_id) from None
 
     def complete_reminder(self, reminder_id: str, source: str) -> dict:
-        """Mark a reminder done, or move a repeating one to its next future date."""
+        """Mark a reminder done, or move a repeating one to its next future date.
+
+        Returns the saved reminder's snapshot row, built under the write lock, so a delete
+        that lands right after cannot make a committed completion look like it failed.
+        """
         _check_id(reminder_id)
         with self._write_lock:
             existing = self._require("reminder", reminder_id)
@@ -327,7 +331,7 @@ class HearthService:
             entity.updated_at = datetime.now(UTC)
             with _db_errors():
                 self._repo.update("reminder", entity, source)
-            return to_dict(entity)
+            return reminder_row(entity, self._today(), now.tzinfo)
 
     def mark_reminder_notified(self, reminder_id: str, occurrence: datetime) -> None:
         """Remember which scheduled instant was notified (bookkeeping: not an edit)."""
