@@ -462,6 +462,16 @@ def test_notes_that_a_write_replaces_say_how_to_add_to_them():
         assert "Replaces the whole text" in description and "read the current text first" in description, name
 
 
+def test_reminder_tools_are_described_and_the_prompt_mentions_reminders():
+    for name in ("create_reminder", "list_reminders", "complete_reminder", "delete_reminder"):
+        assert _tool(name).description, name
+    for name in ("create_reminder", "list_reminders", "complete_reminder"):
+        assert STORED_DATA_RULE in _tool(name).description, name
+    assert "needs a person" in _tool("create_reminder").description
+    assert "not an interaction" in llm_api.API_PROMPT
+    assert "who it is about" in llm_api.API_PROMPT
+
+
 def test_group_tools_name_list_groups():
     assert "list_groups" in _tool("create_group").description
     for name in ("get_group", "update_group", "set_group_members"):

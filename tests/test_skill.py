@@ -65,6 +65,14 @@ def test_every_tool_the_skill_names_exists_and_every_tool_is_named():
     assert named == _real_tool_names()
 
 
+def test_skill_names_the_reminder_tools():
+    text = SKILL.read_text()
+    for tool in ("create_reminder", "list_reminders", "complete_reminder", "delete_reminder"):
+        assert f"{TOOL_PREFIX}{tool}" in text, tool
+    assert "needs a person" in text
+    assert "until you delete" in text
+
+
 def test_api_prompt_names_only_real_tools_and_stays_short():
     prompt = llm_api.API_PROMPT
     named = set(TOOL_NAME.findall(prompt))

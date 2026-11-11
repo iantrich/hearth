@@ -114,6 +114,15 @@ Look up the existing relationships first with `hearth_crm__get_person`, so nothi
 
 Results are capped (25 by default, at most 100) and say when they were truncated. Narrow the search rather than paging.
 
+## Reminders
+
+- A reminder is something to do about a person, later. It is not an interaction: use `hearth_crm__log_interaction` for what already happened.
+- **Set one** with `hearth_crm__create_reminder`. A reminder needs a person, so "remind me to renew my passport" needs a person: ask who it is about. Use the user's own person only if they say so. Pass `due` as `YYYY-MM-DD` (08:00 that day) or `YYYY-MM-DDTHH:MM`, working dates out from today's date; leave it out for a Someday reminder with no date.
+- **Repeats** (`repeat_every` and `repeat_unit` together, with a due date) run until you delete the reminder.
+- **See them** with `hearth_crm__list_reminders`, open ones first. Pass `person_id` for one person, or `include_done` to see finished ones.
+- **Done** is `hearth_crm__complete_reminder`: a one-time reminder is finished, and a repeating one moves on to its next date.
+- **Remove** one with `hearth_crm__delete_reminder`, after confirming which one.
+
 ## If you used an earlier CRM skill
 
 This skill replaces one written for a different CRM. What changed:

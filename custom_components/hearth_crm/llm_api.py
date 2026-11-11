@@ -25,6 +25,7 @@ from .llm_base import HearthTool
 from .llm_tools_links import LINK_TOOLS
 from .llm_tools_people import PEOPLE_TOOLS
 from .llm_tools_read import READ_TOOLS
+from .llm_tools_reminders import REMINDER_TOOLS
 
 if TYPE_CHECKING:
     from . import HearthConfigEntry
@@ -32,7 +33,7 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 # Every tool the API offers. Each tool module adds its classes here.
-TOOL_CLASSES: list[type[HearthTool]] = [*READ_TOOLS, *PEOPLE_TOOLS, *LINK_TOOLS]
+TOOL_CLASSES: list[type[HearthTool]] = [*READ_TOOLS, *PEOPLE_TOOLS, *LINK_TOOLS, *REMINDER_TOOLS]
 
 API_PROMPT = (
     "These tools read and edit the user's Hearth, their personal CRM of people, households, "
@@ -63,7 +64,10 @@ API_PROMPT = (
     "links among the children, in-laws) and say which you added.\n"
     "- Confirm before hearth_crm__delete_interaction or hearth_crm__remove_relationship. "
     "People, households and groups are deleted only in the Hearth panel.\n"
-    "- Read before bulk edits: get each record first and change only what the user asked."
+    "- Read before bulk edits: get each record first and change only what the user asked.\n"
+    "- A reminder is not an interaction: use hearth_crm__create_reminder for what to do or "
+    "follow up on, and hearth_crm__log_interaction only for what happened. A reminder is always about a "
+    "person, so always ask who it is about."
 )
 
 
