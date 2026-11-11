@@ -62,12 +62,13 @@ def sms_uri(phone: str | None) -> str | None:
     return f"sms:{'+' if text.startswith('+') else ''}{digits}"
 
 
-def _tapping(url: str, *, button: tuple[str, str] | None = None, tag: str) -> dict[str, Any]:
+def _tapping(url: str, *, buttons: list[tuple[str, str]] | None = None, tag: str) -> dict[str, Any]:
     """Companion app options: what a tap opens (iOS reads ``url``, Android ``clickAction``)."""
     data: dict[str, Any] = {"tag": tag, "url": url, "clickAction": url}
-    if button is not None:
-        title, uri = button
-        data["actions"] = [{"action": "URI", "title": title, "uri": uri}]
+    if buttons:
+        data["actions"] = [
+            {"action": "URI", "title": title, "uri": uri} for title, uri in buttons
+        ]
     return data
 
 
@@ -89,7 +90,7 @@ def birthday_notifications(people: list[Person], today: date) -> list[Notificati
         text = sms_uri(person.phone) or sms_uri(person.phone2)
         tag = f"hearth-birthday-{person.id}"
         data = (
-            _tapping(text, button=("Open profile", profile), tag=tag)
+            _tapping(text, buttons=[("Open profile", profile)], tag=tag)
             if text
             else _tapping(profile, tag=tag)
         )
@@ -114,13 +115,18 @@ def log_reminder() -> Notification:
     )
 
 
-def sample_notification() -> Notification:
-    """Checks both tap behaviours: the tap should open Messages, the button should open Hearth."""
-    return Notification(
-        "Hearth test",
-        "Tap this and Messages should open. The button opens Hearth.",
-        _tapping("sms:", button=("Open Hearth", _panel_path()), tag="hearth-test"),
-    )
+def sample_notification(person_id: str | None = None) -> Notification:
+    """Checks the tap behaviours: the tap should open Messages, one button should open one
+    person's profile (when there is one to open) and the other should open Hearth."""
+    buttons = [("Open Hearth", _panel_path())]
+    message = "Tap this and Messages should open. The button opens Hearth."
+    if person_id is not None:
+        buttons.insert(0, ("Open a profile", _panel_path("person", person_id)))
+        message = (
+            "Tap this and Messages should open. One button opens a person's profile in "
+            "Hearth; the other opens Hearth."
+        )
+    return Notification("Hearth test", message, _tapping("sms:", buttons=buttons, tag="hearth-test"))
 
 
 class NotificationRuntime:
@@ -176,7 +182,13 @@ class NotificationRuntime:
 
     async def send_test(self) -> int:
         """Send the test notification; resolves to how many devices took it."""
-        return await self._send([sample_notification()])
+        data = await self._hass.async_add_executor_job(self._runtime.service.read_data)
+        me = await self._hass.async_add_executor_job(self._runtime.service.get_settings)
+        known = {p.id for p in data.people}
+        person_id = me["me_person_id"] if me["me_person_id"] in known else None
+        if person_id is None and data.people:
+            person_id = min(data.people, key=lambda p: p.name.casefold()).id
+        return await self._send([sample_notification(person_id)])
 
     async def _send_birthdays(self, now: datetime) -> None:
         if not (await self._settings())["birthdays"]["enabled"]:

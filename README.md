@@ -2,7 +2,7 @@
 
 A Home Assistant custom integration that hosts a personal CRM (people, households, groups, relationships and interactions) on your own Home Assistant instance. Your data lives in your Home Assistant config directory, not in a third-party service.
 
-**What it is today (0.8.0):** a per-user CRM with a sidebar panel you can work from. Each Home Assistant user gets a separate CRM with its own database and photos. The Hearth panel browses it and edits it: people, relationships, households, groups and interactions, plus importing a bundle from Settings. Claude can read and edit your CRM too, through Home Assistant's MCP server (see [Claude](#claude)). You can also keep your contacts in your own Google account up to date from Hearth (see [Google Contacts](#google-contacts)). There is also import and export of the whole CRM as a portable bundle, and a websocket API plus an authenticated photo URL.
+**What it is today (0.8.1):** a per-user CRM with a sidebar panel you can work from. Each Home Assistant user gets a separate CRM with its own database and photos. The Hearth panel browses it and edits it: people, relationships, households, groups and interactions, plus importing a bundle from Settings. Claude can read and edit your CRM too, through Home Assistant's MCP server (see [Claude](#claude)). You can also keep your contacts in your own Google account up to date from Hearth (see [Google Contacts](#google-contacts)). There is also import and export of the whole CRM as a portable bundle, and a websocket API plus an authenticated photo URL.
 
 **What comes later:** dashboard cards and entities (birthdays and counts). These do not ship yet, and this README does not promise dates.
 
@@ -144,7 +144,7 @@ Hearth can send two notifications to your phone. Both are off until you switch t
 - **Birthdays:** one notification per person whose birthday it is, such as "Today is Sam Example's birthday! They are turning 43 years old." The age is left out when the year isn't known. Tapping it opens a text to the person's first phone number; with no number it opens their profile in Hearth. When a tap opens a text, a button on the notification opens the profile instead.
 - **Log reminder:** if you haven't logged any interaction today (nothing dated today and nothing created today), a reminder to do so. Tapping it opens Hearth's search.
 
-They go through the Home Assistant Companion app, to the devices signed in as the CRM's owner only. If no phone is set up, the card says so and nothing is sent. **Send a test** sends a sample whose tap should open Messages and whose button should open Hearth, so you can check both on your phone. A time that passes while Home Assistant is down is skipped, not sent late. Opening a text from a notification depends on the Companion app on your phone; if it doesn't open on yours, the "Open profile" button still works.
+They go through the Home Assistant Companion app, to the devices signed in as the CRM's owner only. If no phone is set up, the card says so and nothing is sent. **Send a test** sends a sample whose tap should open Messages, with one button that opens a person's profile and one that opens Hearth, so you can check all three on your phone. A time that passes while Home Assistant is down is skipped, not sent late. Opening a text from a notification depends on the Companion app on your phone; if it doesn't open on yours, the "Open profile" button still works.
 
 ## Google Contacts
 

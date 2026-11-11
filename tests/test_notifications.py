@@ -143,7 +143,11 @@ def test_wording_of_the_reminder_and_the_test_notification():
     assert note.data["url"] == "/hearth/search"
     sample = sample_notification()
     assert sample.data["url"] == "sms:"
-    assert sample.data["actions"][0]["uri"] == "/hearth"
+    assert [a["uri"] for a in sample.data["actions"]] == ["/hearth"]
+    with_profile = sample_notification("p1")
+    assert [(a["title"], a["uri"]) for a in with_profile.data["actions"]] == [
+        ("Open a profile", "/hearth/person/p1"), ("Open Hearth", "/hearth"),
+    ]
 
 
 # -- the settings --------------------------------------------------------------------
@@ -242,6 +246,25 @@ async def test_the_test_notification_reaches_the_owners_phone(hass, crm):
     [call] = sent
     assert call.data["title"] == "Hearth test"
     assert call.data["data"]["url"] == "sms:"
+    assert [a["uri"] for a in call.data["data"]["actions"]] == ["/hearth"]  # no people yet: no profile button
+
+
+async def test_the_test_notification_offers_a_real_profile_when_there_is_one(hass, crm):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    service = entry.runtime_data.service
+    await hass.async_add_executor_job(service.create, "person", {"name": "Zed Example"}, "panel")
+    first = await hass.async_add_executor_job(service.create, "person", {"name": "Ada Example"}, "panel")
+    await entry.runtime_data.notifications.send_test()
+    assert sent[-1].data["data"]["actions"][0] == {
+        "action": "URI", "title": "Open a profile", "uri": f"/hearth/person/{first['id']}",
+    }
+    # "This is me" wins when it is set.
+    zed = [p for p in (await hass.async_add_executor_job(service.read_data)).people if p.name == "Zed Example"][0]
+    await hass.async_add_executor_job(service.set_settings, {"me_person_id": zed.id}, "panel")
+    await entry.runtime_data.notifications.send_test()
+    assert sent[-1].data["data"]["actions"][0]["uri"] == f"/hearth/person/{zed.id}"
 
 
 async def test_a_failing_phone_is_logged_by_type_and_the_others_still_get_it(hass, crm, caplog):
@@ -307,8 +330,9 @@ async def test_the_reminder_is_sent_only_when_nothing_was_logged(hass, crm, free
     await hass.async_add_executor_job(
         service.set_notification_settings, {"log_reminder": {"enabled": True, "time": "20:00"}}, "panel"
     )
-    await entry.runtime_data.notifications.async_reschedule()
+    # Freeze first: a timer set after 8 pm would otherwise wait for tomorrow.
     freezer.move_to(datetime.combine(today, datetime.min.time(), dt_util.DEFAULT_TIME_ZONE) + timedelta(hours=5))
+    await entry.runtime_data.notifications.async_reschedule()
 
     await at_local(hass, freezer, 20)
     assert [c.data["title"] for c in sent] == ["Log your interactions"]
