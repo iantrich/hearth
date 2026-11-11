@@ -1,9 +1,14 @@
-"""Phone notifications from Hearth: birthdays, and a nudge to log interactions.
+"""Phone notifications from Hearth: birthdays, a nudge to log interactions, and reminders.
 
-One ``NotificationRuntime`` per loaded CRM. Each notification that is switched on fires once a
-day at its time (Home Assistant's time zone) and goes to the Home Assistant Companion app
-devices registered to the CRM's owner, so nobody else's phone is ever told about this CRM. A
-time that passes while Home Assistant is down is skipped, not sent late.
+One ``NotificationRuntime`` per loaded CRM. Each daily notification that is switched on fires
+once a day at its time (Home Assistant's time zone) and goes to the Home Assistant Companion
+app devices registered to the CRM's owner, so nobody else's phone is ever told about this CRM.
+A daily time that passes while Home Assistant is down is skipped, not sent late.
+
+Reminders are different: a check runs at start and every minute, and sends each reminder whose
+scheduled date has passed and was not yet notified, so none is lost while Home Assistant is
+down. A date counts as notified only once a device accepted it (or the switch was off), so a
+reminder with no phone, or whose sends all fail, is retried on the next check.
 
 What is sent is built by pure functions (``birthday_notifications``, ``needs_log_reminder``)
 so the wording and the tap targets are tested without Home Assistant. Logs hold only
@@ -12,23 +17,25 @@ exception type names, never a name, a number or a message.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import re
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 from urllib.parse import quote
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.event import async_track_time_change
+from homeassistant.helpers.event import async_track_time_change, async_track_time_interval
 from homeassistant.util import dt as dt_util
 from homeassistant.util import slugify
 
+from . import reminders
 from .const import PANEL_URL_PATH
 from .derive import upcoming_birthdays
-from .models import Interaction, Person
+from .models import Interaction, Person, Reminder
 
 if TYPE_CHECKING:
     from . import HearthRuntime
@@ -40,6 +47,8 @@ NO_PHONE = (
     "No phone is set up for notifications. Install the Home Assistant Companion app and sign "
     "in as this user."
 )
+REMINDER_CHECK_EVERY = timedelta(seconds=60)
+REMINDER_LOG_EVERY = timedelta(hours=1)
 
 
 @dataclass(frozen=True)
@@ -60,6 +69,15 @@ def sms_uri(phone: str | None) -> str | None:
     if not digits:
         return None
     return f"sms:{'+' if text.startswith('+') else ''}{digits}"
+
+
+def _tap_data(person: Person, tag: str) -> dict[str, Any]:
+    """A tap texts the person's first number (with a profile button), else opens the profile."""
+    profile = _panel_path("person", person.id)
+    text = sms_uri(person.phone) or sms_uri(person.phone2)
+    if text:
+        return _tapping(text, buttons=[("Open profile", profile)], tag=tag)
+    return _tapping(profile, tag=tag)
 
 
 def _tapping(url: str, *, buttons: list[tuple[str, str]] | None = None, tag: str) -> dict[str, Any]:
@@ -86,16 +104,17 @@ def birthday_notifications(people: list[Person], today: date) -> list[Notificati
         if birthday.turning is not None:
             years = "year" if birthday.turning == 1 else "years"
             message += f" They are turning {birthday.turning} {years} old."
-        profile = _panel_path("person", person.id)
-        text = sms_uri(person.phone) or sms_uri(person.phone2)
-        tag = f"hearth-birthday-{person.id}"
-        data = (
-            _tapping(text, buttons=[("Open profile", profile)], tag=tag)
-            if text
-            else _tapping(profile, tag=tag)
-        )
-        notes.append(Notification("Birthday", message, data))
+        notes.append(Notification("Birthday", message, _tap_data(person, f"hearth-birthday-{person.id}")))
     return notes
+
+
+def reminder_notification(person: Person, reminder: Reminder) -> Notification:
+    """A due reminder; a tap behaves as it does for a birthday."""
+    return Notification(
+        f"Follow up with {person.name}",
+        reminder.note or f"Time to check in with {person.name}.",
+        _tap_data(person, f"hearth-reminder-{reminder.id}"),
+    )
 
 
 def needs_log_reminder(interactions: list[Interaction], today: date) -> bool:
@@ -137,12 +156,29 @@ class NotificationRuntime:
         self._entry = entry
         self._runtime = runtime
         self._unsubs: list[CALLBACK_TYPE] = []
+        self._unsub_check: CALLBACK_TYPE | None = None
+        self._check_lock = asyncio.Lock()
+        self._last_failure_log: dict[str, datetime] = {}
 
     async def async_start(self) -> None:
         await self.async_reschedule()
+        self._cancel_check()
+        self._unsub_check = async_track_time_interval(
+            self._hass, self._check_reminders, REMINDER_CHECK_EVERY
+        )
+        # In the background, so a slow phone cannot hold up setting up the integration.
+        self._hass.async_create_background_task(
+            self._check_reminders(), f"hearth_crm reminders {self._entry.entry_id}"
+        )
 
     def stop(self) -> None:
         self._cancel()
+        self._cancel_check()
+
+    def _cancel_check(self) -> None:
+        if self._unsub_check is not None:
+            self._unsub_check()
+            self._unsub_check = None
 
     def _cancel(self) -> None:
         for unsub in self._unsubs:
@@ -203,7 +239,49 @@ class NotificationRuntime:
         if needs_log_reminder(data.interactions, dt_util.now().date()):
             await self._send([log_reminder()])
 
-    async def _send(self, notes: list[Notification]) -> int:
+    async def _check_reminders(self, now: datetime | None = None) -> None:
+        """Send each due, not yet notified reminder (``now`` is the timer's, and in UTC, so the
+        zone and the instant come from Home Assistant instead)."""
+        async with self._check_lock:
+            service = self._runtime.service
+            tz = dt_util.get_default_time_zone()
+            instant = dt_util.utcnow()
+            data = await self._hass.async_add_executor_job(service.read_data)
+            due = [
+                (r, occurrence)
+                for r in data.reminders
+                if (occurrence := reminders.due_occurrence(r, instant, tz)) is not None
+            ]
+            if not due:
+                return
+            enabled = (await self._settings())["reminders"]["enabled"]
+            people = {p.id: p for p in data.people}
+            for reminder, occurrence in due:
+                if enabled:
+                    if reminder.person_id not in people:
+                        continue
+                    errors: list[str] = []
+                    note = reminder_notification(people[reminder.person_id], reminder)
+                    if not await self._send([note], errors=errors):
+                        self._log_reminder_failure(reminder.id, errors, instant)
+                        continue
+                await self._hass.async_add_executor_job(
+                    service.mark_reminder_notified, reminder.id, occurrence
+                )
+
+    def _log_reminder_failure(self, reminder_id: str, errors: list[str], instant: datetime) -> None:
+        """Log why a reminder could not be sent, by type only and about once an hour."""
+        if not errors:
+            return  # no phone: the status says so, and the next check tries again
+        last = self._last_failure_log.get(reminder_id)
+        if last is not None and instant - last < REMINDER_LOG_EVERY:
+            return
+        self._last_failure_log[reminder_id] = instant
+        _LOGGER.warning("A Hearth reminder could not be sent (%s)", ", ".join(sorted(set(errors))))
+
+    async def _send(self, notes: list[Notification], *, errors: list[str] | None = None) -> int:
+        """Send to every owner device; resolves to how many sends were accepted. With
+        ``errors``, failures are collected there (as type names) instead of being logged."""
         sent = 0
         for target in self.targets():
             for note in notes:
@@ -216,5 +294,10 @@ class NotificationRuntime:
                     )
                     sent += 1
                 except HomeAssistantError as err:
-                    _LOGGER.warning("A Hearth notification could not be sent (%s)", type(err).__name__)
+                    if errors is None:
+                        _LOGGER.warning(
+                            "A Hearth notification could not be sent (%s)", type(err).__name__
+                        )
+                    else:
+                        errors.append(type(err).__name__)
         return sent

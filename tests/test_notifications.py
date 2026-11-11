@@ -13,12 +13,13 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed
 
-from custom_components.hearth_crm.models import Interaction, Person
+from custom_components.hearth_crm.models import Interaction, Person, Reminder
 from custom_components.hearth_crm.notifications import (
     NO_PHONE,
     birthday_notifications,
     log_reminder,
     needs_log_reminder,
+    reminder_notification,
     sample_notification,
     sms_uri,
 )
@@ -165,6 +166,7 @@ async def test_settings_default_to_off_at_nine_and_eight(hass, crm):
     assert settings == {
         "birthdays": {"enabled": False, "time": "09:00"},
         "log_reminder": {"enabled": False, "time": "20:00"},
+        "reminders": {"enabled": True},
     }
 
 
@@ -180,6 +182,7 @@ async def test_a_change_keeps_what_it_does_not_mention(hass, crm):
     assert settings == {
         "birthdays": {"enabled": True, "time": "07:30"},
         "log_reminder": {"enabled": True, "time": "20:00"},
+        "reminders": {"enabled": True},
     }
     assert await hass.async_add_executor_job(service.get_notification_settings) == settings
 
@@ -391,3 +394,281 @@ async def test_unloading_stops_the_timers(hass, crm, freezer):
     assert await hass.config_entries.async_unload(entry.entry_id)
     await at_local(hass, freezer, 20)
     assert sent == []
+
+
+# -- reminders: wording ---------------------------------------------------------------
+
+
+def a_reminder(**kw) -> Reminder:
+    return Reminder(id="r1", person_id="p1", created_at=T0, updated_at=T1, **kw)
+
+
+def test_reminder_notification_wording_and_taps():
+    roy = person("p1", "Roy Example", phone="555-010-0142")
+    note = reminder_notification(roy, a_reminder(note="Ask about the move"))
+    assert note.title == "Follow up with Roy Example"
+    assert note.message == "Ask about the move"
+    assert note.data["tag"] == "hearth-reminder-r1"
+    assert note.data["url"] == note.data["clickAction"] == "sms:5550100142"
+    assert note.data["actions"] == [
+        {"action": "URI", "title": "Open profile", "uri": "/hearth/person/p1"}
+    ]
+
+    plain = reminder_notification(roy, a_reminder())
+    assert plain.message == "Time to check in with Roy Example."
+
+    no_number = reminder_notification(person("p1", "Roy Example"), a_reminder())
+    assert no_number.data["url"] == "/hearth/person/p1"
+    assert "actions" not in no_number.data
+
+
+async def test_reminder_settings_have_no_time(hass, crm):
+    _, entry = crm
+    service = entry.runtime_data.service
+    assert (await hass.async_add_executor_job(service.get_notification_settings))["reminders"] == {
+        "enabled": True
+    }
+    with pytest.raises(InvalidInput):
+        await hass.async_add_executor_job(
+            service.set_notification_settings, {"reminders": {"time": "09:00"}}, "panel"
+        )
+    settings = await hass.async_add_executor_job(
+        service.set_notification_settings, {"reminders": {"enabled": False}}, "panel"
+    )
+    assert settings["reminders"] == {"enabled": False}
+
+
+# -- reminders: delivery -----------------------------------------------------------------
+
+BASE = datetime(2026, 6, 15, 12, 0, tzinfo=UTC)
+MINUTE = timedelta(minutes=1)
+
+
+def iso(when: datetime) -> str:
+    return when.isoformat()
+
+
+async def start_at(hass, freezer, entry, when: datetime = BASE) -> None:
+    """Freeze the clock first, then start: the check timer is set from the frozen time."""
+    freezer.move_to(when)
+    await entry.runtime_data.notifications.async_start()
+    await hass.async_block_till_done(wait_background_tasks=True)
+
+
+async def tick(hass, freezer, when: datetime) -> None:
+    freezer.move_to(when)
+    async_fire_time_changed(hass, when)
+    await hass.async_block_till_done(wait_background_tasks=True)
+
+
+async def make_reminder(hass, entry, **fields) -> dict:
+    service = entry.runtime_data.service
+    who = await hass.async_add_executor_job(service.create, "person", {"name": "Roy Example"}, "panel")
+    return await hass.async_add_executor_job(
+        service.create, "reminder", {"person_id": who["id"]} | fields, "panel"
+    )
+
+
+async def stored_reminder(hass, entry, reminder_id: str) -> Reminder:
+    data = await hass.async_add_executor_job(entry.runtime_data.service.read_data)
+    return next(r for r in data.reminders if r.id == reminder_id)
+
+
+async def test_a_due_reminder_is_sent_once_and_not_again(hass, crm, freezer):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    freezer.move_to(BASE)
+    due = BASE + timedelta(seconds=90)
+    made = await make_reminder(hass, entry, due_at=iso(due), note="Ask about the move")
+    await start_at(hass, freezer, entry)
+    assert sent == []  # not due yet
+    await tick(hass, freezer, BASE + 2 * MINUTE)
+    assert [c.data["message"] for c in sent] == ["Ask about the move"]
+    assert (await stored_reminder(hass, entry, made["id"])).notified_for == due
+    await tick(hass, freezer, BASE + 3 * MINUTE)
+    assert len(sent) == 1
+
+
+async def test_a_reminder_that_came_due_while_stopped_is_sent_at_start(hass, crm, freezer):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    freezer.move_to(BASE)
+    await make_reminder(hass, entry, due_at=iso(BASE - timedelta(days=1)))
+    await start_at(hass, freezer, entry)
+    assert len(sent) == 1
+    assert sent[0].data["title"] == "Follow up with Roy Example"
+
+
+async def test_an_ignored_repeating_reminder_fires_at_each_scheduled_date(hass, crm, freezer):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    freezer.move_to(BASE)
+    first = BASE + timedelta(hours=1)
+    await make_reminder(hass, entry, due_at=iso(first), repeat_every=2, repeat_unit="week")
+    await start_at(hass, freezer, entry)
+    await tick(hass, freezer, first + MINUTE)
+    assert len(sent) == 1
+    await tick(hass, freezer, first + timedelta(weeks=1))
+    assert len(sent) == 1
+    await tick(hass, freezer, first + timedelta(weeks=2, minutes=1))
+    assert len(sent) == 2
+
+
+async def test_completing_a_repeating_reminder_stops_the_old_date_and_waits_for_the_next(hass, crm, freezer):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    freezer.move_to(BASE)
+    first = BASE + timedelta(hours=1)
+    made = await make_reminder(hass, entry, due_at=iso(first), repeat_every=2, repeat_unit="week")
+    await start_at(hass, freezer, entry)
+    await tick(hass, freezer, first + MINUTE)
+    assert len(sent) == 1
+    await hass.async_add_executor_job(
+        entry.runtime_data.service.complete_reminder, made["id"], "panel"
+    )
+    await tick(hass, freezer, first + 2 * MINUTE)
+    await tick(hass, freezer, first + timedelta(weeks=1))
+    assert len(sent) == 1
+    await tick(hass, freezer, first + timedelta(weeks=2, minutes=1))
+    assert len(sent) == 2
+
+
+async def test_no_phone_keeps_it_unfired_and_it_goes_out_when_a_phone_appears(hass, crm, freezer):
+    user, entry = crm
+    freezer.move_to(BASE)
+    made = await make_reminder(hass, entry, due_at=iso(BASE - timedelta(hours=1)))
+    await start_at(hass, freezer, entry)
+    assert (await stored_reminder(hass, entry, made["id"])).notified_for is None
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    await tick(hass, freezer, BASE + MINUTE)
+    assert len(sent) == 1
+    assert (await stored_reminder(hass, entry, made["id"])).notified_for is not None
+
+
+async def test_every_send_failing_keeps_it_unfired_and_logs_only_the_type(hass, crm, freezer, caplog):
+    user, entry = crm
+    MockConfigEntry(domain="mobile_app", data={"user_id": user.id, "device_name": "Bad Phone"}).add_to_hass(hass)
+
+    async def broken(call: ServiceCall) -> None:
+        from homeassistant.exceptions import HomeAssistantError
+
+        raise HomeAssistantError("the secret note text")
+
+    hass.services.async_register("notify", "mobile_app_bad_phone", broken)
+    freezer.move_to(BASE)
+    made = await make_reminder(hass, entry, due_at=iso(BASE - timedelta(hours=1)), note="the secret note text")
+    await start_at(hass, freezer, entry)
+    assert (await stored_reminder(hass, entry, made["id"])).notified_for is None
+    assert "HomeAssistantError" in caplog.text
+    assert "the secret note text" not in caplog.text
+    assert "Roy Example" not in caplog.text
+
+    def failures() -> int:
+        return sum("HomeAssistantError" in r.getMessage() for r in caplog.records)
+
+    assert failures() == 1
+    await tick(hass, freezer, BASE + MINUTE)  # retried, but not logged again within the hour
+    assert failures() == 1
+    await tick(hass, freezer, BASE + timedelta(hours=1, minutes=1))
+    assert failures() == 2
+
+
+async def test_some_devices_failing_still_counts_as_sent(hass, crm, freezer):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Good Phone", sent)
+    MockConfigEntry(domain="mobile_app", data={"user_id": user.id, "device_name": "Bad Phone"}).add_to_hass(hass)
+
+    async def broken(call: ServiceCall) -> None:
+        from homeassistant.exceptions import HomeAssistantError
+
+        raise HomeAssistantError("down")
+
+    hass.services.async_register("notify", "mobile_app_bad_phone", broken)
+    freezer.move_to(BASE)
+    made = await make_reminder(hass, entry, due_at=iso(BASE - timedelta(hours=1)))
+    await start_at(hass, freezer, entry)
+    assert len(sent) == 1
+    assert (await stored_reminder(hass, entry, made["id"])).notified_for is not None
+    await tick(hass, freezer, BASE + MINUTE)
+    assert len(sent) == 1
+
+
+async def test_switch_off_marks_as_notified_without_sending_and_switching_on_does_not_release_them(
+    hass, crm, freezer
+):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    service = entry.runtime_data.service
+    await hass.async_add_executor_job(
+        service.set_notification_settings, {"reminders": {"enabled": False}}, "panel"
+    )
+    freezer.move_to(BASE)
+    due = BASE - timedelta(hours=1)
+    made = await make_reminder(hass, entry, due_at=iso(due))
+    await start_at(hass, freezer, entry)
+    assert sent == []
+    assert (await stored_reminder(hass, entry, made["id"])).notified_for == due
+
+    await hass.async_add_executor_job(
+        service.set_notification_settings, {"reminders": {"enabled": True}}, "panel"
+    )
+    await tick(hass, freezer, BASE + MINUTE)
+    assert sent == []  # the old one is not released
+    await make_reminder(hass, entry, due_at=iso(BASE + 2 * MINUTE))
+    await tick(hass, freezer, BASE + 3 * MINUTE)
+    assert len(sent) == 1  # new ones still go out
+
+
+async def test_someday_never_fires(hass, crm, freezer):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    freezer.move_to(BASE)
+    made = await make_reminder(hass, entry, note="Whenever")
+    await start_at(hass, freezer, entry)
+    await tick(hass, freezer, BASE + timedelta(days=30))
+    assert sent == []
+    assert (await stored_reminder(hass, entry, made["id"])).notified_for is None
+
+
+async def test_editing_the_due_time_after_it_fired_fires_again_at_the_new_time(hass, crm, freezer):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    freezer.move_to(BASE)
+    made = await make_reminder(hass, entry, due_at=iso(BASE + MINUTE))
+    await start_at(hass, freezer, entry)
+    await tick(hass, freezer, BASE + 2 * MINUTE)
+    assert len(sent) == 1
+    new_due = BASE + timedelta(hours=2)
+    await hass.async_add_executor_job(
+        entry.runtime_data.service.update, "reminder", made["id"], {"due_at": iso(new_due)}, "panel"
+    )
+    await tick(hass, freezer, BASE + timedelta(hours=1))
+    assert len(sent) == 1
+    await tick(hass, freezer, new_due + MINUTE)
+    assert len(sent) == 2
+
+
+async def test_other_users_reminders_go_only_to_their_own_phones(
+    hass, crm, freezer, add_crm, hass_read_only_user
+):
+    user, entry = crm
+    other_entry = await add_crm(hass_read_only_user)
+    mine: list[ServiceCall] = []
+    theirs: list[ServiceCall] = []
+    add_phone(hass, user.id, "My Phone", mine)
+    add_phone(hass, hass_read_only_user.id, "Their Phone", theirs)
+    freezer.move_to(BASE)
+    await make_reminder(hass, other_entry, due_at=iso(BASE - timedelta(hours=1)))
+    await start_at(hass, freezer, entry)
+    await start_at(hass, freezer, other_entry)
+    assert mine == []
+    assert len(theirs) == 1

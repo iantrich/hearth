@@ -91,10 +91,12 @@ _MODELS = {
 _GROUP_MEMBERS = "member_ids"
 
 
-# Both start switched off; the times are in Home Assistant's time zone.
+# The birthday and log nudges start switched off, at times in Home Assistant's time zone.
+# Reminders fire when each one is due, so that switch has no time and starts on.
 DEFAULT_NOTIFICATIONS = {
     "birthdays": {"enabled": False, "time": "09:00"},
     "log_reminder": {"enabled": False, "time": "20:00"},
+    "reminders": {"enabled": True},
 }
 _CLOCK_TIME = re.compile(r"([01]\d|2[0-3]):[0-5]\d")
 
@@ -418,7 +420,7 @@ class HearthService:
                     continue
                 if isinstance(part.get("enabled"), bool):
                     values["enabled"] = part["enabled"]
-                if isinstance(part.get("time"), str) and _CLOCK_TIME.fullmatch(part["time"]):
+                if "time" in values and isinstance(part.get("time"), str) and _CLOCK_TIME.fullmatch(part["time"]):
                     values["time"] = part["time"]
         return settings
 
@@ -432,14 +434,13 @@ class HearthService:
             if not isinstance(part, dict):
                 raise InvalidInput(kind, "expected an object")
             for key, value in part.items():
+                if key not in DEFAULT_NOTIFICATIONS[kind]:
+                    raise InvalidInput(f"{kind}.{key}", "unknown setting")
                 if key == "enabled":
                     if not isinstance(value, bool):
                         raise InvalidInput(f"{kind}.enabled", "must be true or false")
-                elif key == "time":
-                    if not isinstance(value, str) or not _CLOCK_TIME.fullmatch(value):
-                        raise InvalidInput(f"{kind}.time", "must be a time such as 09:30")
-                else:
-                    raise InvalidInput(f"{kind}.{key}", "unknown setting")
+                elif not isinstance(value, str) or not _CLOCK_TIME.fullmatch(value):
+                    raise InvalidInput(f"{kind}.time", "must be a time such as 09:30")
         with self._write_lock:
             settings = self.get_notification_settings()
             for kind, part in changes.items():
