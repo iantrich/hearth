@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
 from custom_components.hearth_crm.const import CONF_OWNER_USER_ID, DOMAIN
-from custom_components.hearth_crm.enums import ConnectionType, InteractionType
+from custom_components.hearth_crm.enums import ConnectionType, InteractionType, ReminderUnit
 from custom_components.hearth_crm.models import (
     ContactGroup,
     CRMData,
@@ -19,6 +19,7 @@ from custom_components.hearth_crm.models import (
     Person,
     Place,
     Relationship,
+    Reminder,
 )
 
 T0 = datetime(2026, 1, 5, 12, 30, tzinfo=UTC)
@@ -96,6 +97,17 @@ def sample_data() -> CRMData:
                     type=InteractionType.TRIP, created_at=T0, updated_at=T1,
                     person_ids=["p3"]),
     ]
+    reminders = [
+        Reminder(id="m1", person_id="p1", created_at=T0, updated_at=T1,
+                 note="Ask about the trip", due_at=datetime(2026, 3, 1, 15, 0, tzinfo=UTC),
+                 interaction_id="i1"),
+        Reminder(id="m2", person_id="p2", created_at=T0, updated_at=T1,
+                 note="Check in", due_at=datetime(2026, 3, 8, 9, 0, tzinfo=UTC),
+                 repeat_every=2, repeat_unit=ReminderUnit.WEEK,
+                 anchor_at=datetime(2026, 2, 22, 9, 0, tzinfo=UTC),
+                 notified_for=datetime(2026, 3, 8, 9, 0, tzinfo=UTC)),
+        Reminder(id="m3", person_id="p3", created_at=T0, updated_at=T1),
+    ]
     return CRMData(
         people=people,
         households=households,
@@ -103,6 +115,7 @@ def sample_data() -> CRMData:
         group_members=[("g1", "p1"), ("g1", "p2")],
         relationships=relationships,
         interactions=interactions,
+        reminders=reminders,
     )
 
 

@@ -17,6 +17,7 @@ from custom_components.hearth_crm.serialize import (
     interaction_from_dict,
     person_from_dict,
     relationship_from_dict,
+    reminder_from_dict,
     to_dict,
 )
 
@@ -41,6 +42,7 @@ def test_data_to_dict_shape(sample):
     d = data_to_dict(sample)
     assert list(d) == [
         "people", "households", "groups", "group_members", "relationships", "interactions",
+        "reminders",
     ]
     assert d["group_members"] == [["g1", "p1"], ["g1", "p2"]]
     assert [p["id"] for p in d["people"]] == ["p1", "p2", "p3", "p4"]
@@ -221,3 +223,23 @@ def test_empty_group_member_id_is_rejected(sample):
 
 def test_empty_photo_hash_becomes_none():
     assert person_from_dict({**PERSON, "photo_hash": ""}).photo_hash is None
+
+
+def test_a_bundle_without_reminders_still_parses(sample):
+    d = data_to_dict(sample)
+    del d["reminders"]
+    assert data_from_dict(d).reminders == []
+
+
+def test_reminders_round_trip_to_dict_and_back(sample):
+    rows = data_to_dict(sample)["reminders"]
+    assert rows[1]["repeat_unit"] == "week"
+    assert rows[1]["due_at"] == "2026-03-08T09:00:00+00:00"
+    assert rows[2]["due_at"] is None and rows[2]["interaction_id"] is None
+    assert [reminder_from_dict(r) for r in rows] == sample.reminders
+
+
+def test_reminder_unknown_keys_are_refused(sample):
+    row = {**data_to_dict(sample)["reminders"][0], "bogus": 1}
+    with pytest.raises(ValueError, match="unknown field"):
+        reminder_from_dict(row)

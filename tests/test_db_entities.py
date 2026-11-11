@@ -18,6 +18,7 @@ from custom_components.hearth_crm.models import (
     Person,
     Place,
     Relationship,
+    Reminder,
 )
 from custom_components.hearth_crm.serialize import to_dict
 from tests.conftest import T0, T1, sample_data
@@ -231,7 +232,8 @@ def test_delete_relationship_and_interaction(repo):
 
 
 @pytest.mark.parametrize(
-    "kind", ["person", "household", "contact_group", "relationship", "interaction"]
+    "kind",
+    ["person", "household", "contact_group", "relationship", "interaction", "reminder"],
 )
 def test_delete_missing_raises_key_error(repo, kind):
     with pytest.raises(KeyError):
@@ -309,3 +311,31 @@ def test_failed_rollback_does_not_mask_the_original_error(repo):
     finally:
         repo._conn = real
         real.execute("ROLLBACK")
+
+
+def test_deleting_a_person_deletes_and_logs_their_reminders(repo):
+    data = person_delete_data()
+    data.reminders = [
+        Reminder(id="m1", person_id="p1", created_at=T0, updated_at=T0, note="Call"),
+        Reminder(id="m2", person_id="p1", created_at=T0, updated_at=T0, interaction_id="i1"),
+        Reminder(id="m3", person_id="p2", created_at=T0, updated_at=T0),
+    ]
+    seeded(repo, data)
+    result = repo.delete("person", "p1", "panel")
+    assert result.deleted["reminder"] == ["m1", "m2"]
+    assert [r.id for r in repo.snapshot().reminders] == ["m3"]
+    logged = [(c.entity_id, c.action) for c in repo.changes() if c.entity == "reminder"]
+    assert sorted(logged) == [("m1", "delete"), ("m2", "delete")]
+    entry = next(c for c in repo.changes() if c.entity_id == "m1")
+    assert entry.before["note"] == "Call" and entry.after is None
+
+
+def test_deleting_an_interaction_clears_the_link_and_keeps_the_reminder(repo):
+    data = person_delete_data()
+    data.reminders = [
+        Reminder(id="m1", person_id="p2", created_at=T0, updated_at=T0, interaction_id="i1")
+    ]
+    seeded(repo, data)
+    repo.delete("interaction", "i1", "panel")
+    kept = repo.get("reminder", "m1")
+    assert kept is not None and kept.interaction_id is None

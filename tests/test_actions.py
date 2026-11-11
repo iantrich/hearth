@@ -340,7 +340,7 @@ async def test_me_person_is_replaced_by_each_import(hass, hass_admin_user, add_c
     smaller = sample_data()
     smaller.people = [p for p in smaller.people if p.id == "p1"]
     smaller.households, smaller.groups, smaller.group_members = [], [], []
-    smaller.relationships, smaller.interactions = [], []
+    smaller.relationships, smaller.interactions, smaller.reminders = [], [], []
     smaller.people[0] = replace(smaller.people[0], household_id=None, photo_hash=None)
     await hass.async_add_executor_job(repo.replace_all, smaller, "import")
     await hass.async_add_executor_job(repo.set_meta, "me_person_id", None, "import")

@@ -329,3 +329,38 @@ def test_write_refuses_nan_coordinates(tmp_path, data):
         write_bundle(p, data, PHOTOS.__getitem__)
     assert not p.exists()
     assert not (tmp_path / "out.zip.tmp").exists()
+
+
+def test_a_reminder_for_a_missing_person_is_a_problem(tmp_path, data):
+    doc = good_doc(data)
+    doc["reminders"][0]["person_id"] = "ghost-p"
+    with pytest.raises(BundleError, match="ghost-p"):
+        read_bundle(raw_bundle(tmp_path / "b.zip", doc, good_members()))
+
+
+def test_a_reminder_linked_to_a_missing_interaction_is_a_problem(tmp_path, data):
+    doc = good_doc(data)
+    doc["reminders"][0]["interaction_id"] = "ghost-i"
+    with pytest.raises(BundleError, match="ghost-i"):
+        read_bundle(raw_bundle(tmp_path / "b.zip", doc, good_members()))
+
+
+def test_duplicate_reminder_ids_are_a_problem(tmp_path, data):
+    doc = good_doc(data)
+    doc["reminders"].append(copy.deepcopy(doc["reminders"][0]))
+    with pytest.raises(BundleError, match="duplicate id 'm1'"):
+        read_bundle(raw_bundle(tmp_path / "b.zip", doc, good_members()))
+
+
+def test_export_includes_reminders_and_round_trips(tmp_path, data):
+    path = tmp_path / "b.zip"
+    write_bundle(path, data, PHOTOS.__getitem__)
+    with zipfile.ZipFile(path) as zf:
+        assert len(json.loads(zf.read("bundle.json"))["reminders"]) == 3
+
+
+def test_an_old_bundle_without_reminders_imports_with_none(tmp_path, data):
+    doc = good_doc(data)
+    del doc["reminders"]
+    result = read_bundle(raw_bundle(tmp_path / "b.zip", doc, good_members()))
+    assert result.data.reminders == []

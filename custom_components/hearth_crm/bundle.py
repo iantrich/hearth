@@ -210,6 +210,7 @@ def _reference_problems(
         "groups": data.groups,
         "relationships": data.relationships,
         "interactions": data.interactions,
+        "reminders": data.reminders,
     }
     for table, rows in tables.items():
         for pid, count in Counter(r.id for r in rows).items():
@@ -243,6 +244,14 @@ def _reference_problems(
         for person_id in i.person_ids:
             if person_id not in people:
                 problems.append(f"interaction {i.id!r} references missing person {person_id!r}")
+    interactions = {i.id for i in data.interactions}
+    for m in data.reminders:
+        if m.person_id not in people:
+            problems.append(f"reminder {m.id!r} references missing person {m.person_id!r}")
+        if m.interaction_id is not None and m.interaction_id not in interactions:
+            problems.append(
+                f"reminder {m.id!r} references missing interaction {m.interaction_id!r}"
+            )
     if me_person_id is not None and me_person_id not in people:
         problems.append(f"me_person_id references missing person {me_person_id!r}")
 

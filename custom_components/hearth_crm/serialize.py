@@ -14,7 +14,7 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Any
 
-from .enums import ConnectionType, InteractionType
+from .enums import ConnectionType, InteractionType, ReminderUnit
 from .models import (
     ContactGroup,
     CRMData,
@@ -23,6 +23,7 @@ from .models import (
     Person,
     Place,
     Relationship,
+    Reminder,
 )
 
 _DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
@@ -65,6 +66,12 @@ def _dec_float(name: str, raw: Any) -> float:
     return value
 
 
+def _dec_int(name: str, raw: Any) -> int:
+    if isinstance(raw, bool) or not isinstance(raw, int):
+        raise _fail(name, f"expected a whole number, got {type(raw).__name__}")
+    return raw
+
+
 def _dec_date(name: str, raw: Any) -> date:
     if not isinstance(raw, str) or not _DATE_RE.fullmatch(raw):
         raise _fail(name, f"expected a YYYY-MM-DD date, got {raw!r}")
@@ -95,7 +102,7 @@ def _dec_str_list(name: str, raw: Any) -> list[str]:
     return items
 
 
-def _dec_enum(cls: type[ConnectionType] | type[InteractionType]):
+def _dec_enum(cls: type[ConnectionType] | type[InteractionType] | type[ReminderUnit]):
     def decode(name: str, raw: Any) -> Any:
         member = cls.parse(raw) if isinstance(raw, str) else None
         if member is None:
@@ -121,12 +128,14 @@ _DECODERS = {
     "str": _dec_str,
     "bool": _dec_bool,
     "float": _dec_float,
+    "int": _dec_int,
     "date": _dec_date,
     "datetime": _dec_timestamp,
     "list[str]": _dec_str_list,
     "Place": _dec_place,
     "ConnectionType": _dec_enum(ConnectionType),
     "InteractionType": _dec_enum(InteractionType),
+    "ReminderUnit": _dec_enum(ReminderUnit),
 }
 
 
@@ -154,7 +163,7 @@ def _encode(name: str, value: Any) -> Any:
     raise TypeError(f"{name}: cannot serialize {type(value).__name__}")
 
 
-_MODELS = (Person, Household, ContactGroup, Relationship, Interaction, Place)
+_MODELS = (Person, Household, ContactGroup, Relationship, Interaction, Reminder, Place)
 
 
 def to_dict(obj: Any) -> dict[str, Any] | None:
@@ -223,12 +232,17 @@ def interaction_from_dict(d: dict[str, Any]) -> Interaction:
     return _model_from_dict(Interaction, d)
 
 
+def reminder_from_dict(d: dict[str, Any]) -> Reminder:
+    return _model_from_dict(Reminder, d)
+
+
 _TABLES = (
     ("people", person_from_dict),
     ("households", household_from_dict),
     ("groups", group_from_dict),
     ("relationships", relationship_from_dict),
     ("interactions", interaction_from_dict),
+    ("reminders", reminder_from_dict),
 )
 
 
@@ -241,11 +255,16 @@ def data_to_dict(data: CRMData) -> dict[str, Any]:
         "group_members": [[g, p] for g, p in data.group_members],
         "relationships": [to_dict(r) for r in data.relationships],
         "interactions": [to_dict(i) for i in data.interactions],
+        "reminders": [to_dict(m) for m in data.reminders],
     }
 
 
+# Tables a dataset may omit (bundles made before reminders existed): they read as empty.
+_OPTIONAL_TABLES = frozenset({"reminders"})
+
+
 def data_from_dict(d: dict[str, Any]) -> CRMData:
-    """Parse a dataset. Every table is required and unknown keys are rejected."""
+    """Parse a dataset. Every table but ``reminders`` is required; unknown keys are rejected."""
     if not isinstance(d, dict):
         raise ValueError(f"expected an object, got {type(d).__name__}")
     allowed = {name for name, _ in _TABLES} | {"group_members"}
@@ -253,12 +272,12 @@ def data_from_dict(d: dict[str, Any]) -> CRMData:
         if key not in allowed:
             raise ValueError(f"{key}: unknown field")
     for key in sorted(allowed):
-        if key not in d:
+        if key not in d and key not in _OPTIONAL_TABLES:
             raise ValueError(f"{key}: required field is missing")
 
     tables: dict[str, list[Any]] = {}
     for name, parse in _TABLES:
-        rows = d[name]
+        rows = d.get(name, [])
         if not isinstance(rows, list):
             raise ValueError(f"{name}: expected a list, got {type(rows).__name__}")
         parsed = []

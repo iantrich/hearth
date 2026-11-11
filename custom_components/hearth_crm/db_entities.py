@@ -13,10 +13,20 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any, Literal
 
-from .enums import ConnectionType, InteractionType
-from .models import ContactGroup, Household, Interaction, Person, Place, Relationship
+from .enums import ConnectionType, InteractionType, ReminderUnit
+from .models import (
+    ContactGroup,
+    Household,
+    Interaction,
+    Person,
+    Place,
+    Relationship,
+    Reminder,
+)
 
-EntityKind = Literal["person", "household", "contact_group", "relationship", "interaction"]
+EntityKind = Literal[
+    "person", "household", "contact_group", "relationship", "interaction", "reminder"
+]
 
 PLACE_FIELDS = ("formatted", "street", "city", "state", "postal_code", "country", "lat", "lon")
 
@@ -169,6 +179,28 @@ def interaction_from_row(r: tuple, person_ids: list[str]) -> Interaction:
                        updated_at=parse_dt(r[6]), person_ids=person_ids)
 
 
+# -- reminder -------------------------------------------------------------------------------
+
+REMINDER_COLUMNS = ["id", "person_id", "note", "due_at", "repeat_every", "repeat_unit",
+                    "interaction_id", "anchor_at", "done_at", "notified_for",
+                    "created_at", "updated_at"]
+
+
+def reminder_values(m: Reminder) -> tuple[Any, ...]:
+    return (m.id, m.person_id, m.note, dt(m.due_at), m.repeat_every,
+            str(m.repeat_unit) if m.repeat_unit else None, m.interaction_id,
+            dt(m.anchor_at), dt(m.done_at), dt(m.notified_for),
+            dt(m.created_at), dt(m.updated_at))
+
+
+def reminder_from_row(r: tuple) -> Reminder:
+    return Reminder(id=r[0], person_id=r[1], note=r[2], due_at=parse_dt(r[3]),
+                    repeat_every=r[4], repeat_unit=ReminderUnit(r[5]) if r[5] else None,
+                    interaction_id=r[6], anchor_at=parse_dt(r[7]), done_at=parse_dt(r[8]),
+                    notified_for=parse_dt(r[9]), created_at=parse_dt(r[10]),
+                    updated_at=parse_dt(r[11]))
+
+
 # -- generic row operations ------------------------------------------------------------------
 
 
@@ -185,6 +217,7 @@ _SPECS: dict[str, _Spec] = {
     "contact_group": _Spec("contact_group", GROUP_COLUMNS, group_values),
     "relationship": _Spec("relationship", RELATIONSHIP_COLUMNS, relationship_values),
     "interaction": _Spec("interaction", INTERACTION_COLUMNS, interaction_values),
+    "reminder": _Spec("reminder", REMINDER_COLUMNS, reminder_values),
 }
 
 _FROM_ROW: dict[str, Callable[[tuple], Any]] = {
@@ -192,6 +225,7 @@ _FROM_ROW: dict[str, Callable[[tuple], Any]] = {
     "household": household_from_row,
     "contact_group": group_from_row,
     "relationship": relationship_from_row,
+    "reminder": reminder_from_row,
 }
 
 

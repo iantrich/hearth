@@ -21,13 +21,15 @@ def test_report_sections_and_summary():
 
     assert report.counts == {
         "people": 6, "households": 3, "groups": 1, "relationships": 3, "interactions": 2,
+        "reminders": 3,
     }
     assert report.needs_name == [("h2", "Eden Other")]
     assert [i for i, _ in report.not_a_household] == ["h3"]
     assert report.first_name_only == [("p4", "Drew")]
     assert report.no_name == ["p5"]
     assert report.summary() == (
-        "Imported 6 people, 3 households, 1 group, 3 relationships, 2 interactions"
+        "Imported 6 people, 3 households, 1 group, 3 relationships, 2 interactions,"
+        " 3 reminders"
         " · 4 items to review"
     )
     markdown = report.to_markdown()
@@ -46,3 +48,11 @@ def test_clean_data_has_only_the_counts_section():
 def test_empty_report_renders():
     assert ImportReport().summary() == "Imported nothing"
     assert build_import_report(CRMData()).counts["people"] == 0
+
+
+def test_reminders_are_counted_only_when_there_are_some():
+    data = sample_data()
+    data.reminders = []
+    report = build_import_report(data)
+    assert "reminders" not in report.counts
+    assert "reminder" not in report.summary()

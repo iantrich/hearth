@@ -5,6 +5,7 @@ from __future__ import annotations
 import sqlite3
 import threading
 from dataclasses import replace
+from datetime import UTC, datetime
 
 import pytest
 
@@ -15,6 +16,7 @@ from custom_components.hearth_crm.db import (
     ImportRefusedError,
     open_database,
 )
+from custom_components.hearth_crm.enums import ReminderUnit
 from custom_components.hearth_crm.models import CRMData
 from tests.conftest import sample_data
 
@@ -47,7 +49,7 @@ def test_replace_all_logs_one_change_entry_with_counts(repo):
     assert entry.at.tzinfo is not None
     assert entry.after == {
         "person": 4, "household": 1, "contact_group": 1,
-        "group_member": 2, "relationship": 3, "interaction": 2,
+        "group_member": 2, "relationship": 3, "interaction": 2, "reminder": 3,
     }
 
 
@@ -421,3 +423,49 @@ def test_child_foreign_key_indexes_exist(repo):
         "idx_person_household", "idx_group_member_person", "idx_relationship_a",
         "idx_relationship_b", "idx_interaction_person_person",
     } <= names
+
+
+def test_reminders_round_trip_through_replace_all(repo):
+    data = sample_data()
+    repo.replace_all(data, source="import")
+    got = repo.snapshot()
+    assert [r.id for r in got.reminders] == ["m1", "m2", "m3"]
+    assert got.reminders[0].interaction_id == "i1"
+    assert got.reminders[1].repeat_unit is ReminderUnit.WEEK
+    assert got.reminders[2].due_at is None
+    assert got == data
+
+
+def test_replace_all_counts_include_reminders(repo):
+    repo.replace_all(sample_data(), source="import")
+    assert repo.changes()[0].after["reminder"] == 3
+
+
+def test_a_database_without_the_reminder_table_gains_it_on_open(tmp_path):
+    path = tmp_path / "db.sqlite"
+    open_database(path).close()
+    conn = sqlite3.connect(path)
+    conn.execute("DROP TABLE reminder")
+    conn.commit()
+    conn.close()
+    conn = open_database(path)
+    try:
+        repo = CRMRepository(conn)
+        loner = replace(sample_data().people[2], household_id=None)
+        repo.replace_all(CRMData(people=[loner]), source="import")
+        repo.insert("reminder", sample_data().reminders[2], "panel")
+        assert [r.id for r in repo.snapshot().reminders] == ["m3"]
+    finally:
+        conn.close()
+
+
+def test_set_reminder_notified_changes_only_that_column(repo):
+    repo.replace_all(sample_data(), source="import")
+    before = repo.get("reminder", "m1")
+    log_length = len(repo.changes(limit=100))
+    when = datetime(2026, 3, 1, 15, 0, tzinfo=UTC)
+    repo.set_reminder_notified("m1", when)
+    after = repo.get("reminder", "m1")
+    assert after == replace(before, notified_for=when)
+    assert after.updated_at == before.updated_at
+    assert len(repo.changes(limit=100)) == log_length

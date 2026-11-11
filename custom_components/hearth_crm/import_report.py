@@ -10,7 +10,7 @@ from .naming import household_name
 
 _SINGULAR = {
     "people": "person", "households": "household", "groups": "group",
-    "relationships": "relationship", "interactions": "interaction",
+    "relationships": "relationship", "interactions": "interaction", "reminders": "reminder",
 }
 
 
@@ -62,6 +62,7 @@ def build_import_report(data: CRMData) -> ImportReport:
             "groups": len(data.groups),
             "relationships": len(data.relationships),
             "interactions": len(data.interactions),
+            **({"reminders": len(data.reminders)} if data.reminders else {}),
         }
     )
     for household in data.households:

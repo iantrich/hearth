@@ -20,6 +20,7 @@ from .db_entities import (
     PERSON_COLUMNS,
     PLACE_FIELDS,
     RELATIONSHIP_COLUMNS,
+    REMINDER_COLUMNS,
     EntityKind,
     get_entity,
     group_from_row,
@@ -30,6 +31,7 @@ from .db_entities import (
     parse_dt,
     person_from_row,
     relationship_from_row,
+    reminder_from_row,
     update_entity,
 )
 from .models import CRMData
@@ -164,6 +166,21 @@ CREATE TABLE IF NOT EXISTS interaction_person (
     PRIMARY KEY (interaction_id, person_id)
 );
 
+CREATE TABLE IF NOT EXISTS reminder (
+    id TEXT PRIMARY KEY,
+    person_id TEXT NOT NULL REFERENCES person(id) ON DELETE CASCADE,
+    note TEXT,
+    due_at TEXT,
+    repeat_every INTEGER,
+    repeat_unit TEXT,
+    interaction_id TEXT REFERENCES interaction(id) ON DELETE SET NULL,
+    anchor_at TEXT,
+    done_at TEXT,
+    notified_for TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS change_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     at TEXT NOT NULL,
@@ -180,10 +197,12 @@ CREATE INDEX IF NOT EXISTS idx_group_member_person ON group_member(person_id);
 CREATE INDEX IF NOT EXISTS idx_relationship_a ON relationship(person_a_id);
 CREATE INDEX IF NOT EXISTS idx_relationship_b ON relationship(person_b_id);
 CREATE INDEX IF NOT EXISTS idx_interaction_person_person ON interaction_person(person_id);
+CREATE INDEX IF NOT EXISTS idx_reminder_person ON reminder(person_id);
 """
 
 # Child tables first so deletes never trip foreign keys.
 _DATA_TABLES_DELETE_ORDER = (
+    "reminder",
     "interaction_person",
     "interaction",
     "relationship",
@@ -349,6 +368,7 @@ class CRMRepository:
                 "group_member": len(data.group_members),
                 "relationship": len(data.relationships),
                 "interaction": len(data.interactions),
+                "reminder": len(data.reminders),
             }
             self._log(source, "all", None, "replace_all", after=json.dumps(counts))
             if source == IMPORT_SOURCE:
@@ -442,6 +462,8 @@ class CRMRepository:
             insert_entity(conn, "relationship", r)
         for i in data.interactions:
             insert_entity(conn, "interaction", i)
+        for m in data.reminders:
+            insert_entity(conn, "reminder", m)
 
     # -- entity-level writes --------------------------------------------
 
@@ -489,6 +511,15 @@ class CRMRepository:
             self._log(
                 source, "person", person_id, "update",
                 before=json.dumps(before), after=json.dumps(after),
+            )
+
+    def set_reminder_notified(self, reminder_id: str, occurrence: datetime) -> None:
+        """Record the scheduled instant last notified. Only that column changes: no
+        ``updated_at`` bump and no change-log entry, since it is bookkeeping, not an edit."""
+        with self._write_txn():
+            self._conn.execute(
+                "UPDATE reminder SET notified_for = ? WHERE id = ?",
+                (occurrence.isoformat(), reminder_id),
             )
 
     def set_group_members(self, group_id: str, person_ids: list[str], source: str) -> None:
@@ -607,6 +638,18 @@ class CRMRepository:
         ).fetchall():
             self._remove_member(group_id, person_id, source, result)
 
+        for reminder in [
+            reminder_from_row(r)
+            for r in conn.execute(
+                f"SELECT {', '.join(REMINDER_COLUMNS)} FROM reminder"
+                " WHERE person_id = ? ORDER BY id",
+                (person_id,),
+            ).fetchall()
+        ]:
+            conn.execute("DELETE FROM reminder WHERE id = ?", (reminder.id,))
+            self._log(source, "reminder", reminder.id, "delete", before=_json(reminder))
+            result._add("reminder", reminder.id)
+
         for (interaction_id,) in conn.execute(
             "SELECT interaction_id FROM interaction_person WHERE person_id = ?"
             " ORDER BY interaction_id",
@@ -693,6 +736,7 @@ class CRMRepository:
                 interaction_from_row(r, members.get(r[0], []))
                 for r in rows(INTERACTION_COLUMNS, "interaction")
             ],
+            reminders=[reminder_from_row(r) for r in rows(REMINDER_COLUMNS, "reminder")],
         )
 
     def changes(self, limit: int = 50) -> list[ChangeLogEntry]:
