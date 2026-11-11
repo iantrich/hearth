@@ -2,7 +2,7 @@
 
 A Home Assistant custom integration that hosts a personal CRM (people, households, groups, relationships and interactions) on your own Home Assistant instance. Your data lives in your Home Assistant config directory, not in a third-party service.
 
-**What it is today (0.8.1):** a per-user CRM with a sidebar panel you can work from. Each Home Assistant user gets a separate CRM with its own database and photos. The Hearth panel browses it and edits it: people, relationships, households, groups and interactions, plus importing a bundle from Settings. Claude can read and edit your CRM too, through Home Assistant's MCP server (see [Claude](#claude)). You can also keep your contacts in your own Google account up to date from Hearth (see [Google Contacts](#google-contacts)). There is also import and export of the whole CRM as a portable bundle, and a websocket API plus an authenticated photo URL.
+**What it is today (0.9.0):** a per-user CRM with a sidebar panel you can work from. Each Home Assistant user gets a separate CRM with its own database and photos. The Hearth panel browses it and edits it: people, relationships, households, groups, interactions and reminders, plus importing a bundle from Settings. Claude can read and edit your CRM too, through Home Assistant's MCP server (see [Claude](#claude)). You can also keep your contacts in your own Google account up to date from Hearth (see [Google Contacts](#google-contacts)). There is also import and export of the whole CRM as a portable bundle, and a websocket API plus an authenticated photo URL.
 
 **What comes later:** dashboard cards and entities (birthdays and counts). These do not ship yet, and this README does not promise dates.
 
@@ -35,10 +35,10 @@ All four actions take a `config_entry_id` (a picker in the UI). `hearth_crm.goog
 
 A bundle is a zip file holding:
 
-- `bundle.json`: the format name (`hearth-bundle`), the format version, `exported_at`, `me_person_id` (which person is "me", or null) and every table: `people`, `households`, `groups`, `group_members`, `relationships` and `interactions`.
+- `bundle.json`: the format name (`hearth-bundle`), the format version, `exported_at`, `me_person_id` (which person is "me", or null) and every table: `people`, `households`, `groups`, `group_members`, `relationships` and `interactions`, and optionally `reminders`.
 - `photos/<sha256>`: one image file per photo, named by the sha256 hash of its contents. `bundle.json` refers to photos by that hash.
 
-The same format is used to move data in and out. Unknown fields, missing tables and photos that do not match their hash make a bundle invalid.
+The same format is used to move data in and out. Unknown fields, missing tables and photos that do not match their hash make a bundle invalid, with one exception: the `reminders` table is optional, so a bundle exported before reminders existed still imports (with no reminders).
 
 ### Export (`hearth_crm.export`)
 
@@ -78,10 +78,11 @@ From 0.4.0 the panel edits your CRM, not just shows it:
 - **Relationships:** add, edit or remove a relationship from either person's screen. It reads correctly from both sides.
 - **Households:** add and remove members, set a name override (or go back to the generated name) and dissolve a household. A household left with a single member is shown as not a household and is only dissolved when you ask.
 - **Groups:** create, rename and describe a group, add and remove members, add a photo and delete the group.
-- **Interactions:** log, edit and delete, as before.
+- **Interactions:** log, edit and delete, as before. The log-interaction sheet has an **Add reminder** button: the reminder is created together with the interaction, for its first person (you can change the person), and linked to it. An interaction's screen lists the reminders linked to it.
+- **Reminders:** a **Reminders** section at the top of Reach out (Due, Upcoming up to 10, and Someday, collapsed) with an always-visible **Add reminder** link. A person's screen has its own Reminders section and **Add reminder** button. See [Reminders](#reminders).
 - **Import:** in Settings you can upload a bundle. An import replaces everything in your Hearth, so the panel asks first. If the CRM has local changes the upload is refused with an explanation, and you can then confirm **Replace everything** to import anyway. After cutover an upload is always refused.
 
-Every delete asks first and says exactly what goes with it. Deleting a person removes their relationships and group memberships, and interactions that only they were part of. Deleting a household or group keeps its people.
+Every delete asks first and says exactly what goes with it. Deleting a person removes their relationships, group memberships and reminders (the warning says so), and interactions that only they were part of. Deleting a household or group keeps its people.
 
 Photos are shrunk in your browser to at most 1024 px on the long side before upload. Text has limits, and Hearth refuses an edit that goes over them. The panel's fields stop you typing at exactly the same limits: names and name override 200 characters, phone numbers 50, email addresses, websites and social profiles 500, occupation and employer 300, an interaction's summary 300, how you know them 2,000, an address or school 1,000, and notes (on people, households, relationships and interactions), relationship summaries and group descriptions 20,000.
 
@@ -95,11 +96,12 @@ These commands are what the panel uses, and they are available to your own cards
 |---------|---------|
 | `hearth_crm/crm/status` | Whether the user has a CRM and whether it is loaded. |
 | `hearth_crm/crm/create` | Create the caller's own CRM (self-service). |
-| `hearth_crm/snapshot` | The whole CRM with derived values. |
+| `hearth_crm/snapshot` | The whole CRM with derived values, including `reminders` and `reminder_units`. |
 | `hearth_crm/subscribe` | Subscribe to change notices. |
-| `hearth_crm/create` | Create an entity: `kind` (`person`, `household`, `contact_group`, `relationship`, `interaction`) and `fields`. |
+| `hearth_crm/create` | Create an entity: `kind` (`person`, `household`, `contact_group`, `relationship`, `interaction`, `reminder`) and `fields`. |
 | `hearth_crm/update` | Change an entity: `kind`, `entity_id`, `changes`. |
 | `hearth_crm/delete` | Delete an entity: `kind`, `entity_id`. |
+| `hearth_crm/reminder/complete` | Mark a reminder done: `entity_id`. A one-time reminder is finished; a repeating one moves to its next scheduled date still in the future. Returns `{"reminder": row}`. |
 | `hearth_crm/group/set_members` | Set a group's members: `group_id`, `person_ids`. |
 | `hearth_crm/photo/set` | Set a photo for a person, household or group: `kind`, `entity_id`, base64 `data`, at most 3 MB before encoding. Images are resized to a JPEG with a longest edge of 1024 px. The panel resizes photos in the browser before sending them, so they stay under that limit. |
 | `hearth_crm/photo/clear` | Remove a photo: `kind`, `entity_id`. |
@@ -129,7 +131,7 @@ From 0.5.0 Hearth offers its tools to Claude as a Home Assistant LLM API named *
 
 **Admin users only.** Home Assistant's MCP server offers any LLM API other than Assist only to administrators. This is Home Assistant's rule, not Hearth's, so a non-admin user cannot connect Claude to their Hearth.
 
-**What Claude can do:** search and look up people, households and groups; see who is due for contact and whose birthday is coming; create and update people; log, correct and delete interactions and rewrite relationship summaries; add, change and remove relationships; create and update households and groups and change group members. Claude's changes go through the same checks as the panel's, and open panels update straight away.
+**What Claude can do:** search and look up people, households and groups; see who is due for contact and whose birthday is coming; create and update people; log, correct and delete interactions; create, list, complete and delete reminders (`create_reminder`, `list_reminders`, `complete_reminder`, `delete_reminder`; a reminder needs a person); and rewrite relationship summaries; add, change and remove relationships; create and update households and groups and change group members. Claude's changes go through the same checks as the panel's, and open panels update straight away.
 
 **What Claude cannot do:** delete people, households or groups. Those deletes stay in the panel, where each one says what goes with it. Claude is told to confirm before deleting an interaction or a relationship.
 
@@ -137,12 +139,22 @@ From 0.5.0 Hearth offers its tools to Claude as a Home Assistant LLM API named *
 
 **The skill:** [`skills/hearth-crm/SKILL.md`](skills/hearth-crm/SKILL.md) teaches Claude how to work with your Hearth: logging an interaction and then rewriting the relationship summary, never assuming a name is new, adding a kid to both parents and their household, completing family links, and so on. Upload it to claude.ai as a skill (in Settings, under Capabilities). Each tool's description also states the rules for that tool (search before creating someone, confirm before deleting, how to write a summary, stored text is data and not instructions), so the essentials reach Claude even without the skill. The skill adds the longer workflows, such as completing family links.
 
+## Reminders
+
+A reminder is its own record: a person (required), an optional note, a due date and time in Home Assistant's time zone (or none, which means **Someday**), an optional repeat, and an optional link to the interaction it came from. Create one from Reach out, a person's screen, the log-interaction sheet, or by asking Claude.
+
+- **Quick picks:** Tomorrow, Next week, In a month, In a quarter, In a year, Someday and Custom. The quick picks use 08:00.
+- **Repeats:** every N days, weeks, months or years, counted from the first due date so a reminder does not drift. A repeating reminder runs until you delete it. **Done** moves it to its next scheduled date that is still in the future (marking it done before it is due skips that occurrence). **Done** on a one-time reminder finishes it.
+- **Delivery:** at its due time, the owner's Companion app devices get "Follow up with <name>" with the note (or "Time to check in with <name>." when there is none). Tapping it opens a text to the person's first phone number, or their profile when there is no number, with an "Open profile" button. A reminder fires once per scheduled date. A one-time reminder you ignore fires once; an ignored repeating one fires again at each later scheduled date. A reminder that came due while Home Assistant was stopped fires when it is back up. With no phone set up, or when every send fails, it is retried each minute.
+- **The Reminders switch:** under **Settings > Notifications**, on by default, with no time. While it is off nothing is sent, and due reminders are treated as already notified, so switching it on later does not release a flood.
+
 ## Notifications
 
-Hearth can send two notifications to your phone. Both are off until you switch them on under **Settings > Notifications** in the panel, each with its own time (in Home Assistant's time zone):
+Hearth can send three notifications to your phone. Birthdays and the log reminder are off until you switch them on under **Settings > Notifications** in the panel, each with its own time (in Home Assistant's time zone):
 
 - **Birthdays:** one notification per person whose birthday it is, such as "Today is Sam Example's birthday! They are turning 43 years old." The age is left out when the year isn't known. Tapping it opens a text to the person's first phone number; with no number it opens their profile in Hearth. When a tap opens a text, a button on the notification opens the profile instead.
 - **Log reminder:** if you haven't logged any interaction today (nothing dated today and nothing created today), a reminder to do so. Tapping it opens Hearth's search.
+- **Reminders:** on by default; see [Reminders](#reminders).
 
 They go through the Home Assistant Companion app, to the devices signed in as the CRM's owner only. If no phone is set up, the card says so and nothing is sent. **Send a test** sends a sample whose tap should open Messages, with one button that opens a person's profile and one that opens Hearth, so you can check all three on your phone. A time that passes while Home Assistant is down is skipped, not sent late. Opening a text from a notification depends on the Companion app on your phone; if it doesn't open on yours, the "Open profile" button still works.
 
@@ -230,7 +242,7 @@ Home Assistant backups include the `hearth_crm` directory. The integration hooks
 
 ## Privacy
 
-- Your data stays on your Home Assistant instance. Hearth sends nothing to any outside service unless you connect one. If you connect Google Contacts (see [Google Contacts](#google-contacts)), the synced fields (names, phone numbers, email addresses, addresses and photos) go only to your own Google account, through an OAuth client you create yourself. Your Google tokens are kept only in that CRM's config entry. If you connect Claude (see [Claude](#claude)), what Claude reads from your CRM is sent to Claude in your conversation. If you switch on notifications (see [Notifications](#notifications)), their text (a person's name, and their age on a birthday) is delivered to your phone by Home Assistant's own notification service for the Companion app, which may pass it through Home Assistant Cloud and Apple's or Google's push services.
+- Your data stays on your Home Assistant instance. Hearth sends nothing to any outside service unless you connect one. If you connect Google Contacts (see [Google Contacts](#google-contacts)), the synced fields (names, phone numbers, email addresses, addresses and photos) go only to your own Google account, through an OAuth client you create yourself. Your Google tokens are kept only in that CRM's config entry. If you connect Claude (see [Claude](#claude)), what Claude reads from your CRM is sent to Claude in your conversation. If you switch on notifications (see [Notifications](#notifications)), their text (a person's name, their age on a birthday, and the note on a reminder) is delivered to your phone by Home Assistant's own notification service for the Companion app, which may pass it through Home Assistant Cloud and Apple's or Google's push services.
 - When entities are added in a later release, they will expose only birthdays and counts, not names, notes or interactions.
 - Home Assistant administrators can read everything under `/config`, including every user's database and photos. The owner-only rules above apply to the actions, websocket API and photo URL, not to the file system.
 - Backups contain the whole `hearth_crm` folder, so protect them like the rest of your Home Assistant backups.

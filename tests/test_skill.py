@@ -84,6 +84,6 @@ def test_api_prompt_names_only_real_tools_and_stays_short():
     assert len(prompt) <= 2500, len(prompt)
 
 
-def test_version_is_0_8_1():
+def test_version_is_0_9_0():
     manifest = (Path(llm_api.__file__).parent / "manifest.json").read_text()
-    assert '"version": "0.8.1"' in manifest
+    assert '"version": "0.9.0"' in manifest

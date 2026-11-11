@@ -11,6 +11,7 @@ Hearth is a personal CRM for people you care about: who they are, how you know t
 
 - **People, households, groups, relationships and interactions**, with a sidebar panel in Home Assistant for browsing and editing.
 - **One CRM per Home Assistant user**, each with its own database and photos.
+- **Reminders** to follow up with someone at a set time, once or repeating, delivered as a phone notification.
 - **Works with Claude** through Home Assistant's MCP server, so you can ask who to reach out to or log a catch-up in plain language.
 - **Optional Google Contacts sync.** Hearth can keep a copy of your contacts up to date in your own Google account. It is one-way (Hearth to Google), off by default, and never deletes anything in Google.
 - **Portable.** Import and export your whole CRM as a bundle file.

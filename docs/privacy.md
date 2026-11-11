@@ -35,7 +35,7 @@ Hearth's use and transfer of information received from Google APIs adheres to th
 
 ## Notifications (optional)
 
-If you switch on Hearth's phone notifications, Hearth asks your Home Assistant to send them through the Home Assistant Companion app. The text can include a person's name and, for a birthday, their age. Delivery to your phone is handled by Home Assistant's notification service, which may pass the text through Home Assistant Cloud and Apple's or Google's push services. Hearth itself sends nothing to the developer or to any other service.
+If you switch on Hearth's phone notifications, Hearth asks your Home Assistant to send them through the Home Assistant Companion app. The text can include a person's name, for a birthday their age, and for a reminder the note you wrote on it. Delivery to your phone is handled by Home Assistant's notification service, which may pass the text through Home Assistant Cloud and Apple's or Google's push services. Hearth itself sends nothing to the developer or to any other service.
 
 ## Claude (optional)
 
