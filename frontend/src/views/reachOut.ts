@@ -39,7 +39,7 @@ function remindersSection(store: Store): TemplateResult {
   const group = (label: string, list: Reminder[]) =>
     list.length ? html`<div class="label list-label">${label}</div><div class="list">${rows(list)}</div>` : nothing;
   const none = !due.length && !upcoming.length && !someday.length;
-  return html`<div style="display:flex;align-items:center;justify-content:space-between;padding-right:16px">
+  return html`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px 2px 0">
       <div class="label list-label" style="font-size:12px">Reminders</div>
       <a class="pill" href=${href.newReminderAny()}>Add reminder</a>
     </div>
