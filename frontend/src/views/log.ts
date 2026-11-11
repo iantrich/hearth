@@ -2,6 +2,7 @@ import { html, nothing, type TemplateResult } from "lit";
 import { live } from "lit/directives/live.js";
 import { avatar } from "../components";
 import { bindDraft, fieldError } from "../forms/fields";
+import { personPicker } from "../forms/personPicker";
 import { blankReminder, nestedBinding, reminderChangesOf, reminderFields, type ReminderForm } from "../forms/reminderFields";
 import { icons } from "../icons";
 import { goBack, href } from "../router";
@@ -12,6 +13,9 @@ import { snapshotOf } from "./view";
 // The shell's Claude link (kept here too: importing the shell would be a cycle).
 const CLAUDE_URL = "https://claude.ai/new";
 
+/** The inline reminder: for the interaction's person to start with, changeable ("" until chosen). */
+type LogReminder = ReminderForm & { person: string };
+
 /** The log and edit interaction sheet's input. */
 interface LogForm {
   type: string;
@@ -19,7 +23,7 @@ interface LogForm {
   summary: string;
   notes: string;
   /** A reminder to save with a new interaction, linked to it; null when none was added. */
-  reminder: ReminderForm | null;
+  reminder: LogReminder | null;
 }
 
 // The form is a draft keyed by which sheet it is, so typing survives re-renders, a different
@@ -58,7 +62,8 @@ export function logSheet(store: Store, person: Person, editing: Interaction | nu
   };
   const set = (patch: Partial<LogForm>) => store.drafts.patch<LogForm>(key, patch);
   // An added reminder must be complete too (a due choice, a custom date, a good repeat count).
-  const valid = form.summary.trim() !== "" && form.date !== "" && form.type !== "" && (!form.reminder || reminderChangesOf(form.reminder) !== null);
+  const reminderOk = !form.reminder || (reminderChangesOf(form.reminder) !== null && snapshotOf(store).people.some((p) => p.id === form.reminder?.person));
+  const valid = form.summary.trim() !== "" && form.date !== "" && form.type !== "" && reminderOk;
   // The server's error for a field it refused, shown under that field.
   const error = (name: "summary" | "notes") => fieldError(store.writeError, name);
   const errorSlot = (name: "summary" | "notes") => {
@@ -75,15 +80,14 @@ export function logSheet(store: Store, person: Person, editing: Interaction | nu
       if (await store.updateInteraction(editing.id, changes, base && changesOf(base))) done();
       return;
     }
-    // The interaction first, then the reminder linked to it, for its (first) person. If the
+    // The interaction first, then the reminder linked to it, for the person chosen. If the
     // reminder fails the interaction is already saved: the sheet closes and the toast says so.
     const id = await store.createInteraction({ person_ids: [person.id], ...changes });
     if (id === null) return;
     const reminder = form.reminder && reminderChangesOf(form.reminder);
-    if (reminder) await store.addReminder({ person_id: person.id, interaction_id: id, ...reminder });
+    if (reminder && form.reminder) await store.addReminder({ person_id: form.reminder.person, interaction_id: id, ...reminder });
     done();
   };
-  const snapshot = snapshotOf(store);
 
   return html`<div class="sheet-backdrop" @click=${(e: Event) => e.target === e.currentTarget && done()}>
     <div class="sheet" role="dialog" aria-label=${editing ? "Edit interaction" : "Log interaction"}>
@@ -131,7 +135,7 @@ export function logSheet(store: Store, person: Person, editing: Interaction | nu
               .value=${live(form.notes)} @input=${(e: InputEvent) => set({ notes: (e.target as HTMLTextAreaElement).value })}></textarea>
             ${errorSlot("notes")}
           </label>
-          ${reminderPart(store, key, form, editing, snapshot.today, snapshot.reminder_units)}
+          ${reminderPart(store, key, form, editing, person)}
           <a href=${CLAUDE_URL} target="_blank" rel="noopener noreferrer" style="display:grid;justify-items:center;gap:8px;padding:8px 0">
             <span class="action primary" style="width:44px;height:44px;border-radius:50%">${icons.mic}</span>
             <span class="muted" style="font-size:11.5px">Or tell Claude about it, and it logs it in Hearth for you.</span>
@@ -146,12 +150,24 @@ const buttonLink = "display:flex;align-items:center;justify-content:center";
 
 // Editing an interaction: its reminders are their own records, added from their own sheet.
 // Logging one: a reminder can be added here and is saved with it.
-function reminderPart(store: Store, key: string, form: LogForm, editing: Interaction | null, today: string, units: string[]) {
+function reminderPart(store: Store, key: string, form: LogForm, editing: Interaction | null, person: Person) {
   if (editing)
     return html`<a class="btn secondary" style=${buttonLink} href=${href.newInteractionReminder(editing.id)}>Add reminder</a>`;
-  const set = (reminder: ReminderForm | null) => store.drafts.patch<LogForm>(key, { reminder });
-  if (!form.reminder) return html`<button class="btn secondary" @click=${() => set(blankReminder())}>Add reminder</button>`;
+  const set = (reminder: LogReminder | null) => store.drafts.patch<LogForm>(key, { reminder });
+  if (!form.reminder) return html`<button class="btn secondary" @click=${() => set({ ...blankReminder(), person: person.id })}>Add reminder</button>`;
+  const { people, today, reminder_units } = snapshotOf(store);
+  const b = nestedBinding(bindDraft(store, key), "reminder");
+  const chosen = people.find((p) => p.id === form.reminder?.person);
   return html`<div class="label">Reminder</div>
-    ${reminderFields(nestedBinding(bindDraft(store, key), "reminder"), today, units, store.busy)}
+    ${personPicker(store, {
+      id: "log-reminder-person",
+      label: "For",
+      path: href.logInteraction(person.id),
+      selected: chosen ? [chosen.id] : [],
+      onPick: (id) => b.set("person", id),
+      onRemove: () => b.set("person", ""),
+      disabled: store.busy,
+    })}
+    ${reminderFields(b, today, reminder_units, store.busy)}
     <button class="btn secondary" @click=${() => set(null)}>Remove reminder</button>`;
 }

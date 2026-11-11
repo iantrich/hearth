@@ -62,6 +62,11 @@ async function choose(el: HearthPanel, selector: string, value: string) {
   await settle(el);
 }
 
+async function pickPerson(el: HearthPanel, name: string) {
+  [...root(el).querySelectorAll<HTMLButtonElement>(".picker-choice")].find((b) => b.textContent!.includes(name))!.click();
+  await settle(el);
+}
+
 /** Create answers with an id per kind, so a test can tell the interaction's from the reminder's. */
 const creates: Record<string, Handler> = {
   "hearth_crm/create": (msg) => ({ id: msg.kind === "interaction" ? "inew" : "mnew" }),
@@ -84,6 +89,8 @@ describe("reminder sheet", () => {
     expect(sheetText(el)).toContain("Sam Okafor");
     expect(root(el).querySelector("#reminder-person")).toBeNull();
     expect(button(el, "Save")!.disabled).toBe(true);
+    const picks = [...root(el).querySelectorAll('[role="dialog"] .pill')].map((p) => p.textContent!.trim());
+    expect(picks).toEqual(["Tomorrow", "Next week", "In a month", "In a quarter", "In a year", "Someday", "Custom"]);
 
     await type(el, '[role="dialog"] textarea[name="note"]', "Ask about the move");
     await click(el, "Tomorrow");
@@ -143,8 +150,7 @@ describe("reminder sheet", () => {
     expect(button(el, "Save")!.disabled).toBe(true);
 
     await type(el, "#reminder-person", "Taylor");
-    [...root(el).querySelectorAll<HTMLButtonElement>(".picker-choice")].find((b) => b.textContent!.includes("Taylor Brandt"))!.click();
-    await settle(el);
+    await pickPerson(el, "Taylor Brandt");
     expect(button(el, "Save")!.disabled).toBe(false);
     expect(sheetText(el)).toContain("From: Old trip planning");
     await click(el, "Save");
@@ -152,6 +158,21 @@ describe("reminder sheet", () => {
       { type: "hearth_crm/create", kind: "reminder", fields: { person_id: "p6", due_at: "2026-11-06T08:00", interaction_id: "iz" } },
     ]);
     expect(location.pathname).toBe("/hearth/interaction/iz");
+  });
+
+  it("from an interaction the person is preset to its first person and can be changed", async () => {
+    const { el, writes } = await mount("/interaction/i1/reminder/new", sampleSnapshot, creates);
+    // i1 is with Alex and Jordan: Alex is chosen to start with.
+    expect(root(el).querySelectorAll('[role="dialog"] .person-picker .chip')).toHaveLength(1);
+    expect(root(el).querySelector('[role="dialog"] .person-picker .chip')!.textContent).toContain("Alex Marlow");
+    await type(el, "#reminder-person", "Taylor");
+    await pickPerson(el, "Taylor Brandt");
+    expect(root(el).querySelector('[role="dialog"] .person-picker .chip')!.textContent).toContain("Taylor Brandt");
+    await click(el, "Tomorrow");
+    await click(el, "Save");
+    expect(writes()).toEqual([
+      { type: "hearth_crm/create", kind: "reminder", fields: { person_id: "p6", due_at: "2026-11-06T08:00", interaction_id: "i1" } },
+    ]);
   });
 
   it("test_editing_sends_only_changed_fields", async () => {
@@ -224,6 +245,36 @@ describe("log sheet reminders", () => {
       },
     ]);
     expect(location.pathname).toBe("/hearth/person/p4");
+  });
+
+  it("the log sheet's reminder is for the interaction's person to start with and can be changed", async () => {
+    const { el, writes } = await mount("/person/p4/log", sampleSnapshot, creates);
+    await type(el, "#log-summary", "Lunch downtown");
+    await click(el, "Add reminder");
+    expect(root(el).querySelector('[role="dialog"] .person-picker .chip')!.textContent).toContain("Sam Okafor");
+    await type(el, "#log-reminder-person", "Casey");
+    await pickPerson(el, "Casey Lindqvist");
+    await click(el, "Someday");
+    await click(el, "Save");
+    expect(writes()).toEqual([
+      {
+        type: "hearth_crm/create",
+        kind: "interaction",
+        fields: { person_ids: ["p4"], type: "Call", date: "2026-11-05", summary: "Lunch downtown", notes: null },
+      },
+      { type: "hearth_crm/create", kind: "reminder", fields: { person_id: "p5", interaction_id: "inew", due_at: null } },
+    ]);
+  });
+
+  it("the log sheet's reminder needs someone", async () => {
+    const { el } = await mount("/person/p4/log", sampleSnapshot, creates);
+    await type(el, "#log-summary", "Lunch downtown");
+    await click(el, "Add reminder");
+    await click(el, "Tomorrow");
+    expect(button(el, "Save")!.disabled).toBe(false);
+    root(el).querySelector<HTMLButtonElement>('[role="dialog"] .chip-remove')!.click();
+    await settle(el);
+    expect(button(el, "Save")!.disabled).toBe(true);
   });
 
   it("logging without a reminder sends only the interaction", async () => {

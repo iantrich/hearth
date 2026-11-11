@@ -31,7 +31,7 @@ const PICKS: { pick: DuePick; label: string }[] = [
   { pick: "tomorrow", label: "Tomorrow" },
   { pick: "next_week", label: "Next week" },
   { pick: "month", label: "In a month" },
-  { pick: "quarter", label: "In 3 months" },
+  { pick: "quarter", label: "In a quarter" },
   { pick: "year", label: "In a year" },
   { pick: "someday", label: "Someday" },
   { pick: "custom", label: "Custom" },

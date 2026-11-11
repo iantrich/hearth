@@ -1,5 +1,6 @@
 // Add or change one reminder, as a sheet over the screen it opened from: a person's screen (add,
-// for them), an interaction's (add, linked to it, for its first person) or Reach out (edit). The
+// for them), an interaction's (add, linked to it, for its first person unless another is chosen)
+// or Reach out (edit; a reminder's person doesn't change). The
 // form is a draft for the sheet's path. An edit sends only what changed since the sheet opened.
 import { html, nothing, type TemplateResult } from "lit";
 import { avatar } from "../components";
@@ -26,8 +27,10 @@ interface SheetSpec {
   path: string;
   /** Where Cancel and Save go back to when there's no history. */
   closeTo: string;
-  /** The person, when it's set by where the sheet opened (shown, not changeable). */
+  /** Who it's for when the sheet opens. */
   person: Person | null;
+  /** True when the person can't be changed: opened from their screen, or editing. */
+  locked: boolean;
   interaction: Interaction | null;
   existing: Reminder | null;
 }
@@ -41,18 +44,18 @@ export function reminderSheetView(store: Store, route: ReminderRoute): View {
       // The person is gone (or still arriving): their screen says so, with no sheet over it.
       if (!person) return base;
       const path = href.newReminder(person.id);
-      return { ...base, overlay: sheet(store, { key: `reminder:new:person:${person.id}`, path, closeTo: href.person(person.id), person, interaction: null, existing: null }) };
+      return { ...base, overlay: sheet(store, { key: `reminder:new:person:${person.id}`, path, closeTo: href.person(person.id), person, locked: true, interaction: null, existing: null }) };
     }
     case "interactionReminderNew": {
       const base = interactionView(store, route.interactionId, null);
       const interaction = snapshot.interactions.find((i) => i.id === route.interactionId);
       if (!interaction) return base;
-      // For its first person; when its people are all gone, the sheet asks who it's for.
+      // For its first person to start with, changeable; when its people are all gone, nobody yet.
       const lead = interactionPeople(interaction, snapshot.people)[0] ?? null;
       const path = href.newInteractionReminder(interaction.id);
       return {
         ...base,
-        overlay: sheet(store, { key: `reminder:new:interaction:${interaction.id}`, path, closeTo: href.interaction(interaction.id), person: lead, interaction, existing: null }),
+        overlay: sheet(store, { key: `reminder:new:interaction:${interaction.id}`, path, closeTo: href.interaction(interaction.id), person: lead, locked: false, interaction, existing: null }),
       };
     }
     case "reminder": {
@@ -61,7 +64,7 @@ export function reminderSheetView(store: Store, route: ReminderRoute): View {
       if (!existing) return store.isArriving(route.id) ? arriving : notFound("reminder");
       const person = snapshot.people.find((p) => p.id === existing.person_id) ?? null;
       const interaction = existing.interaction_id ? (snapshot.interactions.find((i) => i.id === existing.interaction_id) ?? null) : null;
-      const spec = { key: `edit:reminder:${existing.id}`, path: href.reminder(existing.id), closeTo: href.reachOut(), person, interaction, existing };
+      const spec = { key: `edit:reminder:${existing.id}`, path: href.reminder(existing.id), closeTo: href.reachOut(), person, locked: true, interaction, existing };
       return { ...reachOutView(store), overlay: sheet(store, spec) };
     }
   }
@@ -76,7 +79,7 @@ function sheet(store: Store, spec: SheetSpec): TemplateResult {
     ...(existing ? reminderFormOf(existing) : blankReminder()),
     person: spec.person?.id ?? existing?.person_id ?? "",
   }));
-  const chosen = spec.person ?? snapshot.people.find((p) => p.id === form.person) ?? null;
+  const chosen = spec.locked ? spec.person : (snapshot.people.find((p) => p.id === form.person) ?? null);
 
   const done = () => {
     store.drafts.drop(key);
@@ -111,7 +114,7 @@ function sheet(store: Store, spec: SheetSpec): TemplateResult {
         </div>
         <div class="sheet-body">
           <div class="form">
-            ${spec.person || existing
+            ${spec.locked
               ? html`<div class="field">
                   <span>Person</span>
                   ${chosen

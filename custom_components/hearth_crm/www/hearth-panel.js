@@ -3,7 +3,7 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const xe = globalThis, ft = xe.ShadowRoot && (xe.ShadyCSS === void 0 || xe.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, un = Symbol(), Nt = /* @__PURE__ */ new WeakMap();
+const ke = globalThis, ft = ke.ShadowRoot && (ke.ShadyCSS === void 0 || ke.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, un = Symbol(), Nt = /* @__PURE__ */ new WeakMap();
 let hi = class {
   constructor(e, n, i) {
     if (this._$cssResult$ = !0, i !== un) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
@@ -25,7 +25,7 @@ let hi = class {
 const pn = (t) => new hi(typeof t == "string" ? t : t + "", void 0, un), ui = (t, e) => {
   if (ft) t.adoptedStyleSheets = e.map((n) => n instanceof CSSStyleSheet ? n : n.styleSheet);
   else for (const n of e) {
-    const i = document.createElement("style"), s = xe.litNonce;
+    const i = document.createElement("style"), s = ke.litNonce;
     s !== void 0 && i.setAttribute("nonce", s), i.textContent = n.cssText, t.appendChild(i);
   }
 }, Pt = ft ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((e) => {
@@ -38,7 +38,7 @@ const pn = (t) => new hi(typeof t == "string" ? t : t + "", void 0, un), ui = (t
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: pi, defineProperty: fi, getOwnPropertyDescriptor: mi, getOwnPropertyNames: gi, getOwnPropertySymbols: vi, getPrototypeOf: yi } = Object, Re = globalThis, It = Re.trustedTypes, bi = It ? It.emptyScript : "", $i = Re.reactiveElementPolyfillSupport, ie = (t, e) => t, Ee = { toAttribute(t, e) {
+const { is: pi, defineProperty: fi, getOwnPropertyDescriptor: mi, getOwnPropertyNames: gi, getOwnPropertySymbols: vi, getPrototypeOf: yi } = Object, Me = globalThis, It = Me.trustedTypes, bi = It ? It.emptyScript : "", $i = Me.reactiveElementPolyfillSupport, ie = (t, e) => t, Se = { toAttribute(t, e) {
   switch (e) {
     case Boolean:
       t = t ? bi : null;
@@ -66,8 +66,8 @@ const { is: pi, defineProperty: fi, getOwnPropertyDescriptor: mi, getOwnProperty
       }
   }
   return n;
-} }, mt = (t, e) => !pi(t, e), Ht = { attribute: !0, type: String, converter: Ee, reflect: !1, useDefault: !1, hasChanged: mt };
-Symbol.metadata ??= Symbol("metadata"), Re.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
+} }, mt = (t, e) => !pi(t, e), Ht = { attribute: !0, type: String, converter: Se, reflect: !1, useDefault: !1, hasChanged: mt };
+Symbol.metadata ??= Symbol("metadata"), Me.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 let Y = class extends HTMLElement {
   static addInitializer(e) {
     this._$Ei(), (this.l ??= []).push(e);
@@ -165,14 +165,14 @@ let Y = class extends HTMLElement {
   _$ET(e, n) {
     const i = this.constructor.elementProperties.get(e), s = this.constructor._$Eu(e, i);
     if (s !== void 0 && i.reflect === !0) {
-      const r = (i.converter?.toAttribute !== void 0 ? i.converter : Ee).toAttribute(n, i.type);
+      const r = (i.converter?.toAttribute !== void 0 ? i.converter : Se).toAttribute(n, i.type);
       this._$Em = e, r == null ? this.removeAttribute(s) : this.setAttribute(s, r), this._$Em = null;
     }
   }
   _$AK(e, n) {
     const i = this.constructor, s = i._$Eh.get(e);
     if (s !== void 0 && this._$Em !== s) {
-      const r = i.getPropertyOptions(s), a = typeof r.converter == "function" ? { fromAttribute: r.converter } : r.converter?.fromAttribute !== void 0 ? r.converter : Ee;
+      const r = i.getPropertyOptions(s), a = typeof r.converter == "function" ? { fromAttribute: r.converter } : r.converter?.fromAttribute !== void 0 ? r.converter : Se;
       this._$Em = s;
       const o = a.fromAttribute(n, r.type);
       this[s] = o ?? this._$Ej?.get(s) ?? o, this._$Em = null;
@@ -249,13 +249,13 @@ let Y = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-Y.elementStyles = [], Y.shadowRootOptions = { mode: "open" }, Y[ie("elementProperties")] = /* @__PURE__ */ new Map(), Y[ie("finalized")] = /* @__PURE__ */ new Map(), $i?.({ ReactiveElement: Y }), (Re.reactiveElementVersions ??= []).push("2.1.2");
+Y.elementStyles = [], Y.shadowRootOptions = { mode: "open" }, Y[ie("elementProperties")] = /* @__PURE__ */ new Map(), Y[ie("finalized")] = /* @__PURE__ */ new Map(), $i?.({ ReactiveElement: Y }), (Me.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const gt = globalThis, Ot = (t) => t, Se = gt.trustedTypes, Dt = Se ? Se.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, fn = "$lit$", O = `lit$${Math.random().toFixed(9).slice(2)}$`, mn = "?" + O, _i = `<${mn}>`, j = document, oe = () => j.createComment(""), le = (t) => t === null || typeof t != "object" && typeof t != "function", vt = Array.isArray, wi = (t) => vt(t) || typeof t?.[Symbol.iterator] == "function", Ge = `[ 	
+const gt = globalThis, Ot = (t) => t, Ae = gt.trustedTypes, Dt = Ae ? Ae.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, fn = "$lit$", O = `lit$${Math.random().toFixed(9).slice(2)}$`, mn = "?" + O, _i = `<${mn}>`, j = document, oe = () => j.createComment(""), le = (t) => t === null || typeof t != "object" && typeof t != "function", vt = Array.isArray, wi = (t) => vt(t) || typeof t?.[Symbol.iterator] == "function", Ge = `[ 	
 \f\r]`, te = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Lt = /-->/g, Ut = />/g, F = RegExp(`>|${Ge}(?:([^\\s"'>=/]+)(${Ge}*=${Ge}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), zt = /'/g, Gt = /"/g, gn = /^(?:script|style|textarea|title)$/i, vn = (t) => (e, ...n) => ({ _$litType$: t, strings: e, values: n }), l = vn(1), x = vn(2), I = Symbol.for("lit-noChange"), h = Symbol.for("lit-nothing"), Ft = /* @__PURE__ */ new WeakMap(), B = j.createTreeWalker(j, 129);
 function yn(t, e) {
@@ -288,12 +288,12 @@ class ce {
       if (s.nodeType === 1) {
         if (s.hasAttributes()) for (const p of s.getAttributeNames()) if (p.endsWith(fn)) {
           const y = u[a++], m = s.getAttribute(p).split(O), g = /([.?@])?(.*)/.exec(y);
-          c.push({ type: 1, index: r, name: g[2], strings: m, ctor: g[1] === "." ? Ci : g[1] === "?" ? Ei : g[1] === "@" ? Si : Me }), s.removeAttribute(p);
+          c.push({ type: 1, index: r, name: g[2], strings: m, ctor: g[1] === "." ? Ci : g[1] === "?" ? Ei : g[1] === "@" ? Si : Ne }), s.removeAttribute(p);
         } else p.startsWith(O) && (c.push({ type: 6, index: r }), s.removeAttribute(p));
         if (gn.test(s.tagName)) {
           const p = s.textContent.split(O), y = p.length - 1;
           if (y > 0) {
-            s.textContent = Se ? Se.emptyScript : "";
+            s.textContent = Ae ? Ae.emptyScript : "";
             for (let m = 0; m < y; m++) s.append(p[m], oe()), B.nextNode(), c.push({ type: 2, index: ++r });
             s.append(p[y], oe());
           }
@@ -404,7 +404,7 @@ class de {
     this._$AM === void 0 && (this._$Cv = e, this._$AP?.(e));
   }
 }
-class Me {
+class Ne {
   get tagName() {
     return this.element.tagName;
   }
@@ -429,7 +429,7 @@ class Me {
     e === h ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
   }
 }
-class Ci extends Me {
+class Ci extends Ne {
   constructor() {
     super(...arguments), this.type = 3;
   }
@@ -437,7 +437,7 @@ class Ci extends Me {
     this.element[this.name] = e === h ? void 0 : e;
   }
 }
-class Ei extends Me {
+class Ei extends Ne {
   constructor() {
     super(...arguments), this.type = 4;
   }
@@ -445,7 +445,7 @@ class Ei extends Me {
     this.element.toggleAttribute(this.name, !!e && e !== h);
   }
 }
-class Si extends Me {
+class Si extends Ne {
   constructor(e, n, i, s, r) {
     super(e, n, i, s, r), this.type = 5;
   }
@@ -517,7 +517,7 @@ Mi?.({ LitElement: se });
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Ni = { attribute: !0, type: String, converter: Ee, reflect: !1, hasChanged: mt }, Pi = (t = Ni, e, n) => {
+const Ni = { attribute: !0, type: String, converter: Se, reflect: !1, hasChanged: mt }, Pi = (t = Ni, e, n) => {
   const { kind: i, metadata: s } = n;
   let r = globalThis.litPropertyMetadata.get(s);
   if (r === void 0 && globalThis.litPropertyMetadata.set(s, r = /* @__PURE__ */ new Map()), i === "setter" && ((t = Object.create(t)).wrapped = !0), r.set(n.name, t), i === "accessor") {
@@ -860,10 +860,10 @@ const ji = bn(class extends $n {
 function bt(t) {
   return /* @__PURE__ */ new Date(`${t}T00:00:00Z`);
 }
-const Vi = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }), qi = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }), Ki = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }), Ae = (t) => Vi.format(bt(t)), Yi = (t) => qi.format(bt(t)), wn = (t) => Ki.format(bt(t));
+const Vi = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }), qi = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }), Ki = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }), Te = (t) => Vi.format(bt(t)), Yi = (t) => qi.format(bt(t)), wn = (t) => Ki.format(bt(t));
 function Wi(t, e, n) {
-  if (e) return Ae(t);
-  const i = `${Ae(t)}, ${t.slice(0, 4)}`;
+  if (e) return Te(t);
+  const i = `${Te(t)}, ${t.slice(0, 4)}`;
   return n === null ? i : `${i} - ${n}`;
 }
 function Ji(t) {
@@ -872,25 +872,25 @@ function Ji(t) {
 function Xi(t) {
   return t.trim().split(/\s+/).slice(0, 2).map((e) => e.charAt(0)).join("").toUpperCase();
 }
-function Ne(t, e, n = `${e}s`) {
+function Pe(t, e, n = `${e}s`) {
   return `${t} ${t === 1 ? e : n}`;
 }
-const E = (t) => x`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${t}</svg>`, me = (t) => x`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${t}</svg>`, w = {
+const E = (t) => x`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${t}</svg>`, ge = (t) => x`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${t}</svg>`, w = {
   home: E(x`<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>`),
   search: E(x`<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>`),
-  mic: me(x`<path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11z"/>`),
+  mic: ge(x`<path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11z"/>`),
   bell: E(x`<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>`),
   plusCircle: E(x`<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>`),
   plus: E(x`<path d="M12 5v14M5 12h14"/>`),
   star: E(x`<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>`),
-  starFill: me(x`<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>`),
+  starFill: ge(x`<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>`),
   phone: E(x`<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>`),
   message: E(x`<path d="M21 12a8.5 8.5 0 0 1-12.4 7.6L3 21l1.4-5.6A8.5 8.5 0 1 1 21 12z"/>`),
   envelope: E(x`<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>`),
   mapPin: E(x`<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>`),
   globe: E(x`<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>`),
-  linkedIn: me(x`<path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.5h4V21H3zM9.5 9.5h3.8v1.6h.1c.5-1 1.8-2 3.8-2 4 0 4.8 2.6 4.8 6V21h-4v-5.2c0-1.2 0-2.8-1.7-2.8s-2 1.3-2 2.7V21h-4z"/>`),
-  facebook: me(x`<path d="M14 8.5V6.8c0-.8.2-1.3 1.4-1.3H17V2.2C16.7 2.1 15.7 2 14.6 2 12.2 2 10.6 3.4 10.6 6.1v2.4H8v3.3h2.6V22H14V11.8h2.6l.4-3.3z"/>`),
+  linkedIn: ge(x`<path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.5h4V21H3zM9.5 9.5h3.8v1.6h.1c.5-1 1.8-2 3.8-2 4 0 4.8 2.6 4.8 6V21h-4v-5.2c0-1.2 0-2.8-1.7-2.8s-2 1.3-2 2.7V21h-4z"/>`),
+  facebook: ge(x`<path d="M14 8.5V6.8c0-.8.2-1.3 1.4-1.3H17V2.2C16.7 2.1 15.7 2 14.6 2 12.2 2 10.6 3.4 10.6 6.1v2.4H8v3.3h2.6V22H14V11.8h2.6l.4-3.3z"/>`),
   instagram: E(x`<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor"/>`),
   pencil: E(x`<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>`),
   trash: E(x`<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>`),
@@ -1047,7 +1047,7 @@ function L(t, e) {
 function et(t, e) {
   return L(t.name, e.name);
 }
-function Pe(t) {
+function Ie(t) {
   return t.trim().split(/\s+/)[0] ?? "";
 }
 function X(t) {
@@ -1059,7 +1059,7 @@ function H(t) {
 function $t(t, e) {
   const n = H(t);
   if (X(t)) return n;
-  const i = t.member_ids.map((s) => e.find((r) => r.id === s)).filter((s) => !!s).map((s) => Pe(s.name)).filter(Boolean);
+  const i = t.member_ids.map((s) => e.find((r) => r.id === s)).filter((s) => !!s).map((s) => Ie(s.name)).filter(Boolean);
   return i.length ? `${n} (${i.join(", ")})` : n;
 }
 function xn(t, e) {
@@ -1090,7 +1090,7 @@ function hs(t, e) {
 function Cn(t, e) {
   return t.date === e.date ? 0 : t.date > e.date ? -1 : 1;
 }
-function Ie(t, e) {
+function He(t, e) {
   const n = /* @__PURE__ */ new Map();
   for (const i of e) n.has(i.id) || n.set(i.id, i);
   return t.person_ids.flatMap((i) => {
@@ -1099,7 +1099,7 @@ function Ie(t, e) {
   });
 }
 function us(t) {
-  const e = (s) => Pe(s.name) || s.name, [n, i] = t;
+  const e = (s) => Ie(s.name) || s.name, [n, i] = t;
   return n ? i ? t.length === 2 ? `${e(n)} & ${e(i)}` : `${e(n)} and ${t.length - 1} others` : n.name : "";
 }
 function $(t) {
@@ -1127,7 +1127,7 @@ function En(t, e) {
     >
     <a href=${f.interaction(t.id)} style="display:flex;gap:12px">
       <span class="sub" style="flex:1">${t.summary}</span>
-      <span class="meta">${Ae(t.date)}</span>
+      <span class="meta">${Te(t.date)}</span>
     </a>
   </div>`;
 }
@@ -1152,7 +1152,7 @@ function fs(t) {
       (o) => l`<a href=${f.person(o.id)} style="display:grid;justify-items:center;gap:6px;min-width:0">
                 ${S(o.name, o.photo_url, 56)}
                 <span class="fav-name" style="font-weight:600;font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-                  >${Pe(o.name)}</span
+                  >${Ie(o.name)}</span
                 >
               </a>`
     )}
@@ -1169,7 +1169,7 @@ function fs(t) {
         <!-- "See more", not "See all": that list caps at 25. -->
         <div class="section-head"><h2>Recent</h2><a href=${f.interactions()}>See more</a></div>
         <div class="list">
-          ${a.length ? a.map((o) => En(o, Ie(o, e))) : l`<div class="empty">Nothing logged in the last 30 days.</div>`}
+          ${a.length ? a.map((o) => En(o, He(o, e))) : l`<div class="empty">Nothing logged in the last 30 days.</div>`}
         </div>
       </div>
     </div>`
@@ -1200,7 +1200,7 @@ function gs(t) {
     back: !0,
     actions: [],
     body: l`<div class="page list">
-      ${i.length ? i.map((s) => En(s, Ie(s, e))) : l`<div class="empty">No interactions yet.</div>`}
+      ${i.length ? i.map((s) => En(s, He(s, e))) : l`<div class="empty">No interactions yet.</div>`}
     </div>`
   };
 }
@@ -1271,7 +1271,7 @@ function J(t, e, n, i) {
     ${Q(t, e)}
   </label>`;
 }
-function ge(t, e, n) {
+function ve(t, e, n) {
   return l`<label class="field">
     <span>${n}</span>
     <input
@@ -1344,326 +1344,14 @@ function wt(t, e, n, i) {
     ${Q(t, e)}
   </label>`;
 }
-const ys = "08:00", bs = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-function He(t) {
-  const [e, n, i] = t.split("-").map(Number);
-  return [e, n, i];
-}
-function An(t, e, n) {
-  return `${String(t).padStart(4, "0")}-${String(e).padStart(2, "0")}-${String(n).padStart(2, "0")}`;
-}
-function qt(t, e) {
-  const [n, i, s] = He(t), r = new Date(Date.UTC(n, i - 1, s + e));
-  return An(r.getUTCFullYear(), r.getUTCMonth() + 1, r.getUTCDate());
-}
-function Be(t, e) {
-  const [n, i, s] = He(t), r = n * 12 + (i - 1) + e, a = Math.floor(r / 12), o = r % 12 + 1, c = new Date(Date.UTC(a, o, 0)).getUTCDate();
-  return An(a, o, Math.min(s, c));
-}
-function $s(t, e) {
-  let n;
-  switch (t) {
-    case "someday":
-      return null;
-    case "tomorrow":
-      n = qt(e, 1);
-      break;
-    case "next_week": {
-      const [i, s, r] = He(e), a = new Date(Date.UTC(i, s - 1, r)).getUTCDay();
-      n = qt(e, (8 - a) % 7 || 7);
-      break;
-    }
-    case "month":
-      n = Be(e, 1);
-      break;
-    case "quarter":
-      n = Be(e, 3);
-      break;
-    case "year":
-      n = Be(e, 12);
-      break;
-  }
-  return `${n}T${ys}`;
-}
-function Tn(t, e) {
-  return t === 1 ? `Every ${e}` : `Every ${t} ${e}s`;
-}
-function Kt(t) {
-  const [, e, n] = He(t);
-  return `${bs[e - 1]} ${n}`;
-}
-function _s(t) {
-  const [e, n] = t.split(":").map(Number);
-  return `${e % 12 || 12}:${String(n).padStart(2, "0")} ${e < 12 ? "AM" : "PM"}`;
-}
-function ws(t, e) {
-  return t.due_date ? t.state === "overdue" ? `Overdue · ${Kt(t.due_date)}` : t.state === "due_today" || t.due_date === e ? t.due_time ? `Today ${_s(t.due_time)}` : "Today" : Kt(t.due_date) : "Someday";
-}
-const xt = "08:00", xs = 2e4, it = 999, ks = [
-  { pick: "tomorrow", label: "Tomorrow" },
-  { pick: "next_week", label: "Next week" },
-  { pick: "month", label: "In a month" },
-  { pick: "quarter", label: "In 3 months" },
-  { pick: "year", label: "In a year" },
-  { pick: "someday", label: "Someday" },
-  { pick: "custom", label: "Custom" }
-], Cs = { day: "Days", week: "Weeks", month: "Months", year: "Years" };
-function Rn() {
-  return { note: "", pick: null, date: "", time: xt, repeat_every: "1", repeat_unit: "" };
-}
-function Es(t) {
-  return {
-    note: t.note ?? "",
-    pick: t.due_date ? "custom" : "someday",
-    date: t.due_date ?? "",
-    time: t.due_time ?? xt,
-    repeat_every: String(t.repeat_every ?? 1),
-    repeat_unit: t.repeat_unit ?? ""
-  };
-}
-function Mn(t) {
-  const e = Number(t);
-  return Number.isInteger(e) && e >= 1 && e <= it ? e : null;
-}
-function re(t) {
-  if (!t.pick) return null;
-  const e = t.note.trim() || null;
-  if (t.pick === "someday") return { note: e, due_at: null, repeat_every: null, repeat_unit: null };
-  if (!t.date || !t.time) return null;
-  const n = `${t.date}T${t.time}`;
-  if (!t.repeat_unit) return { note: e, due_at: n, repeat_every: null, repeat_unit: null };
-  const i = Mn(t.repeat_every);
-  return i === null ? null : { note: e, due_at: n, repeat_every: i, repeat_unit: t.repeat_unit };
-}
-function Ss(t, e) {
-  return {
-    get: (n) => (t.get(e) ?? {})[n],
-    set: (n, i) => t.set(e, { ...t.get(e) ?? {}, [n]: i }),
-    error: (n) => t.error(n)
-  };
-}
-function Nn(t, e, n, i = !1) {
-  const s = t.get("pick"), r = (p) => {
-    if (t.set("pick", p), p === "custom") return;
-    const y = $s(p, e);
-    t.set("date", y ? y.slice(0, 10) : ""), t.set("time", y ? y.slice(11) : xt), t.set("repeat_unit", "");
-  }, a = String(t.get("repeat_unit") ?? ""), o = String(t.get("repeat_every") ?? ""), c = Mn(o), d = (p) => String(t.get(p) ?? ""), u = (p) => (y) => t.set(p, y.target.value);
-  return l`${J(t, "note", "Note", xs)}
-    <div class="field">
-      <span>Remind me</span>
-      <div class="pills" style="flex-wrap:wrap">
-        ${ks.map(
-    (p) => l`<button
-            class="pill ${s === p.pick ? "on" : ""}"
-            aria-pressed=${s === p.pick ? "true" : "false"}
-            ?disabled=${i}
-            @click=${() => r(p.pick)}
-          >
-            ${p.label}
-          </button>`
-  )}
-      </div>
-    </div>
-    ${s === "custom" ? l`<label class="field">
-            <span>Date</span>
-            <input id="field-date" name="date" class="input" type="date" .value=${k(d("date"))} @input=${u("date")} />
-          </label>
-          <label class="field">
-            <span>Time</span>
-            <input id="field-time" name="time" class="input" type="time" .value=${k(d("time"))} @input=${u("time")} />
-          </label>
-          ${wt(t, "repeat_unit", "Repeat", [
-    { value: "", label: "Doesn't repeat" },
-    ...n.map((p) => ({ value: p, label: Cs[p] ?? p }))
-  ])}
-          ${a ? l`<label class="field">
-                <span>Every</span>
-                <input id="field-repeat-every" name="repeat_every" class="input" type="number" inputmode="numeric" min="1" max=${it}
-                  aria-invalid=${c === null ? "true" : "false"} .value=${k(o)} @input=${u("repeat_every")} />
-                <div class="muted" style="font-size:12px">${c === null ? `A number from 1 to ${it}` : Tn(c, a)}</div>
-              </label>` : h}` : h}`;
-}
-const As = "https://claude.ai/new";
-function Ts(t, e, n, i) {
-  return t.drafts.open(e, n, () => {
-    const { interaction_types: s, today: r } = $(t);
-    return {
-      type: i?.type ?? s[0] ?? "",
-      date: i?.date ?? r,
-      summary: i?.summary ?? "",
-      notes: i?.notes ?? "",
-      reminder: null
-    };
-  });
-}
-const Yt = (t) => ({
-  type: t.type,
-  date: t.date,
-  summary: t.summary.trim(),
-  notes: t.notes.trim() || null
-});
-function Pn(t, e, n) {
-  const i = n ? `edit:${n.id}` : `log:${e.id}`, s = Ts(t, i, n ? f.editInteraction(n.id) : f.logInteraction(e.id), n), r = $(t).interaction_types, a = () => {
-    t.drafts.drop(i), z(n ? f.interaction(n.id) : f.person(e.id));
-  }, o = (m) => t.drafts.patch(i, m), c = s.summary.trim() !== "" && s.date !== "" && s.type !== "" && (!s.reminder || re(s.reminder) !== null), d = (m) => Sn(t.writeError, m), u = (m) => {
-    const g = d(m);
-    return g ? l`<div class="field-error" role="alert" data-error-for=${m}>${g}</div>` : h;
-  }, p = async () => {
-    if (!c) return;
-    const m = Yt(s), g = t.drafts.base(i);
-    if (n) {
-      await t.updateInteraction(n.id, m, g && Yt(g)) && a();
-      return;
-    }
-    const C = await t.createInteraction({ person_ids: [e.id], ...m });
-    if (C === null) return;
-    const b = s.reminder && re(s.reminder);
-    b && await t.addReminder({ person_id: e.id, interaction_id: C, ...b }), a();
-  }, y = $(t);
-  return l`<div class="sheet-backdrop" @click=${(m) => m.target === m.currentTarget && a()}>
-    <div class="sheet" role="dialog" aria-label=${n ? "Edit interaction" : "Log interaction"}>
-      <div class="topbar">
-        <button class="icon-btn" style="padding:0 12px" @click=${a}>Cancel</button>
-        <span class="title" style="text-align:center">${n ? "Edit" : "Log"}</span>
-        <button class="icon-btn accent" style="padding:0 12px;font-weight:600" ?disabled=${!c || t.busy} @click=${p}>
-          Save
-        </button>
-      </div>
-      <div class="sheet-body">
-        <div class="form">
-          <div class="field">
-            <span>Person</span>
-            <div style="display:flex;align-items:center;gap:10px">${S(e.name, e.photo_url, 26)} ${e.name}</div>
-          </div>
-          <div class="field">
-            <span>Type</span>
-            <div class="pills">
-              ${r.map(
-    (m) => l`<button
-                  class="pill ${s.type === m ? "on" : ""}"
-                  aria-pressed=${s.type === m ? "true" : "false"}
-                  @click=${() => o({ type: m })}
-                >
-                  ${m}
-                </button>`
-  )}
-            </div>
-          </div>
-          <label class="field">
-            <span>Date</span>
-            <input id="log-date" class="input" type="date" required .value=${k(s.date)}
-              @input=${(m) => o({ date: m.target.value })} />
-          </label>
-          <label class="field">
-            <span>Summary</span>
-            <input id="log-summary" class="input" maxlength="300" aria-invalid=${d("summary") ? "true" : "false"}
-              .value=${k(s.summary)} @input=${(m) => o({ summary: m.target.value })} />
-            ${u("summary")}
-          </label>
-          <label class="field">
-            <span>Notes</span>
-            <textarea id="log-notes" class="input" maxlength="20000" aria-invalid=${d("notes") ? "true" : "false"}
-              .value=${k(s.notes)} @input=${(m) => o({ notes: m.target.value })}></textarea>
-            ${u("notes")}
-          </label>
-          ${Ms(t, i, s, n, y.today, y.reminder_units)}
-          <a href=${As} target="_blank" rel="noopener noreferrer" style="display:grid;justify-items:center;gap:8px;padding:8px 0">
-            <span class="action primary" style="width:44px;height:44px;border-radius:50%">${w.mic}</span>
-            <span class="muted" style="font-size:11.5px">Or tell Claude about it, and it logs it in Hearth for you.</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-const Rs = "display:flex;align-items:center;justify-content:center";
-function Ms(t, e, n, i, s, r) {
-  if (i)
-    return l`<a class="btn secondary" style=${Rs} href=${f.newInteractionReminder(i.id)}>Add reminder</a>`;
-  const a = (o) => t.drafts.patch(e, { reminder: o });
-  return n.reminder ? l`<div class="label">Reminder</div>
-    ${Nn(Ss(V(t, e), "reminder"), s, r, t.busy)}
-    <button class="btn secondary" @click=${() => a(null)}>Remove reminder</button>` : l`<button class="btn secondary" @click=${() => a(Rn())}>Add reminder</button>`;
-}
-function Ns(t, e, n) {
-  const i = e.state !== "done", s = i ? ws(e, n) : "Done", r = e.repeat_every && e.repeat_unit ? ` · ${Tn(e.repeat_every, e.repeat_unit)}` : "";
-  return l`<div class="row reminder-row">
-    <a class="main" href=${f.reminder(e.id)}>
-      <div class="name">${e.note || "Reminder"}</div>
-      <div class="sub" style=${e.state === "overdue" ? "color:var(--danger)" : ""}>${s}${r}</div>
-    </a>
-    ${i ? l`<button class="pill" ?disabled=${t.busy} @click=${() => void t.completeReminder(e.id)}>Done</button>` : h}
-  </div>`;
-}
-function In(t, e, n, i) {
-  if (!e.length) return h;
-  const { today: s } = $(t);
-  return l`<div class="label" style=${n}>Reminders</div>
-    <div class="card" style=${i}>${e.map((r) => Ns(t, r, s))}</div>`;
-}
-function Ps(t, e, n) {
-  return [
-    n ? { icon: w.pencil, label: "Edit", href: f.editInteraction(e.id) } : { icon: w.pencil, label: "Edit", disabled: !0 },
-    {
-      icon: w.trash,
-      label: "Delete interaction",
-      onClick: () => t.drafts.put(kt(e.id), f.interaction(e.id), {})
-    }
-  ];
-}
-const kt = (t) => `confirm-delete:interaction:${t}`;
-function Is(t, e, n) {
-  const i = kt(e.id);
-  return N({
-    title: "Delete this interaction?",
-    lines: [`“${e.summary}” on ${wn(e.date)} is removed for good. This can't be undone.`],
-    confirmLabel: "Delete",
-    busy: t.busy,
-    onCancel: () => t.drafts.drop(i),
-    onConfirm: async () => {
-      await t.deleteInteraction(e.id) && (t.drafts.drop(i), z(n ? f.person(n.id) : f.home()));
-    }
-  });
-}
-function Hn(t, e, n) {
-  const { interactions: i, people: s, reminders: r } = $(t), a = i.find((d) => d.id === e);
-  if (!a) return G("interaction");
-  const o = Ie(a, s), c = o[0];
-  return {
-    title: null,
-    back: !0,
-    actions: Ps(t, a, c),
-    body: l`<div class="page" style="padding:20px;display:grid;gap:18px">
-      ${o.length ? l`<div style="display:grid;gap:12px">
-            ${o.length > 1 ? l`<div class="label">People</div>` : h}
-            ${o.map(
-      (d) => l`<a href=${f.person(d.id)} style="display:flex;align-items:center;gap:12px">
-                ${S(d.name, d.photo_url)}<span class="accent" style="font-weight:600;font-size:15px">${d.name}</span>
-              </a>`
-    )}
-          </div>` : h}
-      <div>
-        <div class="label">${wn(a.date)}</div>
-        <div class="mono accent" style="font-size:10.5px">${a.type}</div>
-      </div>
-      <div class="h-serif" style="font-size:19px">${a.summary}</div>
-      ${a.notes ? l`<div><div class="label" style="margin-bottom:6px">Notes</div><div style="white-space:pre-wrap">${a.notes}</div></div>` : h}
-      <div>
-        ${In(t, r.filter((d) => d.interaction_id === a.id), "margin-bottom:6px", "margin:0;padding:0")}
-        <a class="accent" href=${f.newInteractionReminder(a.id)} style="display:block;font-size:12.5px;padding:8px 0">Add reminder</a>
-      </div>
-    </div>`,
-    overlay: l`${n === "edit" && c ? Pn(t, c, a) : h}${t.drafts.get(kt(e)) ? Is(t, a, c) : h}`
-  };
-}
-function Wt(t) {
+function qt(t) {
   return t.birthday && !t.birth_year_unknown ? t.birthday : null;
 }
-function On(t, e) {
-  const n = Wt(t), i = Wt(e);
+function An(t, e) {
+  const n = qt(t), i = qt(e);
   return n && i && n !== i ? n < i ? -1 : 1 : n && !i ? -1 : !n && i ? 1 : L(t.name, e.name);
 }
-const Dn = [
+const Tn = [
   "Grandparent",
   "Parent",
   "Parent-in-law",
@@ -1689,18 +1377,18 @@ const Dn = [
   "Extended Family",
   "In-Law",
   "Other"
-], Hs = new Map(Dn.map((t, e) => [t, e]));
-function Jt(t) {
-  return (t === null ? void 0 : Hs.get(t)) ?? Dn.length;
+], ys = new Map(Tn.map((t, e) => [t, e]));
+function Kt(t) {
+  return (t === null ? void 0 : ys.get(t)) ?? Tn.length;
 }
-function Os(t) {
+function bs(t) {
   return [...t].sort((e, n) => {
-    const i = Jt(e.connectionType) - Jt(n.connectionType);
-    return i !== 0 ? i : On(e.person, n.person);
+    const i = Kt(e.connectionType) - Kt(n.connectionType);
+    return i !== 0 ? i : An(e.person, n.person);
   });
 }
-const ae = { parent: 0, unplaced: 1, child: 2 };
-function Ds(t, e) {
+const re = { parent: 0, unplaced: 1, child: 2 };
+function $s(t, e) {
   const n = new Set(t), i = /* @__PURE__ */ new Set(), s = /* @__PURE__ */ new Set(), r = (o, c) => {
     c === "Parent" ? i.add(o) : c === "Child" && s.add(o);
   };
@@ -1708,23 +1396,23 @@ function Ds(t, e) {
     !n.has(o.person_a_id) || !n.has(o.person_b_id) || (r(o.person_b_id, o.type), r(o.person_a_id, o.inverse_type));
   const a = /* @__PURE__ */ new Map();
   for (const o of t)
-    i.has(o) ? a.set(o, ae.parent) : s.has(o) ? a.set(o, ae.child) : a.set(o, ae.unplaced);
+    i.has(o) ? a.set(o, re.parent) : s.has(o) ? a.set(o, re.child) : a.set(o, re.unplaced);
   return a;
 }
-function Ct(t, e, n, i) {
-  const s = Ds(e, n);
+function xt(t, e, n, i) {
+  const s = $s(e, n);
   return [...t].sort((r, a) => {
-    const o = i(r), c = i(a), d = s.get(o.id) ?? ae.unplaced, u = s.get(c.id) ?? ae.unplaced;
-    return d !== u ? d - u : On(o, c);
+    const o = i(r), c = i(a), d = s.get(o.id) ?? re.unplaced, u = s.get(c.id) ?? re.unplaced;
+    return d !== u ? d - u : An(o, c);
   });
 }
 function Oe(t, e) {
   return t.person_a_id === t.person_b_id ? null : t.person_a_id === e ? { otherId: t.person_b_id, type: t.type } : t.person_b_id === e ? { otherId: t.person_a_id, type: t.inverse_type } : null;
 }
-function Ls(t) {
+function _s(t) {
   return t.householdMembers.length === 0 && t.others.length === 0 && t.groups.length === 0;
 }
-function Us(t, e) {
+function ws(t, e) {
   const { people: n, households: i, groups: s, relationships: r, excludedId: a } = e, o = /* @__PURE__ */ new Map();
   for (const b of n) o.has(b.id) || o.set(b.id, b);
   const c = /* @__PURE__ */ new Map(), d = [];
@@ -1742,7 +1430,7 @@ function Us(t, e) {
     const v = u(b);
     v && m.push(v);
   }
-  const g = Ct(m, y?.member_ids ?? [], r, (b) => b.person), C = Os(
+  const g = xt(m, y?.member_ids ?? [], r, (b) => b.person), C = bs(
     d.filter((b) => !p.has(b)).map(u).filter((b) => b !== null)
   );
   return {
@@ -1754,7 +1442,7 @@ function Us(t, e) {
     groups: s.filter((b) => b.member_ids.includes(t)).sort((b, v) => L(b.name, v.name))
   };
 }
-function Et(t, e, n) {
+function kt(t, e, n) {
   const i = [...e].sort(et);
   if (t === "") return { direct: i, connected: [] };
   const s = t.toLocaleLowerCase(), r = i.filter((u) => u.name.toLocaleLowerCase().includes(s)), a = new Map(r.map((u) => [u.id, u])), o = /* @__PURE__ */ new Map();
@@ -1771,15 +1459,15 @@ function Et(t, e, n) {
   }
   return { direct: r, connected: c.sort((u, p) => et(u.person, p.person)) };
 }
-const zs = 8, Gs = 200;
-function De(t, e) {
+const xs = 8, ks = 200;
+function fe(t, e) {
   const { people: n, relationships: i } = $(t), s = `picker:${e.id}`, r = t.drafts.open(s, e.path, () => ({ query: "" })).query, a = e.selected ?? [], o = /* @__PURE__ */ new Set([...e.exclude ?? [], ...a]), c = a.map((g) => n.find((C) => C.id === g)).filter((g) => !!g), d = r.trim(), u = [];
   if (d) {
-    const g = Et(d, n, i);
+    const g = kt(d, n, i);
     for (const C of g.direct) u.push({ person: C });
     for (const C of g.connected) u.push(C);
   }
-  const p = u.filter((g) => !o.has(g.person.id)).slice(0, zs), y = (g) => {
+  const p = u.filter((g) => !o.has(g.person.id)).slice(0, xs), y = (g) => {
     t.drafts.patch(s, { query: "" }), e.onPick(g);
   }, m = () => {
     t.drafts.patch(s, { query: "" }), e.onCreate?.(d);
@@ -1827,13 +1515,336 @@ function De(t, e) {
   ) : l`<div class="empty">No one matches “${d}”.</div>`}
           ${e.onCreate ? l`<button
                 class="row picker-create"
-                ?disabled=${(e.disabled ?? !1) || d.length > Gs}
+                ?disabled=${(e.disabled ?? !1) || d.length > ks}
                 @click=${m}
               >
                 <span class="main"><div class="name accent">Create “${d}”</div></span>
               </button>` : h}
         </div>` : h}
   </div>`;
+}
+const Cs = "08:00", Es = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function De(t) {
+  const [e, n, i] = t.split("-").map(Number);
+  return [e, n, i];
+}
+function Rn(t, e, n) {
+  return `${String(t).padStart(4, "0")}-${String(e).padStart(2, "0")}-${String(n).padStart(2, "0")}`;
+}
+function Yt(t, e) {
+  const [n, i, s] = De(t), r = new Date(Date.UTC(n, i - 1, s + e));
+  return Rn(r.getUTCFullYear(), r.getUTCMonth() + 1, r.getUTCDate());
+}
+function Be(t, e) {
+  const [n, i, s] = De(t), r = n * 12 + (i - 1) + e, a = Math.floor(r / 12), o = r % 12 + 1, c = new Date(Date.UTC(a, o, 0)).getUTCDate();
+  return Rn(a, o, Math.min(s, c));
+}
+function Ss(t, e) {
+  let n;
+  switch (t) {
+    case "someday":
+      return null;
+    case "tomorrow":
+      n = Yt(e, 1);
+      break;
+    case "next_week": {
+      const [i, s, r] = De(e), a = new Date(Date.UTC(i, s - 1, r)).getUTCDay();
+      n = Yt(e, (8 - a) % 7 || 7);
+      break;
+    }
+    case "month":
+      n = Be(e, 1);
+      break;
+    case "quarter":
+      n = Be(e, 3);
+      break;
+    case "year":
+      n = Be(e, 12);
+      break;
+  }
+  return `${n}T${Cs}`;
+}
+function Mn(t, e) {
+  return t === 1 ? `Every ${e}` : `Every ${t} ${e}s`;
+}
+function Wt(t) {
+  const [, e, n] = De(t);
+  return `${Es[e - 1]} ${n}`;
+}
+function As(t) {
+  const [e, n] = t.split(":").map(Number);
+  return `${e % 12 || 12}:${String(n).padStart(2, "0")} ${e < 12 ? "AM" : "PM"}`;
+}
+function Ts(t, e) {
+  return t.due_date ? t.state === "overdue" ? `Overdue · ${Wt(t.due_date)}` : t.state === "due_today" || t.due_date === e ? t.due_time ? `Today ${As(t.due_time)}` : "Today" : Wt(t.due_date) : "Someday";
+}
+const Ct = "08:00", Rs = 2e4, it = 999, Ms = [
+  { pick: "tomorrow", label: "Tomorrow" },
+  { pick: "next_week", label: "Next week" },
+  { pick: "month", label: "In a month" },
+  { pick: "quarter", label: "In a quarter" },
+  { pick: "year", label: "In a year" },
+  { pick: "someday", label: "Someday" },
+  { pick: "custom", label: "Custom" }
+], Ns = { day: "Days", week: "Weeks", month: "Months", year: "Years" };
+function Nn() {
+  return { note: "", pick: null, date: "", time: Ct, repeat_every: "1", repeat_unit: "" };
+}
+function Ps(t) {
+  return {
+    note: t.note ?? "",
+    pick: t.due_date ? "custom" : "someday",
+    date: t.due_date ?? "",
+    time: t.due_time ?? Ct,
+    repeat_every: String(t.repeat_every ?? 1),
+    repeat_unit: t.repeat_unit ?? ""
+  };
+}
+function Pn(t) {
+  const e = Number(t);
+  return Number.isInteger(e) && e >= 1 && e <= it ? e : null;
+}
+function ae(t) {
+  if (!t.pick) return null;
+  const e = t.note.trim() || null;
+  if (t.pick === "someday") return { note: e, due_at: null, repeat_every: null, repeat_unit: null };
+  if (!t.date || !t.time) return null;
+  const n = `${t.date}T${t.time}`;
+  if (!t.repeat_unit) return { note: e, due_at: n, repeat_every: null, repeat_unit: null };
+  const i = Pn(t.repeat_every);
+  return i === null ? null : { note: e, due_at: n, repeat_every: i, repeat_unit: t.repeat_unit };
+}
+function Is(t, e) {
+  return {
+    get: (n) => (t.get(e) ?? {})[n],
+    set: (n, i) => t.set(e, { ...t.get(e) ?? {}, [n]: i }),
+    error: (n) => t.error(n)
+  };
+}
+function In(t, e, n, i = !1) {
+  const s = t.get("pick"), r = (p) => {
+    if (t.set("pick", p), p === "custom") return;
+    const y = Ss(p, e);
+    t.set("date", y ? y.slice(0, 10) : ""), t.set("time", y ? y.slice(11) : Ct), t.set("repeat_unit", "");
+  }, a = String(t.get("repeat_unit") ?? ""), o = String(t.get("repeat_every") ?? ""), c = Pn(o), d = (p) => String(t.get(p) ?? ""), u = (p) => (y) => t.set(p, y.target.value);
+  return l`${J(t, "note", "Note", Rs)}
+    <div class="field">
+      <span>Remind me</span>
+      <div class="pills" style="flex-wrap:wrap">
+        ${Ms.map(
+    (p) => l`<button
+            class="pill ${s === p.pick ? "on" : ""}"
+            aria-pressed=${s === p.pick ? "true" : "false"}
+            ?disabled=${i}
+            @click=${() => r(p.pick)}
+          >
+            ${p.label}
+          </button>`
+  )}
+      </div>
+    </div>
+    ${s === "custom" ? l`<label class="field">
+            <span>Date</span>
+            <input id="field-date" name="date" class="input" type="date" .value=${k(d("date"))} @input=${u("date")} />
+          </label>
+          <label class="field">
+            <span>Time</span>
+            <input id="field-time" name="time" class="input" type="time" .value=${k(d("time"))} @input=${u("time")} />
+          </label>
+          ${wt(t, "repeat_unit", "Repeat", [
+    { value: "", label: "Doesn't repeat" },
+    ...n.map((p) => ({ value: p, label: Ns[p] ?? p }))
+  ])}
+          ${a ? l`<label class="field">
+                <span>Every</span>
+                <input id="field-repeat-every" name="repeat_every" class="input" type="number" inputmode="numeric" min="1" max=${it}
+                  aria-invalid=${c === null ? "true" : "false"} .value=${k(o)} @input=${u("repeat_every")} />
+                <div class="muted" style="font-size:12px">${c === null ? `A number from 1 to ${it}` : Mn(c, a)}</div>
+              </label>` : h}` : h}`;
+}
+const Hs = "https://claude.ai/new";
+function Os(t, e, n, i) {
+  return t.drafts.open(e, n, () => {
+    const { interaction_types: s, today: r } = $(t);
+    return {
+      type: i?.type ?? s[0] ?? "",
+      date: i?.date ?? r,
+      summary: i?.summary ?? "",
+      notes: i?.notes ?? "",
+      reminder: null
+    };
+  });
+}
+const Jt = (t) => ({
+  type: t.type,
+  date: t.date,
+  summary: t.summary.trim(),
+  notes: t.notes.trim() || null
+});
+function Hn(t, e, n) {
+  const i = n ? `edit:${n.id}` : `log:${e.id}`, s = Os(t, i, n ? f.editInteraction(n.id) : f.logInteraction(e.id), n), r = $(t).interaction_types, a = () => {
+    t.drafts.drop(i), z(n ? f.interaction(n.id) : f.person(e.id));
+  }, o = (m) => t.drafts.patch(i, m), c = !s.reminder || ae(s.reminder) !== null && $(t).people.some((m) => m.id === s.reminder?.person), d = s.summary.trim() !== "" && s.date !== "" && s.type !== "" && c, u = (m) => Sn(t.writeError, m), p = (m) => {
+    const g = u(m);
+    return g ? l`<div class="field-error" role="alert" data-error-for=${m}>${g}</div>` : h;
+  }, y = async () => {
+    if (!d) return;
+    const m = Jt(s), g = t.drafts.base(i);
+    if (n) {
+      await t.updateInteraction(n.id, m, g && Jt(g)) && a();
+      return;
+    }
+    const C = await t.createInteraction({ person_ids: [e.id], ...m });
+    if (C === null) return;
+    const b = s.reminder && ae(s.reminder);
+    b && s.reminder && await t.addReminder({ person_id: s.reminder.person, interaction_id: C, ...b }), a();
+  };
+  return l`<div class="sheet-backdrop" @click=${(m) => m.target === m.currentTarget && a()}>
+    <div class="sheet" role="dialog" aria-label=${n ? "Edit interaction" : "Log interaction"}>
+      <div class="topbar">
+        <button class="icon-btn" style="padding:0 12px" @click=${a}>Cancel</button>
+        <span class="title" style="text-align:center">${n ? "Edit" : "Log"}</span>
+        <button class="icon-btn accent" style="padding:0 12px;font-weight:600" ?disabled=${!d || t.busy} @click=${y}>
+          Save
+        </button>
+      </div>
+      <div class="sheet-body">
+        <div class="form">
+          <div class="field">
+            <span>Person</span>
+            <div style="display:flex;align-items:center;gap:10px">${S(e.name, e.photo_url, 26)} ${e.name}</div>
+          </div>
+          <div class="field">
+            <span>Type</span>
+            <div class="pills">
+              ${r.map(
+    (m) => l`<button
+                  class="pill ${s.type === m ? "on" : ""}"
+                  aria-pressed=${s.type === m ? "true" : "false"}
+                  @click=${() => o({ type: m })}
+                >
+                  ${m}
+                </button>`
+  )}
+            </div>
+          </div>
+          <label class="field">
+            <span>Date</span>
+            <input id="log-date" class="input" type="date" required .value=${k(s.date)}
+              @input=${(m) => o({ date: m.target.value })} />
+          </label>
+          <label class="field">
+            <span>Summary</span>
+            <input id="log-summary" class="input" maxlength="300" aria-invalid=${u("summary") ? "true" : "false"}
+              .value=${k(s.summary)} @input=${(m) => o({ summary: m.target.value })} />
+            ${p("summary")}
+          </label>
+          <label class="field">
+            <span>Notes</span>
+            <textarea id="log-notes" class="input" maxlength="20000" aria-invalid=${u("notes") ? "true" : "false"}
+              .value=${k(s.notes)} @input=${(m) => o({ notes: m.target.value })}></textarea>
+            ${p("notes")}
+          </label>
+          ${Ls(t, i, s, n, e)}
+          <a href=${Hs} target="_blank" rel="noopener noreferrer" style="display:grid;justify-items:center;gap:8px;padding:8px 0">
+            <span class="action primary" style="width:44px;height:44px;border-radius:50%">${w.mic}</span>
+            <span class="muted" style="font-size:11.5px">Or tell Claude about it, and it logs it in Hearth for you.</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+const Ds = "display:flex;align-items:center;justify-content:center";
+function Ls(t, e, n, i, s) {
+  if (i)
+    return l`<a class="btn secondary" style=${Ds} href=${f.newInteractionReminder(i.id)}>Add reminder</a>`;
+  const r = (p) => t.drafts.patch(e, { reminder: p });
+  if (!n.reminder) return l`<button class="btn secondary" @click=${() => r({ ...Nn(), person: s.id })}>Add reminder</button>`;
+  const { people: a, today: o, reminder_units: c } = $(t), d = Is(V(t, e), "reminder"), u = a.find((p) => p.id === n.reminder?.person);
+  return l`<div class="label">Reminder</div>
+    ${fe(t, {
+    id: "log-reminder-person",
+    label: "For",
+    path: f.logInteraction(s.id),
+    selected: u ? [u.id] : [],
+    onPick: (p) => d.set("person", p),
+    onRemove: () => d.set("person", ""),
+    disabled: t.busy
+  })}
+    ${In(d, o, c, t.busy)}
+    <button class="btn secondary" @click=${() => r(null)}>Remove reminder</button>`;
+}
+function Us(t, e, n) {
+  const i = e.state !== "done", s = i ? Ts(e, n) : "Done", r = e.repeat_every && e.repeat_unit ? ` · ${Mn(e.repeat_every, e.repeat_unit)}` : "";
+  return l`<div class="row reminder-row">
+    <a class="main" href=${f.reminder(e.id)}>
+      <div class="name">${e.note || "Reminder"}</div>
+      <div class="sub" style=${e.state === "overdue" ? "color:var(--danger)" : ""}>${s}${r}</div>
+    </a>
+    ${i ? l`<button class="pill" ?disabled=${t.busy} @click=${() => void t.completeReminder(e.id)}>Done</button>` : h}
+  </div>`;
+}
+function On(t, e, n, i) {
+  if (!e.length) return h;
+  const { today: s } = $(t);
+  return l`<div class="label" style=${n}>Reminders</div>
+    <div class="card" style=${i}>${e.map((r) => Us(t, r, s))}</div>`;
+}
+function zs(t, e, n) {
+  return [
+    n ? { icon: w.pencil, label: "Edit", href: f.editInteraction(e.id) } : { icon: w.pencil, label: "Edit", disabled: !0 },
+    {
+      icon: w.trash,
+      label: "Delete interaction",
+      onClick: () => t.drafts.put(Et(e.id), f.interaction(e.id), {})
+    }
+  ];
+}
+const Et = (t) => `confirm-delete:interaction:${t}`;
+function Gs(t, e, n) {
+  const i = Et(e.id);
+  return N({
+    title: "Delete this interaction?",
+    lines: [`“${e.summary}” on ${wn(e.date)} is removed for good. This can't be undone.`],
+    confirmLabel: "Delete",
+    busy: t.busy,
+    onCancel: () => t.drafts.drop(i),
+    onConfirm: async () => {
+      await t.deleteInteraction(e.id) && (t.drafts.drop(i), z(n ? f.person(n.id) : f.home()));
+    }
+  });
+}
+function Dn(t, e, n) {
+  const { interactions: i, people: s, reminders: r } = $(t), a = i.find((d) => d.id === e);
+  if (!a) return G("interaction");
+  const o = He(a, s), c = o[0];
+  return {
+    title: null,
+    back: !0,
+    actions: zs(t, a, c),
+    body: l`<div class="page" style="padding:20px;display:grid;gap:18px">
+      ${o.length ? l`<div style="display:grid;gap:12px">
+            ${o.length > 1 ? l`<div class="label">People</div>` : h}
+            ${o.map(
+      (d) => l`<a href=${f.person(d.id)} style="display:flex;align-items:center;gap:12px">
+                ${S(d.name, d.photo_url)}<span class="accent" style="font-weight:600;font-size:15px">${d.name}</span>
+              </a>`
+    )}
+          </div>` : h}
+      <div>
+        <div class="label">${wn(a.date)}</div>
+        <div class="mono accent" style="font-size:10.5px">${a.type}</div>
+      </div>
+      <div class="h-serif" style="font-size:19px">${a.summary}</div>
+      ${a.notes ? l`<div><div class="label" style="margin-bottom:6px">Notes</div><div style="white-space:pre-wrap">${a.notes}</div></div>` : h}
+      <div>
+        ${On(t, r.filter((d) => d.interaction_id === a.id), "margin-bottom:6px", "margin:0;padding:0")}
+        <a class="accent" href=${f.newInteractionReminder(a.id)} style="display:block;font-size:12.5px;padding:8px 0">Add reminder</a>
+      </div>
+    </div>`,
+    overlay: l`${n === "edit" && c ? Hn(t, c, a) : h}${t.drafts.get(Et(e)) ? Gs(t, a, c) : h}`
+  };
 }
 const Ln = "That file isn't a photo Hearth can use.", Fs = 4e6;
 class ne extends Error {
@@ -1943,7 +1954,7 @@ function At(t, e) {
   }
   return s.sort(et);
 }
-const Fn = (t) => `edit:group:${t}`, ve = "edit:group:new", st = (t) => `confirm-delete:group:${t}`, je = (t, e) => l`<div class="label form-section">${t}</div>
+const Fn = (t) => `edit:group:${t}`, ye = "edit:group:new", st = (t) => `confirm-delete:group:${t}`, je = (t, e) => l`<div class="label form-section">${t}</div>
     ${e}`;
 function Bn(t, e, n) {
   const i = V(t, e), s = { ...i, error: (r) => r === "name" && n ? "Enter a name." : i.error(r) };
@@ -1951,25 +1962,25 @@ function Bn(t, e, n) {
   ${J(s, "description", "Description", 2e4)}`;
 }
 function Ks(t) {
-  const n = !t.drafts.open(ve, f.newGroup(), () => ({ name: "", description: "" })).name.trim(), i = async () => {
-    const s = t.drafts.get(ve);
+  const n = !t.drafts.open(ye, f.newGroup(), () => ({ name: "", description: "" })).name.trim(), i = async () => {
+    const s = t.drafts.get(ye);
     if (!s || !s.name.trim()) return;
     const r = await t.save("contact_group", null, { ...s });
-    r && (t.drafts.drop(ve), U(f.editGroup(r.id), !0));
+    r && (t.drafts.drop(ye), U(f.editGroup(r.id), !0));
   };
   return {
     title: "New group",
     back: !0,
     actions: [],
     body: l`<div class="page form">
-      ${Bn(t, ve, n)}
+      ${Bn(t, ye, n)}
       <button class="btn" ?disabled=${n || t.busy} @click=${i}>Create group</button>
     </div>`
   };
 }
 function Ys(t, e) {
   const n = At(e.member_ids, $(t).people);
-  return De(t, {
+  return fe(t, {
     id: "group-members",
     label: "Add a member",
     path: f.editGroup(e.id),
@@ -2023,7 +2034,7 @@ const jn = (t) => ({
   how_i_know_them: null,
   birthday: null,
   birth_year_unknown: !1
-}), Xs = "Name (leave blank to use the generated name)", Vn = (t) => `edit:household:${t}`, ye = "edit:household:new", Le = (t) => `confirm-delete:household:${t}`, Ue = (t) => `confirm-dissolve:household:${t}`, ze = (t) => `confirm-move:household:${t}`, Ve = (t, e) => l`<div class="label form-section">${t}</div>
+}), Xs = "Name (leave blank to use the generated name)", Vn = (t) => `edit:household:${t}`, be = "edit:household:new", Le = (t) => `confirm-delete:household:${t}`, Ue = (t) => `confirm-dissolve:household:${t}`, ze = (t) => `confirm-move:household:${t}`, Ve = (t, e) => l`<div class="label form-section">${t}</div>
     ${e}`, rt = (t) => ({ name_override: t.name_override, address: t.address, notes: t.notes });
 function qn(t, e) {
   const n = M(t, "name_override", Xs, { maxlength: 200 });
@@ -2032,19 +2043,19 @@ function qn(t, e) {
 }
 function Zs(t) {
   const e = f.newHousehold();
-  t.drafts.open(ye, e, () => ({ name_override: "", address: "", notes: "" }));
+  t.drafts.open(be, e, () => ({ name_override: "", address: "", notes: "" }));
   const n = async () => {
-    const i = t.drafts.get(ye);
+    const i = t.drafts.get(be);
     if (!i) return;
     const s = await t.save("household", null, rt(i));
-    s && (t.drafts.drop(ye), U(f.editHousehold(s.id), !0));
+    s && (t.drafts.drop(be), U(f.editHousehold(s.id), !0));
   };
   return {
     title: "New household",
     back: !0,
     actions: [],
     body: l`<div class="page form">
-      ${qn(V(t, ye), !1)}
+      ${qn(V(t, be), !1)}
       <button class="btn" ?disabled=${t.busy} @click=${n}>Create household</button>
     </div>`
   };
@@ -2083,7 +2094,7 @@ function Qs(t, e) {
 }
 const at = (t, e, n) => t.save("person", e, { household_id: n });
 function er(t, e) {
-  const { people: n, relationships: i } = $(t), s = Ct(At(e.member_ids, n), e.member_ids, i, (o) => o), r = f.editHousehold(e.id), a = (o) => {
+  const { people: n, relationships: i } = $(t), s = xt(At(e.member_ids, n), e.member_ids, i, (o) => o), r = f.editHousehold(e.id), a = (o) => {
     const c = n.find((d) => d.id === o);
     if (c?.household_id && c.household_id !== e.id) {
       t.drafts.put(ze(e.id), r, { personId: o });
@@ -2091,7 +2102,7 @@ function er(t, e) {
     }
     at(t, o, e.id);
   };
-  return De(t, {
+  return fe(t, {
     id: "household-members",
     label: "Add a member",
     path: r,
@@ -2185,7 +2196,7 @@ function ar(t, e) {
   };
 }
 function Yn(t, e, n, i) {
-  const { people: s, relationships: r } = $(t), a = At(n, s), o = i ? Ct(a, n, r, (c) => c) : a;
+  const { people: s, relationships: r } = $(t), a = At(n, s), o = i ? xt(a, n, r, (c) => c) : a;
   return {
     title: null,
     back: !0,
@@ -2196,7 +2207,7 @@ function Yn(t, e, n, i) {
         ${e.subtitle ? l`<div class="muted" style="font-size:12.5px;margin-top:4px">${e.subtitle}</div>` : h}
         ${e.prompt ? l`<a class="warning name-prompt" style="display:block;font-size:12.5px;margin-top:4px" href=${e.prompt.href}>${e.prompt.text}</a>` : h}
         <!-- The members actually shown, not the raw id count. -->
-        <div class="label" style="margin-top:6px">${Ne(o.length, "member").toUpperCase()}</div>
+        <div class="label" style="margin-top:6px">${Pe(o.length, "member").toUpperCase()}</div>
       </div>
       <div class="list">${o.map((c) => Qe(c))}</div>
     </div>`
@@ -2245,7 +2256,7 @@ function pr(t, e) {
   const i = n.formatted ?? "";
   return typeof n.lat == "number" && typeof n.lon == "number" ? `https://maps.apple.com/?ll=${n.lat},${n.lon}&q=${encodeURIComponent(i)}` : i ? `https://maps.apple.com/?q=${encodeURIComponent(i)}` : null;
 }
-function be(t) {
+function $e(t) {
   const e = t?.trim() ?? "";
   if (!e) return null;
   try {
@@ -2255,7 +2266,7 @@ function be(t) {
     return null;
   }
 }
-const fr = "/config/integrations/integration/hearth_crm", Jn = "contact missing", Xn = "create uncertain", ke = "confirm-google-enable", Ce = "confirm-google-clear";
+const fr = "/config/integrations/integration/hearth_crm", Jn = "contact missing", Xn = "create uncertain", Ce = "confirm-google-enable", Ee = "confirm-google-clear";
 function Zn(t) {
   switch (t) {
     case Jn:
@@ -2316,7 +2327,7 @@ function vr(t) {
 function yr(t, e) {
   const n = !e.cutover_confirmed && !e.enabled, i = (s) => {
     const r = s.target;
-    r.checked ? (r.checked = !1, t.drafts.put(ke, f.settings(), {})) : t.setGoogleEnabled(!1);
+    r.checked ? (r.checked = !1, t.drafts.put(Ce, f.settings(), {})) : t.setGoogleEnabled(!1);
   };
   return l`<div style="display:grid;gap:4px">
     <label class="check">
@@ -2373,7 +2384,7 @@ function wr(t) {
         ${r ? l`<button
               class="btn secondary"
               ?disabled=${t.busy}
-              @click=${() => t.drafts.put(Ce, f.settings(), { personId: n.id, uncertain: s })}
+              @click=${() => t.drafts.put(Ee, f.settings(), { personId: n.id, uncertain: s })}
             >
               Create a new contact
             </button>` : h}
@@ -2405,18 +2416,18 @@ function xr(t) {
     </div>`;
 }
 function kr(t) {
-  if (t.drafts.get(ke))
+  if (t.drafts.get(Ce))
     return N({
       title: "Turn on Google sync?",
       lines: ["Contacts will be created and updated in your Google account. Hearth never deletes a Google contact."],
       confirmLabel: "Turn on",
       busy: t.busy,
-      onCancel: () => t.drafts.drop(ke),
+      onCancel: () => t.drafts.drop(Ce),
       onConfirm: () => {
-        t.drafts.drop(ke), t.setGoogleEnabled(!0);
+        t.drafts.drop(Ce), t.setGoogleEnabled(!0);
       }
     });
-  const e = t.drafts.get(Ce);
+  const e = t.drafts.get(Ee);
   if (e)
     return N({
       title: "Create a new contact?",
@@ -2425,13 +2436,13 @@ function kr(t) {
       ],
       confirmLabel: "Create new contact",
       busy: t.busy,
-      onCancel: () => t.drafts.drop(Ce),
+      onCancel: () => t.drafts.drop(Ee),
       onConfirm: () => {
-        t.drafts.drop(Ce), t.clearGoogleContact(e.personId);
+        t.drafts.drop(Ee), t.clearGoogleContact(e.personId);
       }
     });
 }
-function $e(t, e, n) {
+function _e(t, e, n) {
   return l`<a class="action" href=${n} target="_blank" rel="noopener noreferrer" aria-label=${e} title=${e}
     >${t}</a
   >`;
@@ -2443,8 +2454,8 @@ function Cr(t, e) {
       >${w.plus}</a
     >
     <a class="action" href=${f.newReminder(t.id)} aria-label="Add reminder" title="Add reminder">${w.bell}</a>
-    ${n ? $e(w.phone, "Call", n) : h} ${i ? $e(w.message, "Message", i) : h}
-    ${s ? $e(w.envelope, "Email", s) : h} ${r ? $e(w.mapPin, "Map", r) : h}
+    ${n ? _e(w.phone, "Call", n) : h} ${i ? _e(w.message, "Message", i) : h}
+    ${s ? _e(w.envelope, "Email", s) : h} ${r ? _e(w.mapPin, "Map", r) : h}
   </div>`;
 }
 function Er(t, e) {
@@ -2474,10 +2485,10 @@ function Sr(t) {
   </a>`;
 }
 function Ar(t, e) {
-  const { people: n, households: i, groups: s, relationships: r, me_person_id: a } = e, o = Us(t.id, { people: n, households: i, groups: s, relationships: r, excludedId: a }), c = (u) => Er(t.id, u), d = l`<a class="accent add-relationship" href=${f.newRelationship(t.id)} style="display:block;font-size:12.5px;padding:8px 20px 18px"
+  const { people: n, households: i, groups: s, relationships: r, me_person_id: a } = e, o = ws(t.id, { people: n, households: i, groups: s, relationships: r, excludedId: a }), c = (u) => Er(t.id, u), d = l`<a class="accent add-relationship" href=${f.newRelationship(t.id)} style="display:block;font-size:12.5px;padding:8px 20px 18px"
     >Add relationship</a
   >`;
-  return Ls(o) ? l`<div class="label" style="padding:0 20px 8px">Connections</div>${d}` : l`<div class="label" style="padding:0 20px 8px">Connections</div>
+  return _s(o) ? l`<div class="label" style="padding:0 20px 8px">Connections</div>${d}` : l`<div class="label" style="padding:0 20px 8px">Connections</div>
     <div class="card">
       ${o.household ? l`${Sr(o.household)} ${o.householdMembers.map(c)}` : h}
       ${o.others.length ? l`${o.household ? l`${Qt}<div class="mono muted" style="font-size:9.5px">ELSEWHERE</div>` : h}
@@ -2496,10 +2507,10 @@ function Ar(t, e) {
 }
 function Tr(t) {
   const n = [
-    [be(t.website), w.globe, "Website"],
-    [be(t.linkedin), w.linkedIn, "LinkedIn profile"],
-    [be(t.facebook), w.facebook, "Facebook profile"],
-    [be(t.instagram), w.instagram, "Instagram profile"]
+    [$e(t.website), w.globe, "Website"],
+    [$e(t.linkedin), w.linkedIn, "LinkedIn profile"],
+    [$e(t.facebook), w.facebook, "Facebook profile"],
+    [$e(t.instagram), w.instagram, "Instagram profile"]
   ].filter(([i]) => i);
   return n.length ? l`<div style="display:flex;gap:14px;padding:0 20px 18px">
     ${n.map(
@@ -2554,10 +2565,10 @@ function Tt(t, e, n) {
       ${Cr(s, r)}
       ${s.relationship_summary ? l`<div class="label" style="padding:0 20px 8px">Relationship summary</div>
             <div class="card" style="border-left:3px solid var(--accent);padding:14px;font-size:12.5px;white-space:pre-wrap">${s.relationship_summary}</div>` : h}
-      ${In(t, i.reminders.filter((c) => c.person_id === s.id && c.state !== "done"), "padding:0 20px 8px", "padding:0")}
+      ${On(t, i.reminders.filter((c) => c.person_id === s.id && c.state !== "done"), "padding:0 20px 8px", "padding:0")}
       ${Ar(s, i)} ${Tr(s)} ${Rr(hs(i.interactions, s.id))}
     </div>`,
-    overlay: n === "log" ? Pn(t, s, null) : void 0
+    overlay: n === "log" ? Hn(t, s, null) : void 0
   };
 }
 const ot = "new", ti = [
@@ -2704,8 +2715,8 @@ function zr(t, e) {
       ${P("Places", l`${tt(d, "address", "Address")} ${tt(d, "school", "School")}`)}
       ${P(
       "Links",
-      l`${ge(d, "website", "Website")} ${ge(d, "linkedin", "LinkedIn")} ${ge(d, "facebook", "Facebook")}
-        ${ge(d, "instagram", "Instagram")}`
+      l`${ve(d, "website", "Website")} ${ve(d, "linkedin", "LinkedIn")} ${ve(d, "facebook", "Facebook")}
+        ${ve(d, "instagram", "Instagram")}`
     )}
       ${P(
       "Notes and summary",
@@ -2755,7 +2766,7 @@ function Br(t, e, n, i) {
       { ...Mt, notes: v.notes },
       ci ? { notes: T.notes } : { ...Mt, notes: T.notes }
     ) || r && !$(t).relationships.some((di) => di.id === r)) && y();
-  }, C = V(t, a), b = Pe(e.name);
+  }, C = V(t, a), b = Ie(e.name);
   return l`<div class="sheet-backdrop" @click=${(v) => v.target === v.currentTarget && y()}>
     <div class="sheet" role="dialog" aria-label=${n ? "Edit relationship" : "Add relationship"}>
       <div class="topbar">
@@ -2767,7 +2778,7 @@ function Br(t, e, n, i) {
       </div>
       <div class="sheet-body">
         <div class="form">
-          ${De(t, {
+          ${fe(t, {
     id: "relationship-person",
     label: "Person",
     path: o,
@@ -2818,7 +2829,7 @@ function tn(t, e) {
     ${S(t.name, t.photo_url)}
     <span class="main">
       <div class="name">${t.name}</div>
-      <div class="sub">${n.last_contacted ? `Last: ${Ae(n.last_contacted)}` : "No interactions yet"}</div>
+      <div class="sub">${n.last_contacted ? `Last: ${Te(n.last_contacted)}` : "No interactions yet"}</div>
     </span>
     <span class="meta" style="color:${i}">${n.days_since_contact === null ? "—" : `${n.days_since_contact}d`}</span>
   </a>`;
@@ -2833,7 +2844,7 @@ function ni(t) {
     body: l`<div class="page">
       <div class="reach-card">
         <div class="mono accent" style="font-size:10px">CLOSE FRIEND ROTATION · ~6WK CADENCE</div>
-        <div class="h-serif" style="font-size:17px;margin-top:6px">${Ne(n.length, "person", "people")} overdue</div>
+        <div class="h-serif" style="font-size:17px;margin-top:6px">${Pe(n.length, "person", "people")} overdue</div>
       </div>
       ${n.length ? l`<div class="label list-label">Overdue</div>
             <div class="list">${n.map((s) => tn(s, !0))}</div>` : h}
@@ -2850,21 +2861,21 @@ function Vr(t, e) {
       const i = Tt(t, e.personId, null), s = n.people.find((a) => a.id === e.personId);
       if (!s) return i;
       const r = f.newReminder(s.id);
-      return { ...i, overlay: qe(t, { key: `reminder:new:person:${s.id}`, path: r, closeTo: f.person(s.id), person: s, interaction: null, existing: null }) };
+      return { ...i, overlay: qe(t, { key: `reminder:new:person:${s.id}`, path: r, closeTo: f.person(s.id), person: s, locked: !0, interaction: null, existing: null }) };
     }
     case "interactionReminderNew": {
-      const i = Hn(t, e.interactionId, null), s = n.interactions.find((o) => o.id === e.interactionId);
+      const i = Dn(t, e.interactionId, null), s = n.interactions.find((o) => o.id === e.interactionId);
       if (!s) return i;
-      const r = Ie(s, n.people)[0] ?? null, a = f.newInteractionReminder(s.id);
+      const r = He(s, n.people)[0] ?? null, a = f.newInteractionReminder(s.id);
       return {
         ...i,
-        overlay: qe(t, { key: `reminder:new:interaction:${s.id}`, path: a, closeTo: f.interaction(s.id), person: r, interaction: s, existing: null })
+        overlay: qe(t, { key: `reminder:new:interaction:${s.id}`, path: a, closeTo: f.interaction(s.id), person: r, locked: !1, interaction: s, existing: null })
       };
     }
     case "reminder": {
       const i = n.reminders.find((o) => o.id === e.id);
       if (!i) return t.isArriving(e.id) ? ue : G("reminder");
-      const s = n.people.find((o) => o.id === i.person_id) ?? null, r = i.interaction_id ? n.interactions.find((o) => o.id === i.interaction_id) ?? null : null, a = { key: `edit:reminder:${i.id}`, path: f.reminder(i.id), closeTo: f.reachOut(), person: s, interaction: r, existing: i };
+      const s = n.people.find((o) => o.id === i.person_id) ?? null, r = i.interaction_id ? n.interactions.find((o) => o.id === i.interaction_id) ?? null : null, a = { key: `edit:reminder:${i.id}`, path: f.reminder(i.id), closeTo: f.reachOut(), person: s, locked: !0, interaction: r, existing: i };
       return { ...ni(t), overlay: qe(t, a) };
     }
   }
@@ -2872,16 +2883,16 @@ function Vr(t, e) {
 const dt = (t) => `confirm-delete:reminder:${t}`;
 function qe(t, e) {
   const n = $(t), { key: i, path: s, existing: r, interaction: a } = e, o = t.drafts.open(i, s, () => ({
-    ...r ? Es(r) : Rn(),
+    ...r ? Ps(r) : Nn(),
     person: e.person?.id ?? r?.person_id ?? ""
-  })), c = e.person ?? n.people.find((m) => m.id === o.person) ?? null, d = () => {
+  })), c = e.locked ? e.person : n.people.find((m) => m.id === o.person) ?? null, d = () => {
     t.drafts.drop(i), z(e.closeTo);
-  }, u = !!c && re(o) !== null, p = async () => {
-    const m = t.drafts.get(i), g = m && re(m);
+  }, u = !!c && ae(o) !== null, p = async () => {
+    const m = t.drafts.get(i), g = m && ae(m);
     if (!m || !g || !c) return;
     if (r) {
       const b = t.drafts.base(i);
-      await t.updateReminder(r.id, g, (b && re(b)) ?? void 0) && d();
+      await t.updateReminder(r.id, g, (b && ae(b)) ?? void 0) && d();
       return;
     }
     await t.addReminder({ person_id: c.id, interaction_id: a?.id ?? null, ...g }) && d();
@@ -2897,10 +2908,10 @@ function qe(t, e) {
         </div>
         <div class="sheet-body">
           <div class="form">
-            ${e.person || r ? l`<div class="field">
+            ${e.locked ? l`<div class="field">
                   <span>Person</span>
                   ${c ? l`<div style="display:flex;align-items:center;gap:10px">${S(c.name, c.photo_url, 26)} ${c.name}</div>` : l`<div class="muted">No longer in Hearth</div>`}
-                </div>` : De(t, {
+                </div>` : fe(t, {
     id: "reminder-person",
     label: "Person",
     path: s,
@@ -2910,7 +2921,7 @@ function qe(t, e) {
     disabled: t.busy
   })}
             ${a ? l`<div class="muted" style="font-size:12.5px">From: ${a.summary}</div>` : h}
-            ${Nn(y, n.today, n.reminder_units, t.busy)}
+            ${In(y, n.today, n.reminder_units, t.busy)}
             ${r ? l`<button
                   class="btn danger"
                   style="margin-top:12px"
@@ -2948,7 +2959,7 @@ function Yr(t) {
   return l`<a class="row" href=${f.household(t.id)}>
     ${S(e, t.photo_url)}
     <span class="main"><div class="name ${X(t) ? "" : "muted"}">${e}</div></span>
-    <span class="meta">${Ne(t.member_ids.length, "member")}</span>
+    <span class="meta">${Pe(t.member_ids.length, "member")}</span>
   </a>`;
 }
 function Wr(t) {
@@ -2958,14 +2969,14 @@ function Wr(t) {
       <div class="name">${t.name}</div>
       ${t.description ? l`<div class="sub">${t.description}</div>` : h}
     </span>
-    <span class="meta">${Ne(t.member_ids.length, "member")}</span>
+    <span class="meta">${Pe(t.member_ids.length, "member")}</span>
   </a>`;
 }
 function Jr(t) {
   const { people: e, households: n, groups: i, relationships: s } = $(t), r = t.search.text.trim();
   switch (t.search.chip) {
     case "people": {
-      const a = Et(r, e, s);
+      const a = kt(r, e, s);
       return l`${a.direct.map((o) => Qe(o))}
       ${a.connected.length ? l`${es("Connected")} ${a.connected.map((o) => Qe(o.person, o.reason))}` : h}
       ${a.direct.length + a.connected.length === 0 ? l`<div class="empty">No one matches “${r}”.</div>` : h}`;
@@ -3078,17 +3089,17 @@ function ta(t) {
     </button>
   </div>`;
 }
-const na = 8, _e = "me-picker";
+const na = 8, we = "me-picker";
 function ia(t) {
-  const { people: e, relationships: n, me_person_id: i } = $(t), s = i ? e.find((u) => u.id === i) : void 0, r = t.drafts.get(_e)?.query ?? null, a = () => t.drafts.drop(_e), o = async (u) => {
+  const { people: e, relationships: n, me_person_id: i } = $(t), s = i ? e.find((u) => u.id === i) : void 0, r = t.drafts.get(we)?.query ?? null, a = () => t.drafts.drop(we), o = async (u) => {
     await t.setMe(u) && a();
   }, c = l`<div style="display:flex;align-items:center;gap:12px">
     ${s ? l`${S(s.name, s.photo_url, 36)}<span style="flex:1;font-weight:600">${s.name}</span>` : l`<span class="muted" style="flex:1">Not set</span>`}
-    ${r === null ? l`<button class="btn secondary" @click=${() => t.drafts.put(_e, f.settings(), { query: "" })}>Change</button>
+    ${r === null ? l`<button class="btn secondary" @click=${() => t.drafts.put(we, f.settings(), { query: "" })}>Change</button>
           ${s ? l`<button class="btn secondary" ?disabled=${t.busy} @click=${() => o(null)}>Clear</button>` : h}` : h}
   </div>`;
   if (r === null) return l`<div class="card" style="padding:13px">${c}</div>`;
-  const d = Et(r.trim(), e, n).direct.slice(0, na);
+  const d = kt(r.trim(), e, n).direct.slice(0, na);
   return l`<div class="card" style="padding:13px;display:grid;gap:10px">
     ${c}
     <input
@@ -3099,7 +3110,7 @@ function ia(t) {
       aria-label="Search people"
       autocomplete="off"
       .value=${k(r)}
-      @input=${(u) => t.drafts.patch(_e, { query: u.target.value })}
+      @input=${(u) => t.drafts.patch(we, { query: u.target.value })}
     />
     <div class="list">
       ${d.length ? d.map(
@@ -3127,23 +3138,23 @@ function sa(t) {
       return "That file couldn't be read as a Hearth bundle.";
   }
 }
-const Te = "confirm-import";
+const Re = "confirm-import";
 function ra(t, e) {
   return N({
     title: `Import ${e.name}?`,
     lines: ["Everything in your Hearth is replaced by what's in this file."],
     confirmLabel: "Import",
     busy: t.busy,
-    onCancel: () => t.drafts.drop(Te),
+    onCancel: () => t.drafts.drop(Re),
     onConfirm: () => {
-      t.drafts.drop(Te), t.importBundle(e, !1);
+      t.drafts.drop(Re), t.importBundle(e, !1);
     }
   });
 }
 function aa(t) {
   const e = t.importState, n = e.kind === "uploading", i = (s) => {
     const r = s.target, a = r.files?.[0];
-    r.value = "", a && t.drafts.put(Te, f.settings(), { file: a });
+    r.value = "", a && t.drafts.put(Re, f.settings(), { file: a });
   };
   return l`<div class="card" style="padding:13px;display:grid;gap:10px">
     <div class="muted" style="font-size:12.5px">Replaces everything in your Hearth with a Hearth export (.zip).</div>
@@ -3170,7 +3181,7 @@ function aa(t) {
   </div>`;
 }
 function oa(t) {
-  const e = t.drafts.get(Te);
+  const e = t.drafts.get(Re);
   return {
     overlay: e ? ra(t, e.file) : kr(t),
     title: "Settings",
@@ -3236,7 +3247,7 @@ function da(t, e) {
     case "groupEdit":
       return Js(t, e.id);
     case "interaction":
-      return Hn(t, e.id, e.sheet);
+      return Dn(t, e.id, e.sheet);
     case "reminder":
     case "reminderNew":
     case "interactionReminderNew":
@@ -3470,7 +3481,7 @@ class $a {
     try {
       await this.api.update("person", e.id, { favorite: n }), this.pendingFavorites.delete(e.id);
     } catch (i) {
-      this.pendingFavorites.delete(e.id), this.patchFavorite(e.id, e.favorite), this.showToast(we(i));
+      this.pendingFavorites.delete(e.id), this.patchFavorite(e.id, e.favorite), this.showToast(xe(i));
     }
   }
   async addInteraction(e) {
@@ -3638,7 +3649,7 @@ class $a {
       return this.importState = { kind: "done", summary: i.summary }, !0;
     } catch (i) {
       const s = i instanceof A ? i : null, r = s?.code ?? "unknown_error";
-      return r === "local_changes" || r === "cutover_confirmed" || r === "invalid" || r === "too_large" || r === "bad_request" || r === "no_crm" ? this.importState = { kind: "refused", reason: r, message: s?.message ?? r, problems: s?.problems ?? [], file: e } : (this.importState = { kind: "idle" }, this.showToast(we(i, "Couldn't import"))), !1;
+      return r === "local_changes" || r === "cutover_confirmed" || r === "invalid" || r === "too_large" || r === "bad_request" || r === "no_crm" ? this.importState = { kind: "refused", reason: r, message: s?.message ?? r, problems: s?.problems ?? [], file: e } : (this.importState = { kind: "idle" }, this.showToast(xe(i, "Couldn't import"))), !1;
     } finally {
       this.busy = !1, this.onChange();
     }
@@ -3711,7 +3722,7 @@ class $a {
       r = await n();
     } catch (a) {
       if (s !== this.generation) return !1;
-      this.showToast(we(a, i));
+      this.showToast(xe(a, i));
     }
     return s !== this.generation || (this.google = e === "preview" ? { ...this.google, working: null, preview: r ?? this.google.preview } : { ...this.google, working: null, lastSync: r ?? this.google.lastSync, preview: r ? null : this.google.preview }, this.onChange(), await this.loadGoogle()), r !== null;
   }
@@ -3733,7 +3744,7 @@ class $a {
       return { value: await e() };
     } catch (i) {
       const s = i instanceof A ? i : null;
-      return n.ifGone && s?.code === "not_found" ? (this.showToast(pt), await this.refresh(), { value: n.ifGone() }) : (this.writeError = s, this.showToast(we(i, n.failure)), null);
+      return n.ifGone && s?.code === "not_found" ? (this.showToast(pt), await this.refresh(), { value: n.ifGone() }) : (this.writeError = s, this.showToast(xe(i, n.failure)), null);
     } finally {
       this.busy = !1, this.onChange();
     }
@@ -3887,7 +3898,7 @@ function _a(t) {
   const e = (n) => String(n).padStart(2, "0");
   return `${t.getFullYear()}-${e(t.getMonth() + 1)}-${e(t.getDate())}`;
 }
-function we(t, e = "Couldn't save") {
+function xe(t, e = "Couldn't save") {
   switch (t instanceof A ? t.code : null) {
     case "offline":
       return oi;
@@ -3958,7 +3969,7 @@ function Ea(t) {
     </div>
   </div>`;
 }
-var Sa = Object.defineProperty, fe = (t, e, n, i) => {
+var Sa = Object.defineProperty, me = (t, e, n, i) => {
   for (var s = void 0, r = t.length - 1, a; r >= 0; r--)
     (a = t[r]) && (s = a(e, n, s) || s);
   return s && Sa(e, n, s), s;
@@ -4065,19 +4076,19 @@ class ee extends se {
     }
   }
 }
-fe([
+me([
   he({ attribute: !1, hasChanged: Aa })
 ], ee.prototype, "hass");
-fe([
+me([
   he({ type: Boolean })
 ], ee.prototype, "narrow");
-fe([
+me([
   he({ attribute: !1, hasChanged: Ta })
 ], ee.prototype, "route");
-fe([
+me([
   he({ attribute: !1 })
 ], ee.prototype, "panel");
-fe([
+me([
   Ii()
 ], ee.prototype, "refreshing");
 customElements.get("hearth-panel") || customElements.define("hearth-panel", ee);
