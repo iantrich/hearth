@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date, datetime
 
-from .enums import ConnectionType, InteractionType
+from .enums import ConnectionType, InteractionType, ReminderUnit
 
 
 @dataclass(frozen=True)
@@ -99,6 +99,22 @@ class Interaction:
 
 
 @dataclass
+class Reminder:
+    id: str
+    person_id: str
+    created_at: datetime
+    updated_at: datetime
+    note: str | None = None
+    due_at: datetime | None = None  # aware instant; None means Someday
+    repeat_every: int | None = None
+    repeat_unit: ReminderUnit | None = None
+    interaction_id: str | None = None
+    anchor_at: datetime | None = None  # first due instant; repeats count from it
+    done_at: datetime | None = None
+    notified_for: datetime | None = None  # scheduled instant last notified
+
+
+@dataclass
 class CRMData:
     people: list[Person] = field(default_factory=list)
     households: list[Household] = field(default_factory=list)
@@ -106,3 +122,4 @@ class CRMData:
     group_members: list[tuple[str, str]] = field(default_factory=list)
     relationships: list[Relationship] = field(default_factory=list)
     interactions: list[Interaction] = field(default_factory=list)
+    reminders: list[Reminder] = field(default_factory=list)

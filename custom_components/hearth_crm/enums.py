@@ -77,3 +77,12 @@ class InteractionType(_Parsable):
     HEALTH = "Health"
     MILESTONE = "Milestone"
     OTHER = "Other"
+
+
+class ReminderUnit(_Parsable):
+    """Units a repeating reminder steps in."""
+
+    DAY = "day"
+    WEEK = "week"
+    MONTH = "month"
+    YEAR = "year"
