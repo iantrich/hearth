@@ -98,7 +98,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HearthConfigEntry) -> bo
 
     async def _close_on_stop(event: Event) -> None:
         try:
-            runtime.notifications.stop()
+            await runtime.notifications.stop()
             await runtime.google_sync.stop()  # before the database closes under a run
             await hass.async_add_executor_job(repo.close)
         except Exception:
@@ -119,7 +119,7 @@ def _is_direct_child(path: Path, root: Path) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: HearthConfigEntry) -> bool:
     """Stop the Google sync, then close the database."""
-    entry.runtime_data.notifications.stop()
+    await entry.runtime_data.notifications.stop()
     await entry.runtime_data.google_sync.stop()
     await hass.async_add_executor_job(entry.runtime_data.repo.close)
     return True

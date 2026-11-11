@@ -158,22 +158,34 @@ class NotificationRuntime:
         self._unsubs: list[CALLBACK_TYPE] = []
         self._unsub_check: CALLBACK_TYPE | None = None
         self._check_lock = asyncio.Lock()
+        self._start_check: asyncio.Task | None = None
+        self._stopped = False
         self._last_failure_log: dict[str, datetime] = {}
 
     async def async_start(self) -> None:
+        self._stopped = False
         await self.async_reschedule()
         self._cancel_check()
         self._unsub_check = async_track_time_interval(
             self._hass, self._check_reminders, REMINDER_CHECK_EVERY
         )
         # In the background, so a slow phone cannot hold up setting up the integration.
-        self._hass.async_create_background_task(
+        self._start_check = self._hass.async_create_background_task(
             self._check_reminders(), f"hearth_crm reminders {self._entry.entry_id}"
         )
 
-    def stop(self) -> None:
+    async def stop(self) -> None:
+        """Cancel the timers and wait for a check that is running, so nothing touches the
+        database (which closes right after) once this returns."""
+        self._stopped = True
         self._cancel()
         self._cancel_check()
+        task, self._start_check = self._start_check, None
+        if task is not None and not task.done():
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+        async with self._check_lock:
+            pass
 
     def _cancel_check(self) -> None:
         if self._unsub_check is not None:
@@ -243,6 +255,8 @@ class NotificationRuntime:
         """Send each due, not yet notified reminder (``now`` is the timer's, and in UTC, so the
         zone and the instant come from Home Assistant instead)."""
         async with self._check_lock:
+            if self._stopped:
+                return
             service = self._runtime.service
             tz = dt_util.get_default_time_zone()
             instant = dt_util.utcnow()

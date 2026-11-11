@@ -5,6 +5,7 @@ Invented people and numbers only. The Companion app is faked with a ``notify`` s
 
 from __future__ import annotations
 
+import asyncio
 from datetime import UTC, date, datetime, timedelta
 
 import pytest
@@ -672,3 +673,39 @@ async def test_other_users_reminders_go_only_to_their_own_phones(
     await start_at(hass, freezer, other_entry)
     assert mine == []
     assert len(theirs) == 1
+
+
+async def test_stopping_waits_for_a_check_that_is_mid_send_and_nothing_runs_after(hass, crm, freezer):
+    user, entry = crm
+    started = asyncio.Event()
+    release = asyncio.Event()
+    sent: list[ServiceCall] = []
+    MockConfigEntry(domain="mobile_app", data={"user_id": user.id, "device_name": "Slow Phone"}).add_to_hass(hass)
+
+    async def slow(call: ServiceCall) -> None:
+        started.set()
+        await release.wait()
+        sent.append(call)
+
+    hass.services.async_register("notify", "mobile_app_slow_phone", slow)
+    freezer.move_to(BASE)
+    await make_reminder(hass, entry, due_at=iso(BASE + MINUTE))
+    runtime = entry.runtime_data
+    calls: list[str] = []
+    real_read, real_mark = runtime.service.read_data, runtime.service.mark_reminder_notified
+    runtime.service.read_data = lambda: (calls.append("read"), real_read())[1]
+    runtime.service.mark_reminder_notified = lambda *a: (calls.append("mark"), real_mark(*a))[1]
+
+    await runtime.notifications.async_start()
+    freezer.move_to(BASE + 2 * MINUTE)
+    async_fire_time_changed(hass, BASE + 2 * MINUTE)  # an interval check gets stuck in the send
+    await asyncio.wait_for(started.wait(), 5)
+    stopping = hass.async_create_task(runtime.notifications.stop())
+    await asyncio.sleep(0)
+    assert not stopping.done()  # waits for the running check
+    release.set()
+    await asyncio.wait_for(stopping, 5)
+    after = list(calls)
+    await tick(hass, freezer, BASE + 10 * MINUTE)
+    await runtime.notifications._check_reminders()
+    assert calls == after  # nothing reads or writes once stop has returned
