@@ -658,6 +658,32 @@ async def test_editing_the_due_time_after_it_fired_fires_again_at_the_new_time(h
     assert len(sent) == 2
 
 
+async def test_a_repeat_rule_change_after_completions_fires_at_the_shown_due_date(hass, crm, freezer):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    service = entry.runtime_data.service
+    freezer.move_to(BASE)
+    first = BASE + timedelta(hours=1)  # 15 Jun
+    made = await make_reminder(hass, entry, due_at=iso(first), repeat_every=1, repeat_unit="month")
+    await start_at(hass, freezer, entry)
+    await tick(hass, freezer, first + MINUTE)
+    assert len(sent) == 1
+    await hass.async_add_executor_job(service.complete_reminder, made["id"], "panel")  # 15 Jul
+    await hass.async_add_executor_job(service.complete_reminder, made["id"], "panel")  # 15 Aug
+    await hass.async_add_executor_job(
+        service.update, "reminder", made["id"], {"repeat_unit": "week"}, "panel"
+    )
+    shown = (await stored_reminder(hass, entry, made["id"])).due_at
+    assert shown == datetime(2026, 8, 15, 13, 0, tzinfo=UTC)
+    await tick(hass, freezer, shown - MINUTE)
+    assert len(sent) == 1
+    await tick(hass, freezer, shown + MINUTE)  # the old 15 Jun weekly grid would wait to 17 Aug
+    assert len(sent) == 2
+    await tick(hass, freezer, shown + 2 * MINUTE)
+    assert len(sent) == 2
+
+
 async def test_other_users_reminders_go_only_to_their_own_phones(
     hass, crm, freezer, add_crm, hass_read_only_user
 ):

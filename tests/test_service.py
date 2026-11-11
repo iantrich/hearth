@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
+from custom_components.hearth_crm import reminders
 from custom_components.hearth_crm.db import CRMRepository, open_database
 from custom_components.hearth_crm.photos import PhotoStore
 from custom_components.hearth_crm.service import HearthService, InvalidInput, NotFound
@@ -690,6 +691,33 @@ def test_editing_only_the_note_or_the_repeat_rule_keeps_notified_for_and_anchor(
     # the same due time sent again is not a change either
     rsvc.update("reminder", reminder_id, {"due_at": "2026-12-08T08:00"}, "panel")
     assert stored(rsvc, reminder_id).notified_for == before.notified_for
+
+
+def test_changing_the_repeat_rule_re_anchors_at_the_current_due_time_without_re_arming(rsvc, clock):
+    made = rsvc.create(
+        "reminder",
+        {"person_id": "id1", "due_at": "2026-12-08T08:00", "repeat_every": 1, "repeat_unit": "month"},
+        "panel",
+    )
+    clock["now"] = datetime(2026, 12, 8, 9, 0, tzinfo=CHICAGO)
+    rsvc.complete_reminder(made["id"], "panel")  # due 8 Jan
+    rsvc.mark_reminder_notified(made["id"], stored(rsvc, made["id"]).anchor_at)
+    clock["now"] = datetime(2027, 1, 8, 9, 0, tzinfo=CHICAGO)
+    rsvc.complete_reminder(made["id"], "panel")  # due 8 Feb, anchor still 8 Dec
+    before = stored(rsvc, made["id"])
+    assert before.due_at.astimezone(CHICAGO) == datetime(2027, 2, 8, 8, 0, tzinfo=CHICAGO)
+    assert before.anchor_at != before.due_at
+
+    rsvc.update("reminder", made["id"], {"repeat_unit": "week"}, "panel")
+    after = stored(rsvc, made["id"])
+    assert after.anchor_at == after.due_at == before.due_at
+    assert after.notified_for == before.notified_for  # editing the rule does not re-fire
+    assert reminders.due_occurrence(
+        after, datetime(2027, 2, 8, 8, 1, tzinfo=CHICAGO), CHICAGO
+    ) == after.due_at
+
+    rsvc.update("reminder", made["id"], {"repeat_every": 3}, "panel")
+    assert stored(rsvc, made["id"]).anchor_at == before.due_at
 
 
 def test_a_done_reminder_cannot_be_edited(rsvc):

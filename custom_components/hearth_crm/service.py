@@ -286,6 +286,13 @@ class HearthService:
             if kind == "reminder" and entity.due_at != existing.due_at:
                 entity.anchor_at = entity.due_at  # a new due time starts a new schedule
                 entity.notified_for = None
+            elif kind == "reminder" and (entity.repeat_every, entity.repeat_unit) != (
+                existing.repeat_every,
+                existing.repeat_unit,
+            ):
+                # A new rule counts from the date shown now, not from the first one; what was
+                # already sent stays sent, so the edit itself does not fire again.
+                entity.anchor_at = entity.due_at
             members = self._members(kind, changes)
             self._check_references(kind, entity, members)
             try:
