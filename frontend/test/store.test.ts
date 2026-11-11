@@ -585,6 +585,34 @@ describe("Store reminders", () => {
     store.stop();
   });
 
+  it("an old backend's snapshot without reminders landing while a record is arriving does not throw", async () => {
+    const old = () => {
+      const s: any = sampleSnapshot();
+      delete s.reminders;
+      delete s.reminder_units;
+      return s;
+    };
+    let hold = false;
+    const waiting: (() => void)[] = [];
+    const snapshot = () =>
+      hold ? new Promise((resolve) => waiting.push(() => resolve(old()))) : old();
+    const { store } = makeStore({ ...base, "hearth_crm/snapshot": snapshot, "hearth_crm/create": () => ({ id: "m9" }) });
+    await store.start();
+    hold = true;
+    const inFlight = store.refresh(); // started before the save, so it is checked for the new record
+    await vi.advanceTimersByTimeAsync(0);
+    expect(await store.addReminder({ person_id: "p4", note: "Call about the move" })).toBe("m9");
+    hold = false;
+    for (const release of waiting) release();
+    await inFlight;
+    await vi.advanceTimersByTimeAsync(500);
+    expect(store.lastError).toBeNull();
+    expect(store.offline).toBe(false);
+    expect(store.snapshot?.reminders).toEqual([]);
+    expect(store.isArriving("m9")).toBe(true); // not in that snapshot, and the fetch predates the save
+    store.stop();
+  });
+
   it("updateReminder sends only what changed; deleteReminder sends a delete", async () => {
     const { store, conn } = makeStore({ ...base, "hearth_crm/update": () => ({}), "hearth_crm/delete": () => ({}) });
     await store.start();

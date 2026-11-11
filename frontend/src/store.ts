@@ -851,7 +851,9 @@ export class Store {
   }
 
   /** `seq` is the fetch's number from fetchSeq, taken when the request started. */
-  private accept(fetched: Snapshot, seq: number): void {
+  private accept(raw: Snapshot, seq: number): void {
+    // First: an older backend's snapshot has no reminders, and everything below reads them.
+    const fetched = withReminders(raw);
     const arriving = this.arriving;
     // Cleared once it's in, or once a fetch started after the save doesn't have it (deleted).
     if (arriving && (seq > arriving.afterSeq || hasRecord(fetched, arriving.id))) this.stopArriving();
@@ -864,7 +866,7 @@ export class Store {
         }
       : fetched;
     this.settlePendingMembers(fetched, seq);
-    this.snapshot = this.withPendingMembers(withReminders(snapshot));
+    this.snapshot = this.withPendingMembers(snapshot);
     this.offline = false;
     this.lastError = null;
     try {
