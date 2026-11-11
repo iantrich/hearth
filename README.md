@@ -1,6 +1,6 @@
 # Hearth
 
-A Home Assistant custom integration that hosts a personal CRM (people, households, groups, relationships and interactions) on your own Home Assistant instance. Your data lives in your Home Assistant config directory, not in a third-party service.
+A Home Assistant custom integration that hosts a personal CRM (people, households, groups, relationships, interactions and reminders) on your own Home Assistant instance. Your data lives in your Home Assistant config directory, not in a third-party service.
 
 **What it is today (0.9.0):** a per-user CRM with a sidebar panel you can work from. Each Home Assistant user gets a separate CRM with its own database and photos. The Hearth panel browses it and edits it: people, relationships, households, groups, interactions and reminders, plus importing a bundle from Settings. Claude can read and edit your CRM too, through Home Assistant's MCP server (see [Claude](#claude)). You can also keep your contacts in your own Google account up to date from Hearth (see [Google Contacts](#google-contacts)). There is also import and export of the whole CRM as a portable bundle, and a websocket API plus an authenticated photo URL.
 
@@ -145,7 +145,7 @@ A reminder is its own record: a person (required), an optional note, a due date 
 
 - **Quick picks:** Tomorrow, Next week, In a month, In a quarter, In a year, Someday and Custom. The quick picks use 08:00.
 - **Repeats:** every N days, weeks, months or years, counted from the first due date so a reminder does not drift. A repeating reminder runs until you delete it. **Done** moves it to its next scheduled date that is still in the future (marking it done before it is due skips that occurrence). **Done** on a one-time reminder finishes it.
-- **Delivery:** at its due time, the owner's Companion app devices get "Follow up with <name>" with the note (or "Time to check in with <name>." when there is none). Tapping it opens a text to the person's first phone number, or their profile when there is no number, with an "Open profile" button. A reminder fires once per scheduled date. A one-time reminder you ignore fires once; an ignored repeating one fires again at each later scheduled date. A reminder that came due while Home Assistant was stopped fires when it is back up. With no phone set up, or when every send fails, it is retried each minute.
+- **Delivery:** at its due time, the owner's Companion app devices get "Follow up with <name>" with the note (or "Time to check in with <name>." when there is none). Tapping it opens a text to the person's first phone number; with no number it opens their profile in Hearth. When a tap opens a text, an "Open profile" button on the notification opens the profile instead. A reminder fires once per scheduled date. A one-time reminder you ignore fires once; an ignored repeating one fires again at each later scheduled date. A reminder that came due while Home Assistant was stopped fires when it is back up. With no phone set up, or when every send fails, it is retried each minute.
 - **The Reminders switch:** under **Settings > Notifications**, on by default, with no time. While it is off nothing is sent, and due reminders are treated as already notified, so switching it on later does not release a flood.
 
 ## Notifications
@@ -156,7 +156,7 @@ Hearth can send three notifications to your phone. Birthdays and the log reminde
 - **Log reminder:** if you haven't logged any interaction today (nothing dated today and nothing created today), a reminder to do so. Tapping it opens Hearth's search.
 - **Reminders:** on by default; see [Reminders](#reminders).
 
-They go through the Home Assistant Companion app, to the devices signed in as the CRM's owner only. If no phone is set up, the card says so and nothing is sent. **Send a test** sends a sample whose tap should open Messages, with one button that opens a person's profile and one that opens Hearth, so you can check all three on your phone. A time that passes while Home Assistant is down is skipped, not sent late. Opening a text from a notification depends on the Companion app on your phone; if it doesn't open on yours, the "Open profile" button still works.
+They go through the Home Assistant Companion app, to the devices signed in as the CRM's owner only. If no phone is set up, the card says so and nothing is sent. **Send a test** sends a sample whose tap should open Messages, with one button that opens a person's profile and one that opens Hearth, so you can check all three on your phone. A birthday or log-reminder time that passes while Home Assistant is down is skipped, not sent late; a reminder that came due then is sent once Home Assistant is back up. Opening a text from a notification depends on the Companion app on your phone; if it doesn't open on yours, the "Open profile" button still works.
 
 ## Google Contacts
 

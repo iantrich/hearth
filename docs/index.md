@@ -9,7 +9,7 @@ Hearth is a personal CRM for people you care about: who they are, how you know t
 
 ## What it does
 
-- **People, households, groups, relationships and interactions**, with a sidebar panel in Home Assistant for browsing and editing.
+- **People, households, groups, relationships, interactions and reminders**, with a sidebar panel in Home Assistant for browsing and editing.
 - **One CRM per Home Assistant user**, each with its own database and photos.
 - **Reminders** to follow up with someone at a set time, once or repeating, delivered as a phone notification.
 - **Works with Claude** through Home Assistant's MCP server, so you can ask who to reach out to or log a catch-up in plain language.
