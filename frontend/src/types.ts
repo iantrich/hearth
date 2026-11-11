@@ -134,6 +134,22 @@ export interface CrmStatus {
 // The Google Contacts sync, from custom_components/hearth_crm (google_runtime.status and
 // google_sync.report_to_dict).
 
+// Phone notifications, from custom_components/hearth_crm/notifications.py.
+
+export type NotificationKind = "birthdays" | "log_reminder";
+
+export interface NotificationSetting {
+  enabled: boolean;
+  /** "HH:MM", in Home Assistant's time zone. */
+  time: string;
+}
+
+export interface NotificationsStatus {
+  settings: Record<NotificationKind, NotificationSetting>;
+  /** How many of the owner's Companion app devices can be notified. */
+  devices: number;
+}
+
 export type GoogleStopReason = "auth" | "rate_limited" | "account_mismatch" | "disabled" | "api_disabled";
 
 /** Each person counted once, in this order of precedence: missing, errors, skipped, pending, synced. */

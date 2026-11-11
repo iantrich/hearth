@@ -1,0 +1,369 @@
+"""Tests for Hearth's phone notifications: the wording, the settings and the daily timers.
+
+Invented people and numbers only. The Companion app is faked with a ``notify`` service.
+"""
+
+from __future__ import annotations
+
+from datetime import UTC, date, datetime, timedelta
+
+import pytest
+from homeassistant.core import ServiceCall
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.util import dt as dt_util
+from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed
+
+from custom_components.hearth_crm.models import Interaction, Person
+from custom_components.hearth_crm.notifications import (
+    NO_PHONE,
+    birthday_notifications,
+    log_reminder,
+    needs_log_reminder,
+    sample_notification,
+    sms_uri,
+)
+from custom_components.hearth_crm.enums import InteractionType
+from custom_components.hearth_crm.service import InvalidInput
+from tests.conftest import T0, T1
+
+TODAY = date(2026, 6, 15)
+
+
+@pytest.fixture(autouse=True)
+def _custom_integrations(enable_custom_integrations):
+    """Let Home Assistant find this integration."""
+
+
+def person(pid: str, name: str, **kw) -> Person:
+    return Person(id=pid, name=name, created_at=T0, updated_at=T1, **kw)
+
+
+def interaction(when: date, created: datetime = T0) -> Interaction:
+    return Interaction(
+        id="i1", summary="Coffee", date=when, type=InteractionType.CATCH_UP,
+        created_at=created, updated_at=created, person_ids=["p1"],
+    )
+
+
+# -- sms links ----------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("phone", "expected"),
+    [
+        ("(555) 010-0142", "sms:5550100142"),
+        ("+1 555 010 0142", "sms:+15550100142"),
+        ("555.010.0142", "sms:5550100142"),
+        ("", None),
+        (None, None),
+        ("ext", None),
+    ],
+)
+def test_sms_uri(phone, expected):
+    assert sms_uri(phone) == expected
+
+
+# -- birthdays ------------------------------------------------------------------
+
+
+def test_birthday_says_the_age_and_a_tap_opens_a_text():
+    people = [person("p1", "Roy Example", birthday=date(1983, 6, 15), phone="555-010-0142")]
+    [note] = birthday_notifications(people, TODAY)
+    assert note.title == "Birthday"
+    assert note.message == "Today is Roy Example's birthday! They are turning 43 years old."
+    assert note.data["url"] == note.data["clickAction"] == "sms:5550100142"
+    assert note.data["tag"] == "hearth-birthday-p1"
+    assert note.data["actions"] == [
+        {"action": "URI", "title": "Open profile", "uri": "/hearth/person/p1"}
+    ]
+
+
+def test_birthday_without_a_known_year_leaves_the_age_out():
+    people = [person("p1", "Roy Example", birthday=date(2000, 6, 15), birth_year_unknown=True)]
+    [note] = birthday_notifications(people, TODAY)
+    assert note.message == "Today is Roy Example's birthday!"
+
+
+def test_a_first_birthday_is_one_year_old():
+    [note] = birthday_notifications([person("p1", "Kit Example", birthday=date(2025, 6, 15))], TODAY)
+    assert note.message.endswith("They are turning 1 year old.")
+
+
+def test_without_a_phone_a_tap_opens_the_profile_and_there_is_no_button():
+    [note] = birthday_notifications([person("p1", "Roy Example", birthday=date(1983, 6, 15))], TODAY)
+    assert note.data["url"] == "/hearth/person/p1"
+    assert "actions" not in note.data
+
+
+def test_the_second_number_is_used_when_the_first_is_missing():
+    people = [person("p1", "Roy Example", birthday=date(1983, 6, 15), phone2="555-010-0199")]
+    [note] = birthday_notifications(people, TODAY)
+    assert note.data["url"] == "sms:5550100199"
+
+
+def test_only_todays_birthdays_get_one_notification_each():
+    people = [
+        person("p1", "Ann Example", birthday=date(1990, 6, 15)),
+        person("p2", "Bob Example", birthday=date(1985, 6, 15)),
+        person("p3", "Cy Example", birthday=date(1985, 6, 16)),
+        person("p4", "Di Example"),
+    ]
+    notes = birthday_notifications(people, TODAY)
+    assert [n.message.split("'")[0] for n in notes] == [
+        "Today is Ann Example", "Today is Bob Example"
+    ]
+    assert len({n.data["tag"] for n in notes}) == 2
+
+
+def test_a_person_id_with_odd_characters_is_encoded_in_the_profile_link():
+    [note] = birthday_notifications([person("a b/c", "Roy Example", birthday=date(1983, 6, 15))], TODAY)
+    assert note.data["url"] == "/hearth/person/a%20b%2Fc"
+
+
+# -- the log reminder -------------------------------------------------------------
+
+
+def test_reminder_is_due_when_nothing_was_logged_today():
+    assert needs_log_reminder([], TODAY)
+    assert needs_log_reminder([interaction(TODAY - timedelta(days=1))], TODAY)
+
+
+def test_an_interaction_dated_today_counts():
+    assert not needs_log_reminder([interaction(TODAY)], TODAY)
+
+
+def test_an_interaction_created_today_counts_even_when_dated_earlier():
+    created = datetime(2026, 6, 15, 19, 0, tzinfo=UTC)
+    assert not needs_log_reminder([interaction(TODAY - timedelta(days=3), created)], dt_util.as_local(created).date())
+
+
+def test_wording_of_the_reminder_and_the_test_notification():
+    note = log_reminder()
+    assert note.message == "You haven't logged any interactions today. Anyone you caught up with?"
+    assert note.data["url"] == "/hearth/search"
+    sample = sample_notification()
+    assert sample.data["url"] == "sms:"
+    assert sample.data["actions"][0]["uri"] == "/hearth"
+
+
+# -- the settings --------------------------------------------------------------------
+
+
+@pytest.fixture
+async def crm(hass, hass_admin_user, add_crm):
+    entry = await add_crm(hass_admin_user)
+    return hass_admin_user, entry
+
+
+async def test_settings_default_to_off_at_nine_and_eight(hass, crm):
+    _, entry = crm
+    settings = await hass.async_add_executor_job(entry.runtime_data.service.get_notification_settings)
+    assert settings == {
+        "birthdays": {"enabled": False, "time": "09:00"},
+        "log_reminder": {"enabled": False, "time": "20:00"},
+    }
+
+
+async def test_a_change_keeps_what_it_does_not_mention(hass, crm):
+    _, entry = crm
+    service = entry.runtime_data.service
+    await hass.async_add_executor_job(
+        service.set_notification_settings, {"birthdays": {"enabled": True}}, "panel"
+    )
+    settings = await hass.async_add_executor_job(
+        service.set_notification_settings, {"birthdays": {"time": "07:30"}, "log_reminder": {"enabled": True}}, "panel"
+    )
+    assert settings == {
+        "birthdays": {"enabled": True, "time": "07:30"},
+        "log_reminder": {"enabled": True, "time": "20:00"},
+    }
+    assert await hass.async_add_executor_job(service.get_notification_settings) == settings
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"weather": {"enabled": True}},
+        {"birthdays": {"enabled": "yes"}},
+        {"birthdays": {"enabled": 1}},
+        {"birthdays": {"time": "25:00"}},
+        {"birthdays": {"time": "9:00"}},
+        {"birthdays": {"time": "09:60"}},
+        {"birthdays": {"time": 900}},
+        {"birthdays": {"colour": "red"}},
+        {"birthdays": True},
+        [],
+    ],
+)
+async def test_bad_changes_are_refused_and_change_nothing(hass, crm, changes):
+    _, entry = crm
+    service = entry.runtime_data.service
+    before = await hass.async_add_executor_job(service.get_notification_settings)
+    with pytest.raises(InvalidInput):
+        await hass.async_add_executor_job(service.set_notification_settings, changes, "panel")
+    assert await hass.async_add_executor_job(service.get_notification_settings) == before
+
+
+# -- delivery -----------------------------------------------------------------------------
+
+
+def add_phone(hass, user_id: str, device_name: str, sent: list[ServiceCall]) -> None:
+    """A Companion app device for ``user_id``, with its ``notify`` service."""
+    MockConfigEntry(
+        domain="mobile_app", data={"user_id": user_id, "device_name": device_name}
+    ).add_to_hass(hass)
+
+    async def handler(call: ServiceCall) -> None:
+        sent.append(call)
+
+    name = "mobile_app_" + device_name.lower().replace(" ", "_")
+    hass.services.async_register("notify", name, handler)
+
+
+async def test_only_the_owners_phones_are_targeted(hass, crm):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    add_phone(hass, "someone-else", "Other Phone", sent)
+    assert entry.runtime_data.notifications.targets() == ["mobile_app_test_phone"]
+
+
+async def test_a_device_without_a_notify_service_is_not_targeted(hass, crm):
+    user, entry = crm
+    MockConfigEntry(domain="mobile_app", data={"user_id": user.id, "device_name": "Gone"}).add_to_hass(hass)
+    assert entry.runtime_data.notifications.targets() == []
+
+
+async def test_the_test_notification_reaches_the_owners_phone(hass, crm):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    assert await entry.runtime_data.notifications.send_test() == 1
+    [call] = sent
+    assert call.data["title"] == "Hearth test"
+    assert call.data["data"]["url"] == "sms:"
+
+
+async def test_a_failing_phone_is_logged_by_type_and_the_others_still_get_it(hass, crm, caplog):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Good Phone", sent)
+    MockConfigEntry(domain="mobile_app", data={"user_id": user.id, "device_name": "Bad Phone"}).add_to_hass(hass)
+
+    async def broken(call: ServiceCall) -> None:
+        from homeassistant.exceptions import HomeAssistantError
+
+        raise HomeAssistantError("the secret message text")
+
+    hass.services.async_register("notify", "mobile_app_bad_phone", broken)
+    assert await entry.runtime_data.notifications.send_test() == 1
+    assert len(sent) == 1
+    assert "HomeAssistantError" in caplog.text
+    assert "the secret message text" not in caplog.text
+
+
+async def at_local(hass, freezer, hour: int, minute: int = 0, *, day: date | None = None) -> None:
+    """Move to this time today (or on ``day``), in Home Assistant's time zone, and let timers fire."""
+    target = datetime.combine(day or dt_util.now().date(), datetime.min.time(), dt_util.DEFAULT_TIME_ZONE)
+    freezer.move_to(target + timedelta(hours=hour, minutes=minute, seconds=1))
+    async_fire_time_changed(hass)
+    await hass.async_block_till_done(wait_background_tasks=True)
+
+
+async def test_birthday_notifications_fire_at_the_chosen_time_only_when_on(hass, crm, freezer):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    today = dt_util.now().date()
+    service = entry.runtime_data.service
+    await hass.async_add_executor_job(
+        service.create, "person", {"name": "Roy Example", "birthday": today.replace(year=1983).isoformat()}, "panel"
+    )
+    freezer.move_to(datetime.combine(today, datetime.min.time(), dt_util.DEFAULT_TIME_ZONE) + timedelta(hours=5))
+
+    # Off by default: the time passes and nothing is sent.
+    await entry.runtime_data.notifications.async_reschedule()
+    await at_local(hass, freezer, 9)
+    assert sent == []
+
+    await hass.async_add_executor_job(
+        service.set_notification_settings, {"birthdays": {"enabled": True, "time": "09:30"}}, "panel"
+    )
+    await entry.runtime_data.notifications.async_reschedule()
+    await at_local(hass, freezer, 9, 0)  # before the time
+    assert sent == []
+    await at_local(hass, freezer, 9, 30)
+    assert [c.data["message"] for c in sent] == [
+        f"Today is Roy Example's birthday! They are turning {today.year - 1983} years old."
+    ]
+
+
+async def test_the_reminder_is_sent_only_when_nothing_was_logged(hass, crm, freezer):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    service = entry.runtime_data.service
+    today = dt_util.now().date()
+    await hass.async_add_executor_job(
+        service.set_notification_settings, {"log_reminder": {"enabled": True, "time": "20:00"}}, "panel"
+    )
+    await entry.runtime_data.notifications.async_reschedule()
+    freezer.move_to(datetime.combine(today, datetime.min.time(), dt_util.DEFAULT_TIME_ZONE) + timedelta(hours=5))
+
+    await at_local(hass, freezer, 20)
+    assert [c.data["title"] for c in sent] == ["Log your interactions"]
+
+    sent.clear()
+    person = await hass.async_add_executor_job(service.create, "person", {"name": "Roy Example"}, "panel")
+    await hass.async_add_executor_job(
+        service.create,
+        "interaction",
+        {"summary": "Coffee", "date": today.isoformat(), "type": "Catch-up", "person_ids": [person["id"]]},
+        "panel",
+    )
+    await at_local(hass, freezer, 20, day=today + timedelta(days=1))  # the next day's reminder: nothing logged then
+    assert len(sent) == 1
+    sent.clear()
+    freezer.move_to(datetime.combine(today, datetime.min.time(), dt_util.DEFAULT_TIME_ZONE) + timedelta(hours=5))
+    await entry.runtime_data.notifications.async_reschedule()
+    await at_local(hass, freezer, 20)
+    assert sent == []  # something was logged today
+
+
+async def test_switching_a_notification_off_cancels_its_timer(hass, crm, freezer):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    service = entry.runtime_data.service
+    await hass.async_add_executor_job(
+        service.set_notification_settings, {"log_reminder": {"enabled": True, "time": "20:00"}}, "panel"
+    )
+    await entry.runtime_data.notifications.async_reschedule()
+    await hass.async_add_executor_job(
+        service.set_notification_settings, {"log_reminder": {"enabled": False}}, "panel"
+    )
+    await entry.runtime_data.notifications.async_reschedule()
+    await at_local(hass, freezer, 20)
+    assert sent == []
+
+
+async def test_no_phone_means_nothing_is_sent_and_the_status_says_so(hass, crm):
+    _, entry = crm
+    status = await entry.runtime_data.notifications.status()
+    assert status["devices"] == 0
+    assert await entry.runtime_data.notifications.send_test() == 0
+    assert "Companion app" in NO_PHONE
+
+
+async def test_unloading_stops_the_timers(hass, crm, freezer):
+    user, entry = crm
+    sent: list[ServiceCall] = []
+    add_phone(hass, user.id, "Test Phone", sent)
+    await hass.async_add_executor_job(
+        entry.runtime_data.service.set_notification_settings,
+        {"log_reminder": {"enabled": True, "time": "20:00"}}, "panel",
+    )
+    await entry.runtime_data.notifications.async_reschedule()
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    await at_local(hass, freezer, 20)
+    assert sent == []

@@ -7,6 +7,7 @@ import { href } from "../router";
 import type { ImportState, Store } from "../store";
 import { PANEL_VERSION } from "../version";
 import { googleOverlay, googleSection } from "./googleSettings";
+import { notificationsSection } from "./notificationSettings";
 import { snapshotOf, type View } from "./view";
 
 const PICKER_LIMIT = 8;
@@ -151,6 +152,9 @@ export function settingsView(store: Store): View {
     body: html`<div class="page">
       <div class="label" style="padding:16px 20px 8px">This is me</div>
       ${meSection(store)}
+
+      <div class="label" style="padding:0 20px 8px">Notifications</div>
+      ${notificationsSection(store)}
 
       <div class="label" style="padding:0 20px 8px">Export</div>
       <div class="card" style="padding:13px;display:grid;gap:10px">

@@ -2,7 +2,7 @@ import { HearthApi, HearthError, type ChangeNotice, type Connection, type Import
 import { PANEL_PATH } from "./router";
 import { Drafts } from "./forms/drafts";
 import { changedFields, editedFields, findRecord, hasRecord, newFields, type Fields } from "./storeWrites";
-import type { EntityKind, GoogleReport, GoogleStatus, Person, PhotoKind, Snapshot } from "./types";
+import type { EntityKind, GoogleReport, GoogleStatus, NotificationKind, NotificationSetting, NotificationsStatus, Person, PhotoKind, Snapshot } from "./types";
 
 export type Phase =
   | { kind: "loading" }
@@ -45,6 +45,15 @@ export type ImportState =
   | { kind: "uploading" }
   | { kind: "done"; summary: string }
   | { kind: "refused"; reason: string; message: string; problems: string[]; file: File };
+
+/** The Notifications card in Settings. */
+export interface NotificationsView {
+  status: NotificationsStatus | null;
+  /** Why the last load failed; null when it worked. */
+  loadError: string | null;
+  /** True while the test notification is being sent. */
+  testing: boolean;
+}
 
 /** The Google Contacts card in Settings. `working` is a preview or a sync waiting for the server. */
 export interface GoogleView {
@@ -105,6 +114,8 @@ export class Store {
   importState: ImportState = { kind: "idle" };
   /** Google sync health, shown in Settings. Loaded when Settings opens and when a google notice arrives. */
   google: GoogleView = { status: null, loadError: null, preview: null, lastSync: null, working: null };
+  /** Notification switches and times, shown in Settings. Loaded when Settings opens and when a notifications notice arrives. */
+  notifications: NotificationsView = { status: null, loadError: null, testing: false };
   /** A short message at the bottom of the screen; clears itself. */
   toast: string | null = null;
   /**
@@ -257,7 +268,10 @@ export class Store {
     this.drafts.leaveTo(path);
     this.writeError = null;
     this.onSettings = path === `${PANEL_PATH}/settings`;
-    if (this.onSettings && this.phase.kind === "ready") void this.loadGoogle();
+    if (this.onSettings && this.phase.kind === "ready") {
+      void this.loadGoogle();
+      void this.loadNotifications();
+    }
     // A refused import (and the file it holds) is only offered on Settings itself.
     if (this.importState.kind === "refused" && path !== `${PANEL_PATH}/settings`) this.importState = { kind: "idle" };
   }
@@ -511,6 +525,44 @@ export class Store {
     this.onChange();
   }
 
+  // ---- Notifications ----
+
+  /** Reloads the notification settings. Quiet when offline; a failure shows in the card. */
+  async loadNotifications(): Promise<void> {
+    if (this.offline) return;
+    const generation = this.generation;
+    try {
+      const status = await this.api.notificationsGet();
+      if (generation !== this.generation) return;
+      this.notifications = { ...this.notifications, status, loadError: null };
+    } catch (err) {
+      if (generation !== this.generation) return;
+      if (err instanceof HearthError && err.code === "offline") this.offline = true;
+      else this.notifications = { ...this.notifications, loadError: errorMessage(err) };
+    }
+    this.onChange();
+  }
+
+  /** Changes one notification's switch or time; the server answers with the new settings. */
+  async setNotification(kind: NotificationKind, change: Partial<NotificationSetting>): Promise<boolean> {
+    const done = await this.write(() => this.api.notificationsSet({ [kind]: change }), { failure: "Couldn't change the notification" });
+    if (!done) return false;
+    this.notifications = { ...this.notifications, status: done.value, loadError: null };
+    this.onChange();
+    return true;
+  }
+
+  /** Sends a sample notification to the owner's phone. A refusal (no phone) shows as a toast. */
+  async sendTestNotification(): Promise<void> {
+    if (this.notifications.testing) return;
+    this.notifications = { ...this.notifications, testing: true };
+    this.onChange();
+    const done = await this.write(() => this.api.notificationsTest(), { failure: "Couldn't send the test" });
+    this.notifications = { ...this.notifications, testing: false };
+    if (done) this.showToast(done.value.sent > 0 ? "Test sent. Check your phone." : "The test could not be delivered.");
+    this.onChange();
+  }
+
   // ---- Google Contacts sync ----
 
   /** Reloads the sync's status. Quiet when offline; a failure shows in the card, not a toast. */
@@ -690,7 +742,10 @@ export class Store {
       this.phase = { kind: "ready" };
       this.retryAttempt = 0;
       this.onChange();
-      if (this.onSettings) void this.loadGoogle();
+      if (this.onSettings) {
+        void this.loadGoogle();
+        void this.loadNotifications();
+      }
     } catch (err) {
       if (generation !== this.generation) return;
       this.fail(err);
@@ -805,6 +860,7 @@ export class Store {
   private onNotice(notice: ChangeNotice | null): void {
     this.scheduleRefresh();
     if (notice?.entity === "google" && this.google.status) void this.loadGoogle();
+    if (notice?.entity === "notifications" && this.notifications.status) void this.loadNotifications();
   }
 
   private scheduleRefresh(): void {
@@ -852,6 +908,7 @@ function writeError(err: unknown, failure = "Couldn't save"): string {
     case "sync_refused":
     case "sync_failed":
     case "not_blocked":
+    case "no_phone":
       return errorMessage(err);
     default:
       return `${failure}: ${errorMessage(err)}`;

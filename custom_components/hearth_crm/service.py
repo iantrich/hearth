@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import dataclasses
 import io
+import json
+import re
 import sqlite3
 import threading
 import warnings
@@ -24,6 +26,7 @@ from .db import (
     META_GOOGLE_LINK_VERIFIED,
     META_GOOGLE_SYNC,
     META_ME_PERSON,
+    META_NOTIFICATIONS,
     CRMRepository,
     DeleteResult,
 )
@@ -73,6 +76,14 @@ _MODELS = {
     "interaction": Interaction,
 }
 _GROUP_MEMBERS = "member_ids"
+
+
+# Both start switched off; the times are in Home Assistant's time zone.
+DEFAULT_NOTIFICATIONS = {
+    "birthdays": {"enabled": False, "time": "09:00"},
+    "log_reminder": {"enabled": False, "time": "20:00"},
+}
+_CLOCK_TIME = re.compile(r"([01]\d|2[0-3]):[0-5]\d")
 
 
 class Unset:
@@ -337,6 +348,53 @@ class HearthService:
                 with _db_errors():
                     self._repo.set_meta(META_ME_PERSON, me, source)
             return self.get_settings()
+
+    # -- notification settings ------------------------------------------
+
+    def get_notification_settings(self) -> dict:
+        """Each notification's switch and time, with defaults for anything not stored."""
+        settings = {kind: dict(values) for kind, values in DEFAULT_NOTIFICATIONS.items()}
+        raw = self._repo.get_meta(META_NOTIFICATIONS)
+        try:
+            stored = json.loads(raw) if raw else {}
+        except ValueError:
+            stored = {}
+        if isinstance(stored, dict):
+            for kind, values in settings.items():
+                part = stored.get(kind)
+                if not isinstance(part, dict):
+                    continue
+                if isinstance(part.get("enabled"), bool):
+                    values["enabled"] = part["enabled"]
+                if isinstance(part.get("time"), str) and _CLOCK_TIME.fullmatch(part["time"]):
+                    values["time"] = part["time"]
+        return settings
+
+    def set_notification_settings(self, changes: dict, source: str) -> dict:
+        """Change some switches or times; what isn't mentioned stays as it is."""
+        if not isinstance(changes, dict):
+            raise InvalidInput("changes", "expected an object")
+        for kind, part in changes.items():
+            if kind not in DEFAULT_NOTIFICATIONS:
+                raise InvalidInput(str(kind), "unknown notification")
+            if not isinstance(part, dict):
+                raise InvalidInput(kind, "expected an object")
+            for key, value in part.items():
+                if key == "enabled":
+                    if not isinstance(value, bool):
+                        raise InvalidInput(f"{kind}.enabled", "must be true or false")
+                elif key == "time":
+                    if not isinstance(value, str) or not _CLOCK_TIME.fullmatch(value):
+                        raise InvalidInput(f"{kind}.time", "must be a time such as 09:30")
+                else:
+                    raise InvalidInput(f"{kind}.{key}", "unknown setting")
+        with self._write_lock:
+            settings = self.get_notification_settings()
+            for kind, part in changes.items():
+                settings[kind].update(part)
+            with _db_errors():
+                self._repo.set_meta(META_NOTIFICATIONS, json.dumps(settings, sort_keys=True), source)
+            return settings
 
     # -- Google sync state ----------------------------------------------
 

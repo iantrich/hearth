@@ -26,6 +26,7 @@ from .changes import notify_change
 from .const import CONF_OWNER_USER_ID, DOMAIN, SIGNAL_CHANGED
 from .db import BackupInProgress
 from .google_runtime import GoogleSyncFailed
+from .notifications import NO_PHONE
 from .google_sync import report_to_dict
 from .photo_urls import signed_photo_url
 from .service import MAX_PHOTO_BYTES, GoogleSyncRefused, InvalidInput, NotBlocked, NotFound
@@ -47,6 +48,7 @@ ERR_BACKUP_IN_PROGRESS = "backup_in_progress"
 ERR_CUTOVER_NOT_CONFIRMED = "cutover_not_confirmed"
 ERR_SYNC_REFUSED = "sync_refused"
 ERR_SYNC_FAILED = "sync_failed"
+ERR_NO_PHONE = "no_phone"
 ERR_NOT_BLOCKED = "not_blocked"
 CUTOVER_NOT_CONFIRMED_MESSAGE = (
     "Confirm cutover before switching on the Google sync, so test edits never reach Google."
@@ -64,7 +66,7 @@ def async_register_websocket(hass: HomeAssistant) -> None:
         ws_status, ws_create_crm, ws_snapshot, ws_subscribe, ws_create, ws_update, ws_delete,
         ws_set_members, ws_photo_set, ws_photo_clear, ws_settings_get, ws_settings_set,
         ws_google_status, ws_google_set_enabled, ws_google_sync_now, ws_google_preview,
-        ws_google_clear_contact,
+        ws_google_clear_contact, ws_notifications_get, ws_notifications_set, ws_notifications_test,
     ):
         websocket_api.async_register_command(hass, command)
 
@@ -336,6 +338,42 @@ async def ws_settings_set(hass, connection, msg, entry) -> None:
     )
     _notify(hass, entry, "settings", None, "update")
     connection.send_result(msg["id"], settings)
+
+
+# -- Notifications ---------------------------------------------------------
+
+
+@websocket_api.websocket_command({"type": "hearth_crm/notifications/get"})
+@websocket_api.async_response
+@_with_crm
+async def ws_notifications_get(hass, connection, msg, entry) -> None:
+    connection.send_result(msg["id"], await entry.runtime_data.notifications.status())
+
+
+@websocket_api.websocket_command(
+    {"type": "hearth_crm/notifications/set", probatio.Required("changes"): dict}
+)
+@websocket_api.async_response
+@_with_crm
+async def ws_notifications_set(hass, connection, msg, entry) -> None:
+    runtime = entry.runtime_data
+    await hass.async_add_executor_job(
+        runtime.service.set_notification_settings, msg["changes"], SOURCE
+    )
+    await runtime.notifications.async_reschedule()
+    _notify(hass, entry, "notifications", None, "update")
+    connection.send_result(msg["id"], await runtime.notifications.status())
+
+
+@websocket_api.websocket_command({"type": "hearth_crm/notifications/test"})
+@websocket_api.async_response
+@_with_crm
+async def ws_notifications_test(hass, connection, msg, entry) -> None:
+    notifications = entry.runtime_data.notifications
+    if not notifications.targets():
+        connection.send_error(msg["id"], ERR_NO_PHONE, NO_PHONE)
+        return
+    connection.send_result(msg["id"], {"sent": await notifications.send_test()})
 
 
 # -- Google Contacts sync -------------------------------------------------

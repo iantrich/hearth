@@ -33,6 +33,10 @@ You can stop at any time by switching the sync off or removing the connection in
 
 Hearth's use and transfer of information received from Google APIs adheres to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements. Google user data is used only to provide the sync you asked for. It is not used for advertising, is not sold, is not shared with anyone, and is not used to train AI or machine-learning models.
 
+## Notifications (optional)
+
+If you switch on Hearth's phone notifications, Hearth asks your Home Assistant to send them through the Home Assistant Companion app. The text can include a person's name and, for a birthday, their age. Delivery to your phone is handled by Home Assistant's notification service, which may pass the text through Home Assistant Cloud and Apple's or Google's push services. Hearth itself sends nothing to the developer or to any other service.
+
 ## Claude (optional)
 
 If you choose to connect an AI assistant such as Claude to your Home Assistant's MCP server, the assistant can read and edit your CRM through the tools Hearth exposes. What it can see is governed by your own Home Assistant setup and by the assistant's provider, whose privacy policy applies to that use. Hearth does not send your data to any assistant on its own.

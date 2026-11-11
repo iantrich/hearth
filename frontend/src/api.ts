@@ -1,4 +1,6 @@
-import type { CrmStatus, EntityKind, GoogleReport, GoogleStatus, PhotoKind, Snapshot } from "./types";
+import type {
+  CrmStatus, EntityKind, GoogleReport, GoogleStatus, NotificationKind, NotificationSetting, NotificationsStatus, PhotoKind, Snapshot,
+} from "./types";
 
 /** The slice of Home Assistant's hass.connection (home-assistant-js-websocket) that Hearth uses. */
 export interface Connection {
@@ -139,6 +141,20 @@ export class HearthApi {
 
   settingsSet(mePersonId: string | null): Promise<unknown> {
     return this.send({ type: "hearth_crm/settings/set", changes: { me_person_id: mePersonId } });
+  }
+
+  notificationsGet(): Promise<NotificationsStatus> {
+    return this.send({ type: "hearth_crm/notifications/get" });
+  }
+
+  /** Only what is mentioned changes. */
+  notificationsSet(changes: Partial<Record<NotificationKind, Partial<NotificationSetting>>>): Promise<NotificationsStatus> {
+    return this.send({ type: "hearth_crm/notifications/set", changes });
+  }
+
+  /** Refused with code `no_phone` when the owner has no Companion app device. */
+  notificationsTest(): Promise<{ sent: number }> {
+    return this.send({ type: "hearth_crm/notifications/test" });
   }
 
   googleStatus(): Promise<GoogleStatus> {

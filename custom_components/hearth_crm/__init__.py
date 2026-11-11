@@ -23,6 +23,7 @@ from .db import CRMRepository, open_database
 from .google_link import GoogleLink
 from .google_runtime import GoogleRuntime
 from .http import HearthImportView, HearthPhotoView
+from .notifications import NotificationRuntime
 from .panel import async_register_panel
 from .photos import PhotoStore
 from .service import HearthService
@@ -44,6 +45,7 @@ class HearthRuntime:
     owner_user_id: str
     google: GoogleLink  # always present; not connected until the owner links Google
     google_sync: GoogleRuntime = field(init=False)  # set right after the runtime is built
+    notifications: NotificationRuntime = field(init=False)  # likewise
 
 
 type HearthConfigEntry = ConfigEntry[HearthRuntime]
@@ -89,10 +91,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: HearthConfigEntry) -> bo
         google=GoogleLink(hass, entry),
     )
     runtime.google_sync = GoogleRuntime(hass, entry, runtime)
+    runtime.notifications = NotificationRuntime(hass, entry, runtime)
     entry.runtime_data = runtime
 
     async def _close_on_stop(event: Event) -> None:
         try:
+            runtime.notifications.stop()
             await runtime.google_sync.stop()  # before the database closes under a run
             await hass.async_add_executor_job(repo.close)
         except Exception:
@@ -102,6 +106,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HearthConfigEntry) -> bo
     # which happens when an entry is unloaded after Home Assistant began stopping.
     entry.async_on_unload(hass.bus.async_listen(EVENT_HOMEASSISTANT_STOP, _close_on_stop))
     runtime.google_sync.start()
+    await runtime.notifications.async_start()
     return True
 
 
@@ -112,6 +117,7 @@ def _is_direct_child(path: Path, root: Path) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: HearthConfigEntry) -> bool:
     """Stop the Google sync, then close the database."""
+    entry.runtime_data.notifications.stop()
     await entry.runtime_data.google_sync.stop()
     await hass.async_add_executor_job(entry.runtime_data.repo.close)
     return True

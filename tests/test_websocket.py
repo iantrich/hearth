@@ -77,6 +77,9 @@ async def test_user_without_crm_gets_no_crm(hass, hass_ws_client):
         ("photo/clear", {"kind": "person", "entity_id": "p"}),
         ("settings/get", {}),
         ("settings/set", {"changes": {}}),
+        ("notifications/get", {}),
+        ("notifications/set", {"changes": {}}),
+        ("notifications/test", {}),
     ):
         reply = await call(ws, command, **data)
         assert not reply["success"] and reply["error"]["code"] == "no_crm", command
@@ -403,3 +406,43 @@ async def test_status_includes_entry_id(hass, two_crms, ws_for_a):
     assert (await ok(ws_for_a, "crm/status")) == {
         "has_crm": True, "loaded": True, "entry_id": two_crms[2].entry_id
     }
+
+
+async def test_notifications_get_set_and_test(hass, two_crms, ws_for_a):
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    first = await ok(ws_for_a, "notifications/get")
+    assert first["devices"] == 0
+    assert first["settings"]["birthdays"] == {"enabled": False, "time": "09:00"}
+
+    # No phone yet: the test is refused with a plain explanation.
+    reply = await call(ws_for_a, "notifications/test")
+    assert reply["error"]["code"] == "no_phone" and "Companion app" in reply["error"]["message"]
+
+    changed = await ok(
+        ws_for_a, "notifications/set",
+        changes={"birthdays": {"enabled": True, "time": "07:45"}},
+    )
+    assert changed["settings"]["birthdays"] == {"enabled": True, "time": "07:45"}
+    assert (await ok(ws_for_a, "notifications/get"))["settings"] == changed["settings"]
+
+    reply = await call(ws_for_a, "notifications/set", changes={"birthdays": {"time": "7:45"}})
+    assert reply["error"]["code"] == "invalid"
+
+    sent = []
+
+    async def handler(call):
+        sent.append(call.data)
+
+    hass.services.async_register("notify", "mobile_app_test_phone", handler)
+    MockConfigEntry(
+        domain="mobile_app", data={"user_id": two_crms[0].id, "device_name": "Test Phone"}
+    ).add_to_hass(hass)
+    assert (await ok(ws_for_a, "notifications/get"))["devices"] == 1
+    assert (await ok(ws_for_a, "notifications/test")) == {"sent": 1}
+    assert sent[0]["title"] == "Hearth test"
+
+
+async def test_notification_settings_are_each_users_own(hass, two_crms, ws_for_a, ws_for_b):
+    await ok(ws_for_a, "notifications/set", changes={"log_reminder": {"enabled": True}})
+    assert (await ok(ws_for_b, "notifications/get"))["settings"]["log_reminder"]["enabled"] is False

@@ -48,6 +48,9 @@ META_GOOGLE_SYNC = "google_sync_enabled"
 # Set once Google has accepted an update or create through this CRM's link. A setting, so
 # (like the other meta keys but me_person_id) a bundle neither carries nor replaces it.
 META_GOOGLE_LINK_VERIFIED = "google_link_verified"
+# The notification switches and times, as one JSON object (see service.py). Like the Google
+# keys, a setting: a bundle neither carries nor replaces it.
+META_NOTIFICATIONS = "notification_settings"
 GOOGLE_FIELDS = (
     "google_contact_id", "google_synced_at", "google_photo_hash", "google_sync_error",
 )

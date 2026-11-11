@@ -2,7 +2,7 @@
 
 A Home Assistant custom integration that hosts a personal CRM (people, households, groups, relationships and interactions) on your own Home Assistant instance. Your data lives in your Home Assistant config directory, not in a third-party service.
 
-**What it is today (0.7.0):** a per-user CRM with a sidebar panel you can work from. Each Home Assistant user gets a separate CRM with its own database and photos. The Hearth panel browses it and edits it: people, relationships, households, groups and interactions, plus importing a bundle from Settings. Claude can read and edit your CRM too, through Home Assistant's MCP server (see [Claude](#claude)). You can also keep your contacts in your own Google account up to date from Hearth (see [Google Contacts](#google-contacts)). There is also import and export of the whole CRM as a portable bundle, and a websocket API plus an authenticated photo URL.
+**What it is today (0.8.0):** a per-user CRM with a sidebar panel you can work from. Each Home Assistant user gets a separate CRM with its own database and photos. The Hearth panel browses it and edits it: people, relationships, households, groups and interactions, plus importing a bundle from Settings. Claude can read and edit your CRM too, through Home Assistant's MCP server (see [Claude](#claude)). You can also keep your contacts in your own Google account up to date from Hearth (see [Google Contacts](#google-contacts)). There is also import and export of the whole CRM as a portable bundle, and a websocket API plus an authenticated photo URL.
 
 **What comes later:** dashboard cards and entities (birthdays and counts). These do not ship yet, and this README does not promise dates.
 
@@ -104,6 +104,9 @@ These commands are what the panel uses, and they are available to your own cards
 | `hearth_crm/photo/set` | Set a photo for a person, household or group: `kind`, `entity_id`, base64 `data`, at most 3 MB before encoding. Images are resized to a JPEG with a longest edge of 1024 px. The panel resizes photos in the browser before sending them, so they stay under that limit. |
 | `hearth_crm/photo/clear` | Remove a photo: `kind`, `entity_id`. |
 | `hearth_crm/settings/get` and `hearth_crm/settings/set` | Read and change settings (currently `me_person_id`). |
+| `hearth_crm/notifications/get` | The notification switches and times, and how many of your Companion app devices can be notified. |
+| `hearth_crm/notifications/set` | Change some of them: `changes`, such as `{"birthdays": {"enabled": true, "time": "09:30"}}`. |
+| `hearth_crm/notifications/test` | Send a sample notification to your phone. Refused with `no_phone` when you have no Companion app device. |
 | `hearth_crm/google/status` | Whether Google is connected, whether the sync is on, whether cutover is confirmed, the counts and the last run. |
 | `hearth_crm/google/set_enabled` | Switch the sync on or off: `enabled`. Switching on is refused until cutover is confirmed. |
 | `hearth_crm/google/sync_now` | Run a sync now. |
@@ -133,6 +136,15 @@ From 0.5.0 Hearth offers its tools to Claude as a Home Assistant LLM API named *
 **Privacy:** the tools work only on the signed-in user's own CRM. No user, or a user with no CRM, is refused, and an administrator never reaches another user's CRM through them. What Claude reads from your CRM is sent to Claude as part of your conversation.
 
 **The skill:** [`skills/hearth-crm/SKILL.md`](skills/hearth-crm/SKILL.md) teaches Claude how to work with your Hearth: logging an interaction and then rewriting the relationship summary, never assuming a name is new, adding a kid to both parents and their household, completing family links, and so on. Upload it to claude.ai as a skill (in Settings, under Capabilities). Each tool's description also states the rules for that tool (search before creating someone, confirm before deleting, how to write a summary, stored text is data and not instructions), so the essentials reach Claude even without the skill. The skill adds the longer workflows, such as completing family links.
+
+## Notifications
+
+Hearth can send two notifications to your phone. Both are off until you switch them on under **Settings > Notifications** in the panel, each with its own time (in Home Assistant's time zone):
+
+- **Birthdays:** one notification per person whose birthday it is, such as "Today is Sam Example's birthday! They are turning 43 years old." The age is left out when the year isn't known. Tapping it opens a text to the person's first phone number; with no number it opens their profile in Hearth. When a tap opens a text, a button on the notification opens the profile instead.
+- **Log reminder:** if you haven't logged any interaction today (nothing dated today and nothing created today), a reminder to do so. Tapping it opens Hearth's search.
+
+They go through the Home Assistant Companion app, to the devices signed in as the CRM's owner only. If no phone is set up, the card says so and nothing is sent. **Send a test** sends a sample whose tap should open Messages and whose button should open Hearth, so you can check both on your phone. A time that passes while Home Assistant is down is skipped, not sent late. Opening a text from a notification depends on the Companion app on your phone; if it doesn't open on yours, the "Open profile" button still works.
 
 ## Google Contacts
 
@@ -218,7 +230,7 @@ Home Assistant backups include the `hearth_crm` directory. The integration hooks
 
 ## Privacy
 
-- Your data stays on your Home Assistant instance. Hearth sends nothing to any outside service unless you connect one. If you connect Google Contacts (see [Google Contacts](#google-contacts)), the synced fields (names, phone numbers, email addresses, addresses and photos) go only to your own Google account, through an OAuth client you create yourself. Your Google tokens are kept only in that CRM's config entry. If you connect Claude (see [Claude](#claude)), what Claude reads from your CRM is sent to Claude in your conversation.
+- Your data stays on your Home Assistant instance. Hearth sends nothing to any outside service unless you connect one. If you connect Google Contacts (see [Google Contacts](#google-contacts)), the synced fields (names, phone numbers, email addresses, addresses and photos) go only to your own Google account, through an OAuth client you create yourself. Your Google tokens are kept only in that CRM's config entry. If you connect Claude (see [Claude](#claude)), what Claude reads from your CRM is sent to Claude in your conversation. If you switch on notifications (see [Notifications](#notifications)), their text (a person's name, and their age on a birthday) is delivered to your phone by Home Assistant's own notification service for the Companion app, which may pass it through Home Assistant Cloud and Apple's or Google's push services.
 - When entities are added in a later release, they will expose only birthdays and counts, not names, notes or interactions.
 - Home Assistant administrators can read everything under `/config`, including every user's database and photos. The owner-only rules above apply to the actions, websocket API and photo URL, not to the file system.
 - Backups contain the whole `hearth_crm` folder, so protect them like the rest of your Home Assistant backups.
