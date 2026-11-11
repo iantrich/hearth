@@ -21,7 +21,10 @@ export type Route =
   | { name: "group"; id: string }
   | { name: "groupNew" }
   | { name: "groupEdit"; id: string }
-  | { name: "interaction"; id: string; sheet: "edit" | null };
+  | { name: "interaction"; id: string; sheet: "edit" | null }
+  | { name: "reminder"; id: string }
+  | { name: "reminderNew"; personId: string }
+  | { name: "interactionReminderNew"; interactionId: string };
 
 export const PANEL_PATH = "/hearth";
 
@@ -46,6 +49,7 @@ export function parseRoute(path: string): Route {
       return { name: "settings" };
     case "person":
       if (id && extra === "edit") return { name: "personEdit", id };
+      if (id && extra === "reminder" && parts[3] === "new") return { name: "reminderNew", personId: id };
       if (id && extra === "relationship") {
         const relId = parts[3];
         if (relId) return { name: "relationship", personId: id, relId: relId === "new" ? null : relId };
@@ -63,7 +67,11 @@ export function parseRoute(path: string): Route {
       if (id && extra === "edit") return { name: "groupEdit", id };
       if (id) return { name: "group", id };
       break;
+    case "reminder":
+      if (id) return { name: "reminder", id };
+      break;
     case "interaction":
+      if (id && extra === "reminder" && parts[3] === "new") return { name: "interactionReminderNew", interactionId: id };
       if (id) return { name: "interaction", id, sheet: extra === "edit" ? "edit" : null };
       break;
   }
@@ -101,6 +109,9 @@ export const href = {
   editGroup: (id: string) => `${PANEL_PATH}/group/${enc(id)}/edit`,
   interaction: (id: string) => `${PANEL_PATH}/interaction/${enc(id)}`,
   editInteraction: (id: string) => `${PANEL_PATH}/interaction/${enc(id)}/edit`,
+  reminder: (id: string) => `${PANEL_PATH}/reminder/${enc(id)}`,
+  newReminder: (personId: string) => `${PANEL_PATH}/person/${enc(personId)}/reminder/new`,
+  newInteractionReminder: (interactionId: string) => `${PANEL_PATH}/interaction/${enc(interactionId)}/reminder/new`,
 };
 
 /** True for "/hearth" and anything under "/hearth/": links the panel handles itself. */

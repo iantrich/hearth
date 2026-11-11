@@ -3,7 +3,7 @@
 
 export type Urgency = "ok" | "due_soon" | "overdue";
 export type NameStatus = "generated" | "override" | "needs_name" | "not_a_household";
-export type EntityKind = "person" | "household" | "contact_group" | "relationship" | "interaction";
+export type EntityKind = "person" | "household" | "contact_group" | "relationship" | "interaction" | "reminder";
 /** The kinds that can have a photo. */
 export type PhotoKind = "person" | "household" | "contact_group";
 
@@ -113,12 +113,32 @@ export interface Interaction {
   person_ids: string[];
 }
 
+export type ReminderState = "done" | "someday" | "overdue" | "due_today" | "upcoming";
+
+export interface Reminder {
+  id: string;
+  person_id: string;
+  note: string | null;
+  due_at: string | null; // aware ISO
+  due_date: string | null; // YYYY-MM-DD, in Home Assistant's zone
+  due_time: string | null; // HH:MM, in Home Assistant's zone
+  repeat_every: number | null;
+  repeat_unit: "day" | "week" | "month" | "year" | null;
+  interaction_id: string | null;
+  done_at: string | null;
+  created_at: string;
+  updated_at: string;
+  state: ReminderState;
+}
+
 export interface Snapshot {
   people: Person[];
   households: Household[];
   groups: ContactGroup[];
   relationships: Relationship[];
   interactions: Interaction[];
+  reminders: Reminder[];
+  reminder_units: string[];
   interaction_types: string[];
   connection_types: string[];
   me_person_id: string | null;

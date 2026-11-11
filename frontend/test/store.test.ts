@@ -539,3 +539,101 @@ describe("Store", () => {
     expect(store.offline).toBe(false);
   });
 });
+
+describe("Store reminders", () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  const base = { "hearth_crm/crm/status": () => LOADED, "hearth_crm/snapshot": () => sampleSnapshot() };
+
+  it("addReminder creates a reminder and resolves to its id, which is arriving", async () => {
+    const { store, conn } = makeStore({ ...base, "hearth_crm/create": () => ({ id: "m9" }) });
+    await store.start();
+    const id = await store.addReminder({ person_id: "p4", note: "Call about the move", due_at: "2026-12-08T08:00", repeat_every: 2, repeat_unit: "week" });
+    expect(id).toBe("m9");
+    expect(conn.sent.find((m) => m.type === "hearth_crm/create")).toMatchObject({
+      kind: "reminder",
+      fields: { person_id: "p4", note: "Call about the move", due_at: "2026-12-08T08:00", repeat_every: 2, repeat_unit: "week" },
+    });
+    expect(store.isArriving("m9")).toBe(true);
+    store.stop();
+  });
+
+  it("addReminder sends Someday (due_at null) as null", async () => {
+    const { store, conn } = makeStore({ ...base, "hearth_crm/create": () => ({ id: "m9" }) });
+    await store.start();
+    await store.addReminder({ person_id: "p4", note: "Someday thing", due_at: null });
+    const sent = conn.sent.find((m) => m.type === "hearth_crm/create")!;
+    expect(sent.fields.due_at ?? null).toBeNull();
+    store.stop();
+  });
+
+  it("a created reminder stops arriving once a snapshot containing it lands", async () => {
+    let extra = false;
+    const data = () => {
+      const s = sampleSnapshot();
+      if (extra) s.reminders = [...s.reminders, { ...s.reminders[1], id: "m9" }];
+      return s;
+    };
+    const { store } = makeStore({ ...base, "hearth_crm/snapshot": data, "hearth_crm/create": () => ({ id: "m9" }) });
+    await store.start();
+    await store.addReminder({ person_id: "p4", note: "x" });
+    expect(store.isArriving("m9")).toBe(true);
+    extra = true;
+    await store.refresh();
+    expect(store.isArriving("m9")).toBe(false);
+    store.stop();
+  });
+
+  it("updateReminder sends only what changed; deleteReminder sends a delete", async () => {
+    const { store, conn } = makeStore({ ...base, "hearth_crm/update": () => ({}), "hearth_crm/delete": () => ({}) });
+    await store.start();
+    expect(await store.updateReminder("m2", { note: "Send the trip photos", due_at: "2026-12-08T08:00" })).toBe(true);
+    expect(conn.sent.find((m) => m.type === "hearth_crm/update")).toMatchObject({
+      kind: "reminder", entity_id: "m2", changes: { due_at: "2026-12-08T08:00" },
+    });
+    expect(await store.deleteReminder("m2")).toBe(true);
+    expect(conn.sent.find((m) => m.type === "hearth_crm/delete")).toMatchObject({ kind: "reminder", entity_id: "m2" });
+    store.stop();
+  });
+
+  it("completeReminder sends reminder/complete and refreshes", async () => {
+    const { store, conn } = makeStore({ ...base, "hearth_crm/reminder/complete": () => ({ reminder: sampleSnapshot().reminders[0] }) });
+    await store.start();
+    const before = snapshotCalls(conn);
+    expect(await store.completeReminder("m1")).toBe(true);
+    expect(conn.sent.find((m) => m.type === "hearth_crm/reminder/complete")).toMatchObject({ entity_id: "m1" });
+    expect(snapshotCalls(conn)).toBe(before + 1);
+    store.stop();
+  });
+
+  it("completeReminder toasts and resolves false on failure", async () => {
+    const { store } = makeStore({ ...base, "hearth_crm/reminder/complete": () => { throw { code: "unknown_error", message: "boom" }; } });
+    await store.start();
+    expect(await store.completeReminder("m1")).toBe(false);
+    expect(store.toast).toContain("Couldn't mark it done");
+    store.stop();
+  });
+
+  it("a cached snapshot from before reminders loads with an empty list", async () => {
+    const { reminders: _r, reminder_units: _u, ...old } = sampleSnapshot();
+    const storage = memoryStorage({ "hearth_crm:snapshot:A": JSON.stringify(old) });
+    const { store } = makeStore({
+      "hearth_crm/crm/status": () => LOADED,
+      "hearth_crm/snapshot": () => { throw { code: "offline", message: "down" }; },
+    }, "A", storage);
+    await store.start();
+    expect(store.snapshot?.reminders).toEqual([]);
+    expect(store.snapshot?.reminder_units).toEqual([]);
+    store.stop();
+  });
+
+  it("a fetched snapshot without reminders is normalized too", async () => {
+    const { reminders: _r, reminder_units: _u, ...old } = sampleSnapshot();
+    const { store } = makeStore({ "hearth_crm/crm/status": () => LOADED, "hearth_crm/snapshot": () => old });
+    await store.start();
+    expect(store.snapshot?.reminders).toEqual([]);
+    expect(store.snapshot?.reminder_units).toEqual([]);
+    store.stop();
+  });
+});

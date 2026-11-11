@@ -27,6 +27,19 @@ export interface InteractionChanges {
   notes: string | null;
 }
 
+/** What the add reminder form saves. `due_at` is a naive local "YYYY-MM-DDTHH:MM", or null for Someday. */
+export interface NewReminder {
+  person_id: string;
+  note?: string | null;
+  due_at?: string | null;
+  repeat_every?: number | null;
+  repeat_unit?: string | null;
+  interaction_id?: string | null;
+}
+
+/** What the edit reminder form saves; a field left out is not changed. */
+export type ReminderChanges = Partial<Omit<NewReminder, "person_id" | "interaction_id">>;
+
 /** What the add person form saves. Blank and null fields are left out of what's sent. */
 export interface NewPerson {
   name: string;
@@ -73,6 +86,11 @@ export const ALREADY_DELETED = "That was already deleted.";
 
 /** Each user's offline copy of their snapshot is stored under this prefix plus their user id. */
 const CACHE_PREFIX = "hearth_crm:snapshot:";
+
+/** A snapshot from before reminders (an old cache, say) has none: read it as an empty list. */
+function withReminders(snapshot: Snapshot): Snapshot {
+  return snapshot.reminders && snapshot.reminder_units ? snapshot : { ...snapshot, reminders: snapshot.reminders ?? [], reminder_units: snapshot.reminder_units ?? [] };
+}
 const DEBOUNCE_MS = 250;
 const TOAST_MS = 3500;
 /** Delays before retrying a load that failed while data is on screen; the last repeats. */
@@ -331,6 +349,38 @@ export class Store {
 
   deleteInteraction(id: string): Promise<boolean> {
     return this.remove("interaction", id);
+  }
+
+  /** Saves a new reminder and resolves to its id (null if it failed). See `save` for arriving. */
+  async addReminder(fields: NewReminder): Promise<string | null> {
+    // A null due_at is Someday, which newFields would leave out; send it so the server doesn't default it.
+    const sent = { ...newFields("reminder", { ...fields }), due_at: fields.due_at ?? null };
+    const created = await this.write(() => this.api.create("reminder", sent) as Promise<{ id: string }>);
+    if (!created) return null;
+    this.markArriving(created.value.id);
+    return created.value.id;
+  }
+
+  /** Only the fields that differ from `base` and the snapshot are sent. See `updateInteraction`. */
+  async updateReminder(id: string, changes: ReminderChanges, base?: ReminderChanges): Promise<boolean> {
+    const edited = editedFields({ ...changes }, base ? { ...base } : undefined);
+    const record = this.snapshot ? findRecord(this.snapshot, "reminder", id) : undefined;
+    const send = record ? changedFields("reminder", record, edited) : edited;
+    if (!Object.keys(send).length) return true;
+    const run = () => this.api.update("reminder", id, send);
+    return (await this.write(run, { ifGone: () => undefined })) !== null;
+  }
+
+  deleteReminder(id: string): Promise<boolean> {
+    return this.remove("reminder", id);
+  }
+
+  /** Marks it done (a repeating one rolls to its next date on the server), then refreshes. */
+  async completeReminder(id: string): Promise<boolean> {
+    const done = await this.write(() => this.api.reminderComplete(id), { failure: "Couldn't mark it done", ifGone: () => undefined });
+    if (!done) return false;
+    await this.refresh();
+    return true;
   }
 
   /** Saves a new person and resolves to their id (null if it failed). See `save` for arriving. */
@@ -808,7 +858,7 @@ export class Store {
         }
       : fetched;
     this.settlePendingMembers(fetched, seq);
-    this.snapshot = this.withPendingMembers(snapshot);
+    this.snapshot = this.withPendingMembers(withReminders(snapshot));
     this.offline = false;
     this.lastError = null;
     try {
@@ -850,7 +900,7 @@ export class Store {
       const raw = this.storage?.getItem(this.cacheKey);
       if (!raw) return null;
       const parsed = JSON.parse(raw) as Snapshot;
-      return Array.isArray(parsed?.people) ? parsed : null;
+      return Array.isArray(parsed?.people) ? withReminders(parsed) : null;
     } catch {
       return null;
     }

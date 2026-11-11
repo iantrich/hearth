@@ -29,6 +29,8 @@ function recordsOf(snapshot: Snapshot, kind: EntityKind): readonly { id: string 
       return snapshot.relationships;
     case "interaction":
       return snapshot.interactions;
+    case "reminder":
+      return snapshot.reminders;
   }
 }
 
@@ -38,7 +40,7 @@ export function findRecord(snapshot: Snapshot, kind: EntityKind, id: string): Fi
 
 /** True when a record of any kind has this id. */
 export function hasRecord(snapshot: Snapshot, id: string): boolean {
-  const kinds: EntityKind[] = ["person", "household", "contact_group", "relationship", "interaction"];
+  const kinds: EntityKind[] = ["person", "household", "contact_group", "relationship", "interaction", "reminder"];
   return kinds.some((kind) => recordsOf(snapshot, kind).some((r) => r.id === id));
 }
 

@@ -59,6 +59,11 @@ export function viewFor(store: Store, route: Route): View {
       return groupEditView(store, route.id);
     case "interaction":
       return interactionView(store, route.id, route.sheet);
+    // The reminder screens arrive with the views; until then these land on home.
+    case "reminder":
+    case "reminderNew":
+    case "interactionReminderNew":
+      return homeView(store);
   }
 }
 

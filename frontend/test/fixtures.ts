@@ -1,5 +1,5 @@
 import type { Connection } from "../src/api";
-import type { ContactGroup, Household, Interaction, Person, Relationship, Snapshot } from "../src/types";
+import type { ContactGroup, Household, Interaction, Person, Relationship, Reminder, Snapshot } from "../src/types";
 
 export type Handler = (msg: Record<string, any>) => unknown;
 
@@ -102,6 +102,14 @@ export function interaction(
   };
 }
 
+export function reminder(id: string, person_id: string, extra: Partial<Reminder> = {}): Reminder {
+  return {
+    id, person_id, note: null, due_at: null, due_date: null, due_time: null, repeat_every: null,
+    repeat_unit: null, interaction_id: null, done_at: null, created_at: STAMP, updated_at: STAMP,
+    state: "someday", ...extra,
+  };
+}
+
 export function household(id: string, name: string | null, member_ids: string[], extra: Partial<Household> = {}): Household {
   return {
     id, created_at: STAMP, updated_at: STAMP, name_override: null, address: null, notes: null,
@@ -182,6 +190,14 @@ export function sampleSnapshot(): Snapshot {
       interaction("i2", "Phoned about the trip", "2026-09-27", ["p5"]),
       interaction("i3", "Dinner out", "2026-09-10", ["p4"]),
     ],
+    reminders: [
+      reminder("m1", "p4", {
+        note: "Ask about the new job", due_at: "2026-11-05T14:00:00+00:00", due_date: "2026-11-05", due_time: "08:00",
+        state: "due_today",
+      }),
+      reminder("m2", "p5", { note: "Send the trip photos", state: "someday" }),
+    ],
+    reminder_units: ["day", "week", "month", "year"],
     interaction_types: ["Call", "Text", "In person", "Email", "Other"],
     connection_types: ["Spouse", "Parent", "Child", "Sibling", "Friend", "Mentee", "Other"],
     me_person_id: "p1",

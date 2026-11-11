@@ -1,5 +1,5 @@
 import type {
-  CrmStatus, EntityKind, GoogleReport, GoogleStatus, NotificationKind, NotificationSetting, NotificationsStatus, PhotoKind, Snapshot,
+  CrmStatus, EntityKind, GoogleReport, GoogleStatus, NotificationKind, NotificationSetting, NotificationsStatus, PhotoKind, Reminder, Snapshot,
 } from "./types";
 
 /** The slice of Home Assistant's hass.connection (home-assistant-js-websocket) that Hearth uses. */
@@ -119,6 +119,10 @@ export class HearthApi {
 
   remove(kind: EntityKind, entityId: string): Promise<unknown> {
     return this.send({ type: "hearth_crm/delete", kind, entity_id: entityId });
+  }
+
+  reminderComplete(id: string): Promise<{ reminder: Reminder }> {
+    return this.send({ type: "hearth_crm/reminder/complete", entity_id: id });
   }
 
   /** `data` is the photo as base64, with no data: prefix. */
