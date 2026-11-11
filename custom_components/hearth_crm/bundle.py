@@ -17,7 +17,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from .models import CRMData
+from .models import CRMData, Reminder
+from .reminders import MAX_REPEAT_EVERY, MIN_REPEAT_EVERY
 from .serialize import data_from_dict, data_to_dict
 
 BUNDLE_FORMAT = "hearth-bundle"
@@ -200,6 +201,27 @@ def _load_document(zf: zipfile.ZipFile, names: list[str], problems: list[str]) -
     return document
 
 
+def _schedule_problems(m: Reminder) -> list[str]:
+    """What the service would never save, and the scheduler cannot work from."""
+    problems: list[str] = []
+    if (m.repeat_every is None) != (m.repeat_unit is None):
+        problems.append(f"reminder {m.id!r} has a repeat number or unit without the other")
+    if m.repeat_every is not None and not MIN_REPEAT_EVERY <= m.repeat_every <= MAX_REPEAT_EVERY:
+        problems.append(
+            f"reminder {m.id!r} repeats every {m.repeat_every}: it must be between "
+            f"{MIN_REPEAT_EVERY} and {MAX_REPEAT_EVERY}"
+        )
+    if m.repeat_every is not None or m.repeat_unit is not None:
+        for field in ("due_at", "anchor_at"):
+            if getattr(m, field) is None:
+                problems.append(f"reminder {m.id!r} repeats without {field}")
+    if m.due_at is None:
+        for field in ("anchor_at", "notified_for"):
+            if getattr(m, field) is not None:
+                problems.append(f"reminder {m.id!r} has {field} without due_at")
+    return problems
+
+
 def _reference_problems(
     data: CRMData, me_person_id: str | None, present: set[str], valid: set[str]
 ) -> list[str]:
@@ -252,6 +274,7 @@ def _reference_problems(
             problems.append(
                 f"reminder {m.id!r} references missing interaction {m.interaction_id!r}"
             )
+        problems.extend(_schedule_problems(m))
     if me_person_id is not None and me_person_id not in people:
         problems.append(f"me_person_id references missing person {me_person_id!r}")
 

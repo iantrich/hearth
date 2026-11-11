@@ -364,3 +364,52 @@ def test_an_old_bundle_without_reminders_imports_with_none(tmp_path, data):
     del doc["reminders"]
     result = read_bundle(raw_bundle(tmp_path / "b.zip", doc, good_members()))
     assert result.data.reminders == []
+
+
+# m2 in the sample repeats every 2 weeks with a due time, an anchor and a notified date.
+
+
+def _refused(tmp_path, doc, match):
+    with pytest.raises(BundleError, match=match) as err:
+        read_bundle(raw_bundle(tmp_path / "b.zip", doc, good_members()))
+    return err.value.problems
+
+
+def test_a_negative_repeat_is_refused_with_a_readable_problem(tmp_path, data):
+    doc = good_doc(data)
+    doc["reminders"][1]["repeat_every"] = -1
+    problems = _refused(tmp_path, doc, "m2")
+    assert problems == ["reminder 'm2' repeats every -1: it must be between 1 and 999"]
+
+
+@pytest.mark.parametrize("every", [0, 1000, 10**12])
+def test_a_repeat_number_outside_1_to_999_is_refused(tmp_path, data, every):
+    doc = good_doc(data)
+    doc["reminders"][1]["repeat_every"] = every
+    _refused(tmp_path, doc, "must be between 1 and 999")
+
+
+@pytest.mark.parametrize("missing", ["repeat_every", "repeat_unit"])
+def test_a_repeat_needs_both_its_number_and_its_unit(tmp_path, data, missing):
+    doc = good_doc(data)
+    doc["reminders"][1][missing] = None
+    _refused(tmp_path, doc, "'m2' has a repeat number or unit without the other")
+
+
+@pytest.mark.parametrize("missing", ["due_at", "anchor_at"])
+def test_a_repeat_needs_a_due_time_and_an_anchor(tmp_path, data, missing):
+    doc = good_doc(data)
+    doc["reminders"][1][missing] = None
+    _refused(tmp_path, doc, f"'m2' repeats without {missing}")
+
+
+@pytest.mark.parametrize("field", ["anchor_at", "notified_for"])
+def test_an_anchor_or_notified_date_needs_a_due_time(tmp_path, data, field):
+    doc = good_doc(data)
+    doc["reminders"][2][field] = "2026-03-01T15:00:00+00:00"
+    _refused(tmp_path, doc, f"'m3' has {field} without due_at")
+
+
+def test_the_sample_reminders_pass_the_new_checks(tmp_path, data):
+    result = read_bundle(raw_bundle(tmp_path / "b.zip", good_doc(data), good_members()))
+    assert [r.id for r in result.data.reminders] == ["m1", "m2", "m3"]

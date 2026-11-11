@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import time
 from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
+import pytest
+
+from custom_components.hearth_crm import reminders as reminders_mod
 from custom_components.hearth_crm.enums import ReminderUnit
 from custom_components.hearth_crm.models import Reminder
 from custom_components.hearth_crm.reminders import (
@@ -158,3 +162,29 @@ def test_comparisons_ignore_how_now_is_represented_in_the_repeated_hour():
     before = datetime(2026, 11, 1, 6, 45, tzinfo=timezone.utc)
     assert due_occurrence(one_time, before, TZ) is None
     assert due_occurrence(one_time, before.astimezone(TZ), TZ) is None
+
+
+# -- a bad stored repeat (only an imported or hand-edited database can hold one) ----------
+
+
+@pytest.mark.parametrize("every", [-1, 0, 1000, 10**9])
+def test_due_occurrence_with_a_bad_stored_repeat_is_never_due_and_returns_quickly(every):
+    bad = replace(repeating(local(2020, 1, 1), anchor=local(2020, 1, 1)), repeat_every=every)
+    started = time.perf_counter()
+    assert due_occurrence(bad, local(2026, 6, 1), TZ) is None
+    assert next_after(bad, local(2026, 6, 1), TZ) is None
+    assert time.perf_counter() - started < 0.1
+
+
+def test_latest_k_gives_up_instead_of_spinning():
+    started = time.perf_counter()
+    got = reminders_mod._latest_k(local(2020, 1, 1), -1, ReminderUnit.DAY, local(2026, 6, 1), TZ)
+    assert got is None
+    assert time.perf_counter() - started < 0.1
+
+
+def test_completing_a_bad_stored_repeat_finishes_it_instead_of_raising():
+    bad = replace(repeating(local(2020, 1, 1)), repeat_every=-1)
+    now = local(2026, 6, 1)
+    done = completed(bad, now, TZ)
+    assert done.done_at == now
